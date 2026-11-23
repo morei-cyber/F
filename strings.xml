@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">FOCUS ROOM</string>
+    <string name="admin_description">FOCUS ROOMの集中セッション中に専用画面を固定するための端末管理機能です。</string>
+</resources>
