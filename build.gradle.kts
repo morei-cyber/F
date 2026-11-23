@@ -1,23 +1,4 @@
 plugins {
-    id("com.android.application")
-    id("org.jetbrains.kotlin.android")
-}
-
-android {
-    namespace = "jp.focusroom.nativeapp"
-    compileSdk = 35
-
-    defaultConfig {
-        applicationId = "jp.focusroom.nativeapp"
-        minSdk = 26
-        targetSdk = 35
-        versionCode = 1
-        versionName = "2.0.0"
-    }
-
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
-    }
-    kotlinOptions { jvmTarget = "17" }
+    id("com.android.application") version "8.9.2" apply false
+    id("org.jetbrains.kotlin.android") version "2.1.10" apply false
 }
