@@ -123,6 +123,19 @@ body.test-mode{background:#edf0f4!important;color:#171717!important;color-scheme
 .test-paper .qcard.is-review{border-left:3px solid #b66a00;padding-left:12px}
 .test-paper .grade-score{color:#b51e28}
 #tokenUsageNote{margin-top:7px;color:#667085;font-size:11px;line-height:1.6}
+.provider-grid{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-top:12px}
+.provider-card{min-width:0;border:1px solid #334a69;border-radius:14px;background:linear-gradient(160deg,#14243a,#0e1929);padding:13px}
+.provider-card.openai{border-top:3px solid #62d6ad}
+.provider-card.deepseek{border-top:3px solid #7daeff}
+.provider-title{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.provider-mark{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;background:#20344f;font-size:15px;font-weight:900}
+.provider-title strong{display:block;font-size:14px;line-height:1.25}
+.provider-title small{display:block;color:#91a8c5;font-size:10px;margin-top:2px}
+.provider-card .label{margin-top:10px}
+.provider-card .input{margin-top:3px}
+.provider-description{min-height:32px;color:#9fb2ca;font-size:10px;line-height:1.5;margin:7px 0 2px}
+.storage-help{margin-top:6px;color:#91a8c5;font-size:10px;line-height:1.55}
+@media(max-width:760px){.provider-grid{grid-template-columns:1fr}.provider-description{min-height:0}}
 @media(max-width:700px){
  .test-nav{grid-template-columns:auto 1fr auto;gap:6px;padding:9px 8px}
  .test-nav-back,.test-nav-submit{font-size:10px;padding:8px 9px}
@@ -209,10 +222,10 @@ body.test-mode{background:#edf0f4!important;color:#171717!important;color-scheme
         <div class="label">Gemini APIキー</div>
         <input class="input" id="apiKey" type="password" autocomplete="off" placeholder="AIza...">
         <div class="row mobile-stack" style="margin-top:7px;align-items:center">
-          <label class="switchline" style="margin:0"><input type="checkbox" id="rememberApiKey"> 入力済みの3社APIキーをこの端末に保存して次回から入力を省略</label>
+          <label class="switchline" style="margin:0"><input type="checkbox" id="rememberApiKey"> 入力済みのAPIキーをこの端末に保存して次回から入力を省略</label>
           <button class="btn ghost" id="clearSavedApiKey" type="button" style="flex:0 0 auto;padding:8px 10px">保存キーを削除</button>
         </div>
-        <div id="apiKeyStatus" class="small muted" style="margin-top:5px">保存は任意です。Gemini・OpenAI・DeepSeekのAPIキーはこの端末のブラウザ保存領域に暗号化せず保存されます。共有端末では保存しないでください。</div>
+        <div id="apiKeyStatus" class="small muted" style="margin-top:5px">保存は任意です。Safariの通常保存領域が使えない場合はIndexedDBへ切り替えます。APIキーは暗号化されないため、共有端末では保存しないでください。</div>
         <div class="row" style="margin-top:8px;align-items:end">
           <div style="flex:1;min-width:0"><label class="label" for="model">使用モデル（5種類から選択）</label>
             <select class="input" id="model">
@@ -231,19 +244,36 @@ body.test-mode{background:#edf0f4!important;color:#171717!important;color-scheme
       <section class="panel" style="margin:12px 0 0;padding:13px;background:#101b2b;border-color:#3b5271">
         <div class="section-head"><h3 style="margin:0;font-size:14px">マルチAI設定</h3><span class="tag">役割別分配</span></div>
         <p class="small muted" style="margin:6px 0 10px">Gemini＝教材解析・問題生成 ／ OpenAI＝全問の独立解答・一次検証 ／ DeepSeek＝記述・複雑問題・判定が割れた問題だけ二次検証</p>
-        <label class="label" for="openaiApiKey">OpenAI APIキー</label>
-        <div class="small"><a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener">OpenAI APIキーを取得 ↗</a></div>
-        <input class="input" id="openaiApiKey" type="password" autocomplete="off" placeholder="sk-...">
-        <label class="label" for="openaiModel">OpenAIモデル</label>
-        <select class="input" id="openaiModel"><option value="gpt-6.2-astra" selected>GPT-6.2 Astra（高精度検証）</option></select>
-        <div style="height:10px"></div>
-        <label class="label" for="deepseekApiKey">DeepSeek APIキー</label>
-        <div class="small"><a href="https://platform.deepseek.com/api_keys" target="_blank" rel="noopener">DeepSeek APIキーを取得 ↗</a></div>
-        <input class="input" id="deepseekApiKey" type="password" autocomplete="off" placeholder="DeepSeek APIキーを入力">
-        <label class="label" for="deepseekModel">DeepSeekモデル（二次検証）</label>
-        <select class="input" id="deepseekModel"><option value="deepseek-v4-pro" selected>DeepSeek V4 Pro（高精度・難問向け）</option><option value="deepseek-flash">DeepSeek V4.1 Flash（低コスト）</option></select>
-        <div class="notice warn" style="margin-top:10px">重要：GitHub Pagesのブラウザから直接APIを呼ぶ方式です。APIキーはこの端末のブラウザに保存できますが、ブラウザ内では完全に秘匿できません。共有端末では保存せず、利用額上限を設定した専用APIキーを使ってください。公開サービスとして安全に配布する場合は、Vercel等のサーバー側中継が必要です。</div>
-        <div class="small muted" id="multiApiStatus" style="margin-top:7px">正答検証ON時はOpenAIが必須。記述・複雑問題・低信頼判定がある場合はDeepSeekも必須です。DeepSeek APIは従量課金です。APIエラー時は自動再試行・他社への代替をせず停止します。</div>
+        <div class="provider-grid">
+          <section class="provider-card openai">
+            <div class="provider-title"><div class="provider-mark">◎</div><div><strong>OpenAI</strong><small>一次検証 · 全問をチェック</small></div></div>
+            <label class="label" for="openaiApiKey">APIキー</label>
+            <input class="input" id="openaiApiKey" type="password" autocomplete="off" placeholder="sk-...">
+            <div class="small" style="margin-top:5px"><a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener">OpenAI APIキーを取得 ↗</a></div>
+            <label class="label" for="openaiModel">使用モデル（3種類）</label>
+            <select class="input" id="openaiModel">
+              <option value="gpt-6.2-astra" selected>GPT-6.2 Astra · 最高精度</option>
+              <option value="gpt-6.2-sol">GPT-6.2 Sol · バランス</option>
+              <option value="gpt-6.1-sol">GPT-6.1 Sol · コスト重視</option>
+            </select>
+            <div class="provider-description">全問を独立して解き、元の正答と照合します。上位モデルほど利用料金が高くなる場合があります。</div>
+          </section>
+          <section class="provider-card deepseek">
+            <div class="provider-title"><div class="provider-mark">✳</div><div><strong>DeepSeek</strong><small>二次検証 · 必要な問題だけ</small></div></div>
+            <label class="label" for="deepseekApiKey">APIキー</label>
+            <input class="input" id="deepseekApiKey" type="password" autocomplete="off" placeholder="DeepSeek APIキーを入力">
+            <div class="small" style="margin-top:5px"><a href="https://platform.deepseek.com/api_keys" target="_blank" rel="noopener">DeepSeek APIキーを取得 ↗</a></div>
+            <label class="label" for="deepseekModel">モデル・推論設定（3種類）</label>
+            <select class="input" id="deepseekModel">
+              <option value="deepseek-v4-pro|high" selected>V4 Pro · 高精度・難問向け</option>
+              <option value="deepseek-flash|high">V4.1 Flash · 推論重視</option>
+              <option value="deepseek-flash|none">V4.1 Flash · 高速モード</option>
+            </select>
+            <div class="provider-description">難しい問題や判定が割れた問題だけを再検証します。V4 ProとV4.1 Flashの2系統から選び、Flashは推論重視／高速を切り替えます。</div>
+          </section>
+        </div>
+        <div class="notice warn" style="margin-top:10px">重要：GitHub Pagesのブラウザから直接APIを呼ぶ方式です。APIキーはこの端末のブラウザに保存できますが、暗号化されず、ブラウザ内では完全に秘匿できません。共有端末では保存せず、利用額上限を設定した専用APIキーを使ってください。公開サービスとして安全に配布する場合は、サーバー側中継が必要です。</div>
+        <div class="small muted" id="multiApiStatus" style="margin-top:7px">正答検証ON時はOpenAIが必須。記述・複雑問題・低信頼判定がある場合はDeepSeekも必須です。APIエラー時は自動再試行・他社への代替をせず停止します。</div>
       </section>
       <div id="localInfo" class="notice warn hidden">AIなしモードは端末内処理です。写真OCRは初回に日本語辞書（数MB〜）をダウンロードするため、通信環境によっては数分かかる場合があります。120秒で進まない場合はエラー表示します。自由な類題生成はできません。</div>
       <div class="label">教科</div>
@@ -327,31 +357,52 @@ function renderActivityHistory(){
  if($('visitSummary'))$('visitSummary').textContent=`この端末で訪問 ${visits}回`;
  if($('historyList'))$('historyList').innerHTML=list.slice(0,12).map(x=>`<div class="history-item"><time>${escapeHtml(new Date(x.at).toLocaleString('ja-JP'))}</time><div><strong>${escapeHtml(x.title)}</strong><span>${escapeHtml(x.detail||'')}</span></div></div>`).join('')||'<div class="small muted">まだ履歴はありません。</div>';
 }
-function saveApiKeyIfRequested(){
- const checked=$('rememberApiKey')?.checked;
- try{
-  const fields=[['apiKey',API_KEY_STORAGE_KEY],['openaiApiKey',OPENAI_KEY_STORAGE_KEY],['deepseekApiKey',DEEPSEEK_KEY_STORAGE_KEY]];
-  if(checked){for(const [id,key] of fields){const value=$(id)?.value.trim()||'';if(value)localStorage.setItem(key,value);else localStorage.removeItem(key);}$('apiKeyStatus').textContent='入力済みのAPIキーをこの端末のSafariに保存しました。次回から入力を省略できます。';}
-  else{for(const [,key] of fields)localStorage.removeItem(key);$('apiKeyStatus').textContent='APIキーは保存していません。';}
- }catch(e){$('apiKeyStatus').textContent='ブラウザの保存領域を使えません。毎回入力してください。';}
+let examForgeDbPromise=null;
+function openExamForgeDb(){
+ if(examForgeDbPromise)return examForgeDbPromise;
+ examForgeDbPromise=new Promise((resolve,reject)=>{
+  if(!('indexedDB' in window)){reject(new Error('このブラウザではIndexedDBが利用できません。'));return;}
+  let request;
+  try{request=indexedDB.open('examForgeBrowserStore',1);}catch(e){reject(e);return;}
+  request.onupgradeneeded=()=>{const db=request.result;if(!db.objectStoreNames.contains('items'))db.createObjectStore('items');};
+  request.onsuccess=()=>{const db=request.result;db.onversionchange=()=>db.close();resolve(db);};
+  request.onerror=()=>reject(request.error||new Error('IndexedDBを開けませんでした。'));
+  request.onblocked=()=>reject(new Error('別のタブが保存領域を使用中です。ほかの模試メーカーのタブを閉じてください。'));
+ });
+ return examForgeDbPromise;
 }
-function setupLocalPersistence(){
+async function idbGet(key){const db=await openExamForgeDb();return new Promise((resolve,reject)=>{const tx=db.transaction('items','readonly'),req=tx.objectStore('items').get(key);req.onsuccess=()=>resolve(req.result??null);req.onerror=()=>reject(req.error||new Error('保存データを読み込めません。'));});}
+async function idbSet(key,value){const db=await openExamForgeDb();return new Promise((resolve,reject)=>{const tx=db.transaction('items','readwrite');tx.objectStore('items').put(value,key);tx.oncomplete=()=>resolve();tx.onerror=()=>reject(tx.error||new Error('保存処理に失敗しました。'));tx.onabort=()=>reject(tx.error||new Error('保存処理が中断されました。'));});}
+async function idbRemove(key){const db=await openExamForgeDb();return new Promise((resolve,reject)=>{const tx=db.transaction('items','readwrite');tx.objectStore('items').delete(key);tx.oncomplete=()=>resolve();tx.onerror=()=>reject(tx.error||new Error('削除処理に失敗しました。'));tx.onabort=()=>reject(tx.error||new Error('削除処理が中断されました。'));});}
+async function persistentGet(key){let localFailed=false;try{const value=localStorage.getItem(key);if(value!==null)return value;}catch(e){localFailed=true;}try{return await idbGet(key);}catch(idbError){if(localFailed)throw new Error(`Safari標準領域とIndexedDBの両方を読み込めません：${idbError?.message||idbError}`);return null;}}
+async function persistentSet(key,value){try{localStorage.setItem(key,value);return 'Safari標準領域';}catch(localError){try{await idbSet(key,value);return 'IndexedDB';}catch(idbError){throw new Error(`Safari標準領域とIndexedDBの両方で保存できません。Safariのプライベートブラウズ、Webサイトデータ設定、空き容量を確認してください。（${String(idbError?.message||idbError).slice(0,110)}）`);}}}
+async function persistentRemove(key){let localOk=false;try{localStorage.removeItem(key);localOk=true;}catch(e){}try{await idbRemove(key);}catch(e){if(!localOk)throw e;}}
+async function saveApiKeyIfRequested(){
+ const checked=$('rememberApiKey')?.checked;
+ const fields=[['apiKey',API_KEY_STORAGE_KEY],['openaiApiKey',OPENAI_KEY_STORAGE_KEY],['deepseekApiKey',DEEPSEEK_KEY_STORAGE_KEY]];
  try{
-  const pairs=[['apiKey',API_KEY_STORAGE_KEY],['openaiApiKey',OPENAI_KEY_STORAGE_KEY],['deepseekApiKey',DEEPSEEK_KEY_STORAGE_KEY]];let restored=0;
-  for(const [id,key] of pairs){const saved=localStorage.getItem(key);if(saved){$(id).value=saved;restored++;}}
-  if(restored){$('rememberApiKey').checked=true;$('apiKeyStatus').textContent=`保存済みAPIキー ${restored}/3 件を読み込みました。`;}
-  const model=localStorage.getItem(MODEL_STORAGE_KEY);if(model&&[...$('model').options].some(o=>o.value===model))$('model').value=model;
-  const openaiModel=localStorage.getItem(OPENAI_MODEL_STORAGE_KEY);if(openaiModel&&[...$('openaiModel').options].some(o=>o.value===openaiModel))$('openaiModel').value=openaiModel;
-  const deepseekModel=localStorage.getItem(DEEPSEEK_MODEL_STORAGE_KEY);if(deepseekModel&&[...$('deepseekModel').options].some(o=>o.value===deepseekModel))$('deepseekModel').value=deepseekModel;
-  localStorage.removeItem('examForge.claudeKey.v1');localStorage.removeItem('examForge.claudeModel.v1');
- }catch(e){$('apiKeyStatus').textContent='ブラウザの保存領域を利用できません。';}
- ['apiKey','openaiApiKey','deepseekApiKey'].forEach(id=>$(id).addEventListener('input',()=>{if($('rememberApiKey').checked)saveApiKeyIfRequested();}));
+  if(checked){let backend='Safari標準領域',saved=0;for(const [id,key] of fields){const value=$(id)?.value.trim()||'';if(value){backend=await persistentSet(key,value);saved++;}else await persistentRemove(key);}
+   $('apiKeyStatus').textContent=saved?`APIキー ${saved}件を${backend}に保存しました。次回から入力を省略できます。`:'保存するAPIキーがまだ入力されていません。';
+  }else{for(const [,key] of fields)await persistentRemove(key);$('apiKeyStatus').textContent='APIキーは保存していません。';}
+ }catch(e){$('apiKeyStatus').textContent=`保存できませんでした：${e.message||e}`;}
+}
+async function setupLocalPersistence(){
+ ['apiKey','openaiApiKey','deepseekApiKey'].forEach(id=>$(id).addEventListener('change',()=>{if($('rememberApiKey').checked)saveApiKeyIfRequested();}));
  $('rememberApiKey').addEventListener('change',saveApiKeyIfRequested);
- $('clearSavedApiKey').addEventListener('click',()=>{try{[API_KEY_STORAGE_KEY,OPENAI_KEY_STORAGE_KEY,DEEPSEEK_KEY_STORAGE_KEY,'examForge.claudeKey.v1','examForge.claudeModel.v1'].forEach(k=>localStorage.removeItem(k));}catch{}['apiKey','openaiApiKey','deepseekApiKey'].forEach(id=>$(id).value='');$('rememberApiKey').checked=false;$('apiKeyStatus').textContent='保存済みAPIキーをすべて削除しました。';});
- $('model').addEventListener('change',()=>{try{localStorage.setItem(MODEL_STORAGE_KEY,$('model').value);}catch{}});
- $('openaiModel').addEventListener('change',()=>{try{localStorage.setItem(OPENAI_MODEL_STORAGE_KEY,$('openaiModel').value);}catch{}});
- $('deepseekModel').addEventListener('change',()=>{try{localStorage.setItem(DEEPSEEK_MODEL_STORAGE_KEY,$('deepseekModel').value);}catch{}});
+ $('clearSavedApiKey').addEventListener('click',async()=>{for(const key of [API_KEY_STORAGE_KEY,OPENAI_KEY_STORAGE_KEY,DEEPSEEK_KEY_STORAGE_KEY,'examForge.claudeKey.v1','examForge.claudeModel.v1']){try{await persistentRemove(key);}catch(e){}}['apiKey','openaiApiKey','deepseekApiKey'].forEach(id=>$(id).value='');$('rememberApiKey').checked=false;$('apiKeyStatus').textContent='保存済みAPIキーを削除しました。';});
+ $('model').addEventListener('change',()=>persistentSet(MODEL_STORAGE_KEY,$('model').value).catch(()=>{}));
+ $('openaiModel').addEventListener('change',()=>persistentSet(OPENAI_MODEL_STORAGE_KEY,$('openaiModel').value).catch(()=>{}));
+ $('deepseekModel').addEventListener('change',()=>persistentSet(DEEPSEEK_MODEL_STORAGE_KEY,$('deepseekModel').value).catch(()=>{}));
  $('clearHistoryBtn').addEventListener('click',()=>{if(!confirm('この端末に保存した利用・訪問履歴をすべて削除しますか？'))return;try{localStorage.removeItem(HISTORY_STORAGE_KEY);}catch{}renderActivityHistory();});
+ try{
+  const pairs=[['apiKey',API_KEY_STORAGE_KEY],['openaiApiKey',OPENAI_KEY_STORAGE_KEY],['deepseekApiKey',DEEPSEEK_KEY_STORAGE_KEY]];let restored=0,backend='Safari標準領域';
+  for(const [id,key] of pairs){const saved=await persistentGet(key);if(saved){$(id).value=saved;restored++;try{if(localStorage.getItem(key)===null)backend='IndexedDB';}catch(e){backend='IndexedDB';}}}
+  const model=await persistentGet(MODEL_STORAGE_KEY);if(model&&[...$('model').options].some(o=>o.value===model))$('model').value=model;
+  const openaiModel=await persistentGet(OPENAI_MODEL_STORAGE_KEY);if(openaiModel&&[...$('openaiModel').options].some(o=>o.value===openaiModel))$('openaiModel').value=openaiModel;
+  const deepseekModel=await persistentGet(DEEPSEEK_MODEL_STORAGE_KEY);if(deepseekModel&&[...$('deepseekModel').options].some(o=>o.value===deepseekModel))$('deepseekModel').value=deepseekModel;
+  try{localStorage.removeItem('examForge.claudeKey.v1');localStorage.removeItem('examForge.claudeModel.v1');}catch(e){}
+  if(restored){$('rememberApiKey').checked=true;$('apiKeyStatus').textContent=`保存済みAPIキー ${restored}/3件を${backend}から読み込みました。`;}else $('apiKeyStatus').textContent='保存先を確認しました。キーを入力して「この端末に保存」をONにすると次回から省略できます。';
+ }catch(e){$('apiKeyStatus').textContent=`保存領域を確認できません：${e.message||e}。Safariの通常モードでGitHub Pagesを開いてください。`;}
  renderActivityHistory();recordActivity('visit','アプリを開いた','この端末のSafari内に記録。サイト全体の訪問者数ではありません。');
 }
 // The generated exam lives in its own white examination page, not inside the dark builder.
@@ -580,14 +631,14 @@ async function callOpenAI(prompt,outputTokens=5000,responseSchema=null){
 }
 async function callDeepSeek(prompt,outputTokens=3500,responseSchema=null){
  const key=$('deepseekApiKey').value.trim();if(!key)throw new Error('高リスク問題の二次検証に必要なDeepSeek APIキーを入力してください。');
- saveApiKeyIfRequested();const model=$('deepseekModel').value||'deepseek-v4-pro',operation=state.currentOperation||'二次検証';
- const body={model,input:[{role:'user',content:[{type:'input_text',text:prompt}]}],reasoning:{effort:'high'},max_output_tokens:outputTokens};
+ saveApiKeyIfRequested();const selection=$('deepseekModel').value||'deepseek-v4-pro|high',parts=selection.split('|'),model=parts[0],effort=parts[1]||'high',modelLabel=selection==='deepseek-v4-pro|high'?'DeepSeek V4 Pro':selection==='deepseek-flash|none'?'DeepSeek V4.1 Flash（高速）':'DeepSeek V4.1 Flash（推論）',operation=state.currentOperation||'二次検証';
+ const body={model,input:[{role:'user',content:[{type:'input_text',text:prompt}]}],reasoning:{effort},max_output_tokens:outputTokens};
  if(responseSchema)body.text={format:{type:'json_schema',name:'exam_answer_audit',schema:toStandardJsonSchema(responseSchema)}};
- let response;try{response=await fetch('https://api.deepseek.com/responses',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${key}`},body:JSON.stringify(body)});}catch(e){recordActivity('api_error','DeepSeek API通信エラー',`${operation} / ${model} / ${String(e.message||e).slice(0,120)}`);throw new Error(`DeepSeekとの通信に失敗しました（${model}）：${e.message||'ネットワークまたはCORS制限'}。自動再試行はしません。`);}
- if(!response.ok){const raw=await response.text();let msg=raw;try{msg=JSON.parse(raw).error?.message||raw;}catch{}throw providerError('DeepSeek',operation,model,response.status,msg);}
- const data=await response.json();recordProviderUsage('DeepSeek',model,operation,data.usage||{});
+ let response;try{response=await fetch('https://api.deepseek.com/responses',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${key}`},body:JSON.stringify(body)});}catch(e){recordActivity('api_error','DeepSeek API通信エラー',`${operation} / ${modelLabel} / ${String(e.message||e).slice(0,120)}`);throw new Error(`DeepSeekとの通信に失敗しました（${modelLabel}）：${e.message||'ネットワークまたはCORS制限'}。自動再試行はしません。`);}
+ if(!response.ok){const raw=await response.text();let msg=raw;try{msg=JSON.parse(raw).error?.message||raw;}catch{}throw providerError('DeepSeek',operation,modelLabel,response.status,msg);}
+ const data=await response.json();recordProviderUsage('DeepSeek',modelLabel,operation,data.usage||{});
  let textOut=String(data.output_text||'');if(!textOut&&Array.isArray(data.output))textOut=data.output.flatMap(x=>x.content||[]).filter(x=>x.type==='output_text').map(x=>x.text||'').join('\n');
- if(!textOut)throw new Error(`DeepSeekから解析可能な本文が返りませんでした（${model}）。自動再試行はしません。`);
+ if(!textOut)throw new Error(`DeepSeekから解析可能な本文が返りませんでした（${modelLabel}）。自動再試行はしません。`);
  return parseJson(textOut);
 }
 function stripJsonEnvelope(source){
