@@ -11,6 +11,8 @@
 @media(max-width:760px){.wrap{padding:14px 12px 50px}.grid{grid-template-columns:1fr}.hero{padding:19px}.steps{grid-template-columns:repeat(2,1fr)}.panel{padding:15px}.top{align-items:flex-start}.pill{font-size:10px}.row.mobile-stack{flex-direction:column;align-items:stretch}.row.mobile-stack>*{width:100%}}
 .exam-head{border:1px solid var(--line);border-radius:14px;padding:14px;margin:14px 0;background:#0e1a2b}.student-fields{display:grid;grid-template-columns:1fr 1fr 2fr;gap:8px;margin-top:12px}.student-field{border-bottom:1px solid #8b9bb0;min-height:28px;font-size:12px;padding:3px}.exam-instructions{font-size:12px;color:var(--muted);margin-top:10px}.exam-toolbar{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0}.answerarea{min-height:100px;resize:vertical}.print-writing-space{display:none}.print-only{display:none}.print-head{color:#111}.print-school-line{display:flex;justify-content:space-between;font-size:10pt;border-bottom:1px solid #222;padding-bottom:4px}.print-head h1{font-size:19pt;text-align:center;margin:9px 0 5px}.print-subline{display:flex;justify-content:space-between;gap:10px;font-size:10pt}.print-student-fields{display:grid;grid-template-columns:1fr 1fr 2fr;border:1px solid #222;margin:10px 0}.print-student-fields div{padding:7px 8px;min-height:34px;border-right:1px solid #222;font-size:10pt}.print-student-fields div:last-child{border-right:0}.print-instructions{font-size:9pt;margin:7px 0 13px}.q-number{font-weight:800}.answer-sheet-table,.key-table{width:100%;border-collapse:collapse;margin-top:10px;font-size:10pt}.answer-sheet-table th,.answer-sheet-table td,.key-table th,.key-table td{border:1px solid #555;padding:7px;text-align:left;vertical-align:top}.answer-sheet-table th{width:13%}.key-table th{white-space:nowrap}.print-lines{margin-top:10px}.print-line{height:25px;border-bottom:1px solid #888}.print-choice-answer{display:none;margin-top:8px;font-size:10pt}.question-kind{font-size:10px;border:1px solid #687b94;border-radius:4px;padding:1px 5px;margin-left:6px}.grading-note{font-size:12px;color:var(--muted);margin-top:7px}.grade-detail{border-top:1px solid #35534f;margin-top:10px;padding-top:10px}.grade-detail h4{margin:0 0 5px}.grade-score{font-size:30px;font-weight:900;color:#8be6c1}
 @page{size:A4;margin:14mm 15mm 15mm}
+.history-list{display:grid;gap:7px}.history-item{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--line);border-radius:10px;background:#0e1a2a;padding:9px 11px;font-size:11px}.history-item time{color:var(--muted);white-space:nowrap;min-width:125px}.history-item strong{display:block;color:var(--text)}.history-item span{color:var(--muted)}
+@media(max-width:600px){.history-item{display:block}.history-item time{display:block;margin-bottom:3px}}
 @media print{
   html,body{background:#fff!important;color:#111!important;font-family:"Yu Mincho","Hiragino Mincho ProN","Noto Serif JP",serif!important;font-size:10pt!important;line-height:1.55!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
   #builderPage{display:none!important}.test-page{display:block!important;background:#fff!important}.test-nav{display:none!important}.test-paper{box-shadow:none!important;border:0!important}
@@ -153,7 +155,7 @@ body.test-mode{background:#edf0f4!important;color:#171717!important;color-scheme
 <div class="wrap" id="builderPage">
   <header class="top">
     <div class="brand"><div class="logo">✦</div><div><small>AI STUDY WORKSHOP</small><strong>EXAM FORGE <span style="color:#7eaaff">/ 模試メーカー</span></strong></div></div>
-    <div class="pill">iPad / Safari 対応 · 試作版 0.6</div>
+    <div class="pill">iPad / Safari 対応 · 試作版 1.0</div>
   </header>
   <section class="hero">
     <div class="eyebrow">FROM YOUR MATERIALS TO YOUR MOCK EXAM</div>
@@ -178,7 +180,11 @@ body.test-mode{background:#edf0f4!important;color:#171717!important;color-scheme
         <input id="fileInput" type="file" accept="application/pdf,image/jpeg,image/png,image/webp" multiple hidden>
       </div>
       <div id="fileList" class="files"></div>
-      <div class="notice">📌 AIありモードでは教材ファイルをGeminiに送信して解析します。個人情報や公開できない教材は送信しないでください。</div>
+      <div class="row mobile-stack" style="margin-top:10px;align-items:end">
+        <div><label class="label" for="pageLimit">複数ページの解析上限</label><select class="input" id="pageLimit"><option value="5">5ページ</option><option value="10" selected>10ページ（節約）</option><option value="15">15ページ</option><option value="20">20ページ</option><option value="30">30ページ</option></select></div>
+        <div class="small muted" style="padding-bottom:8px">文字PDFはテキスト抽出を優先し、スキャンページ・写真だけを圧縮画像で送信します。</div>
+      </div>
+      <div class="notice">📌 AIありモードでは教材の一部がGeminiに送信されます。複数ページは上限内で処理し、重複ページを除外します。個人情報や公開できない教材は送信しないでください。</div>
       <div class="label">出題対象の補足（任意）</div>
       <textarea id="scopeNote" rows="2" placeholder="例：このプリントの問1〜問8。二次関数の最大・最小を中心に。"></textarea>
       <div class="actions"><button class="btn full" id="analyzeBtn" type="button" disabled>教材を解析する</button></div>
@@ -202,6 +208,11 @@ body.test-mode{background:#edf0f4!important;color:#171717!important;color-scheme
       <div id="aiSettings">
         <div class="label">Gemini APIキー</div>
         <input class="input" id="apiKey" type="password" autocomplete="off" placeholder="AIza...">
+        <div class="row mobile-stack" style="margin-top:7px;align-items:center">
+          <label class="switchline" style="margin:0"><input type="checkbox" id="rememberApiKey"> この端末に保存して次回から入力を省略</label>
+          <button class="btn ghost" id="clearSavedApiKey" type="button" style="flex:0 0 auto;padding:8px 10px">保存キーを削除</button>
+        </div>
+        <div id="apiKeyStatus" class="small muted" style="margin-top:5px">保存は任意です。APIキーはこの端末のブラウザ保存領域に暗号化せず保存されます。共有端末では保存しないでください。</div>
         <div class="row" style="margin-top:8px;align-items:end">
           <div style="flex:1;min-width:0"><label class="label" for="model">使用モデル（5種類から選択）</label>
             <select class="input" id="model">
@@ -215,7 +226,7 @@ body.test-mode{background:#edf0f4!important;color:#171717!important;color-scheme
           <div style="flex:0 0 auto;align-self:end"><a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener">APIキー取得 ↗</a></div>
         </div>
         <div class="small muted" style="margin-top:7px">モデルはここで手動選択します。選択したモデルに1回だけ送信し、混雑・エラー時に別モデルへ自動切替や自動再試行はしません。モデルの利用可否・無料枠はGoogle側のアカウント条件に従います。</div>
-        <div id="tokenUsageNote">AI利用は教材解析・問題生成のみ。採点ではGemini APIを呼び出しません。通信は選択したモデルへ各処理1回だけ送信します。</div>
+        <div id="tokenUsageNote">AI利用は教材解析・問題生成・多段階正答検証。通常採点は端末内で行い、採点時にGemini APIは呼び出しません。自動再試行・別モデルへの切替なし。</div>
       </div>
       <div id="localInfo" class="notice warn hidden">AIなしモードは端末内処理です。写真OCRは初回に日本語辞書（数MB〜）をダウンロードするため、通信環境によっては数分かかる場合があります。120秒で進まない場合はエラー表示します。自由な類題生成はできません。</div>
       <div class="label">教科</div>
@@ -230,10 +241,24 @@ body.test-mode{background:#edf0f4!important;color:#171717!important;color-scheme
       </div>
       <label class="switchline"><input type="checkbox" id="mixTypes" checked> 教材に合わせて問題形式を混ぜる</label>
       <label class="switchline"><input type="checkbox" id="strictScope" checked> 教材にない知識をなるべく出題しない</label>
+      <label class="switchline"><input type="checkbox" id="verifyAnswers" checked> 生成後に正答を多段階検証する（追加API通信1回）</label>
+      <div class="notice warn" style="margin-top:6px">問題文・選択肢の構造検査、独立解答、再検算、解説との整合、教材根拠を確認します。基準を満たさない問題は「要確認」として採点を保留します。</div>
       <button class="btn green full" id="generateBtn" type="button" disabled>解析した教材から模試を作成</button>
       <div class="small muted" style="margin-top:8px">先に左側で教材を解析してください。</div>
     </section>
   </div>
+
+  <section class="panel" id="usageHistoryPanel">
+    <div class="section-head"><h2>03 / 利用・訪問履歴</h2><span class="tag" id="visitSummary">この端末の訪問記録</span></div>
+    <p class="sub">このSafari内だけに保存する履歴です。サイト全体の訪問者数や他の人の利用状況は記録しません。</p>
+    <div class="kpi" id="historyStats">
+      <div><b id="visitCount">0</b><span>この端末での訪問回数</span></div>
+      <div><b id="apiCallCount">0</b><span>API呼び出し回数</span></div>
+      <div><b id="historyTokenCount">0</b><span>累計トークン（取得分）</span></div>
+    </div>
+    <div id="historyList" class="history-list" style="margin-top:12px"></div>
+    <div class="actions"><button class="btn ghost" type="button" id="clearHistoryBtn">この端末の履歴を消去</button></div>
+  </section>
 
   <section class="panel exam" id="examSection">
     <div class="section-head"><div><div class="eyebrow">YOUR GENERATED EXAM</div><h2 id="examTitle">模試</h2><p class="sub" id="examMeta" style="margin:4px 0 0"></p></div><span class="tag" id="examMode">AI生成</span></div>
@@ -263,9 +288,41 @@ body.test-mode{background:#edf0f4!important;color:#171717!important;color-scheme
 </main>
 <script type="module">
 const $ = id => document.getElementById(id);
-const state = { files: [], analysis: null, questions: [], answers: {}, graded: false, examMode: 'ai', examMeta: {}, grading: null, pdfjs: null, tesseract: null, tesseractLoading: null, tokenUsage: { input: 0, output: 0, total: 0 } };
+const state = { files: [], analysis: null, questions: [], answers: {}, graded: false, examMode: 'ai', examMeta: {}, grading: null, pdfjs: null, tesseract: null, tesseractLoading: null, tokenUsage: { input: 0, output: 0, total: 0 }, currentOperation: 'AI処理', materialMeta: null };
+const HISTORY_STORAGE_KEY='examForge.activity.v1';
+const API_KEY_STORAGE_KEY='examForge.geminiKey.v1';
+const MODEL_STORAGE_KEY='examForge.model.v1';
+function readHistory(){try{const v=JSON.parse(localStorage.getItem(HISTORY_STORAGE_KEY)||'[]');return Array.isArray(v)?v:[];}catch{return[];}}
+function recordActivity(kind,title,detail='',meta={}){
+ try{const list=readHistory();list.unshift({id:Date.now()+'-'+Math.random().toString(36).slice(2,7),at:new Date().toISOString(),kind,title:String(title||'記録').slice(0,80),detail:String(detail||'').slice(0,260),...meta});localStorage.setItem(HISTORY_STORAGE_KEY,JSON.stringify(list.slice(0,100)));}catch(e){console.warn('履歴を保存できませんでした',e);}
+ renderActivityHistory();
+}
+function renderActivityHistory(){
+ const list=readHistory(),visits=list.filter(x=>x.kind==='visit').length,api=list.filter(x=>x.kind==='api').length;
+ const totalTokens=list.filter(x=>x.kind==='api').reduce((n,x)=>n+(Number(x.totalTokens)||0),0);
+ if($('visitCount'))$('visitCount').textContent=visits.toLocaleString();
+ if($('apiCallCount'))$('apiCallCount').textContent=api.toLocaleString();
+ if($('historyTokenCount'))$('historyTokenCount').textContent=totalTokens.toLocaleString();
+ if($('visitSummary'))$('visitSummary').textContent=`この端末で訪問 ${visits}回`;
+ if($('historyList'))$('historyList').innerHTML=list.slice(0,12).map(x=>`<div class="history-item"><time>${escapeHtml(new Date(x.at).toLocaleString('ja-JP'))}</time><div><strong>${escapeHtml(x.title)}</strong><span>${escapeHtml(x.detail||'')}</span></div></div>`).join('')||'<div class="small muted">まだ履歴はありません。</div>';
+}
+function saveApiKeyIfRequested(){
+ const checked=$('rememberApiKey')?.checked,key=$('apiKey')?.value.trim()||'';
+ try{if(checked&&key){localStorage.setItem(API_KEY_STORAGE_KEY,key);$('apiKeyStatus').textContent='APIキーをこの端末のSafariに保存しました。次回から自動入力されます。';}else if(!checked){localStorage.removeItem(API_KEY_STORAGE_KEY);$('apiKeyStatus').textContent='APIキーは保存していません。';}else{$('apiKeyStatus').textContent='APIキーを入力すると、この端末に保存されます。';}}catch(e){$('apiKeyStatus').textContent='ブラウザの保存領域を使えません。毎回入力してください。';}
+}
+function setupLocalPersistence(){
+ try{const saved=localStorage.getItem(API_KEY_STORAGE_KEY);if(saved){$('apiKey').value=saved;$('rememberApiKey').checked=true;$('apiKeyStatus').textContent='保存済みAPIキーを読み込みました。この端末で次回から入力を省略できます。';}const model=localStorage.getItem(MODEL_STORAGE_KEY);if(model&&[...$('model').options].some(o=>o.value===model))$('model').value=model;}catch(e){$('apiKeyStatus').textContent='ブラウザの保存領域を利用できません。';}
+ $('apiKey').addEventListener('input',()=>{if($('rememberApiKey').checked)saveApiKeyIfRequested();});
+ $('rememberApiKey').addEventListener('change',saveApiKeyIfRequested);
+ $('clearSavedApiKey').addEventListener('click',()=>{try{localStorage.removeItem(API_KEY_STORAGE_KEY);}catch{}$('apiKey').value='';$('rememberApiKey').checked=false;$('apiKeyStatus').textContent='保存済みAPIキーを削除しました。';});
+ $('model').addEventListener('change',()=>{try{localStorage.setItem(MODEL_STORAGE_KEY,$('model').value);}catch{}});
+ $('clearHistoryBtn').addEventListener('click',()=>{if(!confirm('この端末に保存した利用・訪問履歴をすべて削除しますか？'))return;try{localStorage.removeItem(HISTORY_STORAGE_KEY);}catch{}renderActivityHistory();});
+ renderActivityHistory();
+ recordActivity('visit','アプリを開いた','この端末のSafari内に記録。サイト全体の訪問者数ではありません。');
+}
 // The generated exam lives in its own white examination page, not inside the dark builder.
 $('testPaper').appendChild($('examSection'));
+setupLocalPersistence();
 function openTestPage(){ $('builderPage').classList.add('hidden'); $('testPage').classList.add('active'); $('testPage').setAttribute('aria-hidden','false'); document.body.classList.add('test-mode'); window.scrollTo({top:0,behavior:'auto'}); }
 function returnToBuilder(){ $('testPage').classList.remove('active'); $('testPage').setAttribute('aria-hidden','true'); $('builderPage').classList.remove('hidden'); document.body.classList.remove('test-mode'); window.scrollTo({top:0,behavior:'auto'}); }
 $('backToBuilder').addEventListener('click',returnToBuilder);
@@ -279,7 +336,7 @@ function escapeHtml(v=''){return String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','
 function setMode(){const mode=document.querySelector('input[name="mode"]:checked').value;$('aiSettings').classList.toggle('hidden',mode!=='ai');$('localInfo').classList.toggle('hidden',mode!=='local');$('generateBtn').textContent=mode==='ai'?'AIで類題を生成':'AIなしで問題を作成';}
 document.querySelectorAll('input[name="mode"]').forEach(x=>x.addEventListener('change',setMode));setMode();
 function renderFiles(){ $('fileCount').textContent=state.files.length+' ファイル'; $('fileList').innerHTML=state.files.map((f,i)=>`<div class="file"><div class="ficon">${f.type==='application/pdf'?'📕':'🖼️'}</div><div class="fname">${escapeHtml(f.name)}<span class="meta">${fmtSize(f.size)} · ${f.type||'画像'}</span></div><button type="button" aria-label="削除" data-remove="${i}">×</button></div>`).join('');$('analyzeBtn').disabled=!state.files.length;$('generateBtn').disabled=!state.analysis;}
-function addFiles(list){const incoming=[...list];for(const f of incoming){if(state.files.length>=MAX_FILES)break;if(!['application/pdf','image/jpeg','image/png','image/webp'].includes(f.type)){continue;}if(f.size>MAX_FILE_BYTES){alert(`${f.name} は20MBを超えています。ファイルを小さくしてから追加してください。`);continue;}if(!state.files.some(x=>x.name===f.name&&x.size===f.size)){state.files.push(f);}}state.analysis=null;$('summary').classList.remove('show');$('examSection').classList.remove('show');renderFiles();}
+function addFiles(list){const incoming=[...list];let added=0;for(const f of incoming){if(state.files.length>=MAX_FILES)break;if(!['application/pdf','image/jpeg','image/png','image/webp'].includes(f.type)){continue;}if(f.size>MAX_FILE_BYTES){alert(`${f.name} は20MBを超えています。ファイルを小さくしてから追加してください。`);continue;}if(!state.files.some(x=>x.name===f.name&&x.size===f.size)){state.files.push(f);added++;}}if(added){state.analysis=null;$('summary').classList.remove('show');$('examSection').classList.remove('show');recordActivity('upload','教材ファイルを追加',`${added}ファイルを追加（ファイル名・内容は履歴に保存しません）`);}renderFiles();}
 $('pickFiles').addEventListener('click',()=>$('fileInput').click());$('fileInput').addEventListener('change',e=>{addFiles(e.target.files);e.target.value='';});
 $('fileList').addEventListener('click',e=>{const b=e.target.closest('[data-remove]');if(!b)return;state.files.splice(Number(b.dataset.remove),1);state.analysis=null;$('summary').classList.remove('show');renderFiles();});
 const dz=$('dropZone');dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('over')});dz.addEventListener('dragleave',()=>dz.classList.remove('over'));dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('over');addFiles(e.dataTransfer.files)});
@@ -356,6 +413,42 @@ async function extractPdf(file){const pdfjs=await loadPdfJs();const bytes=new Ui
 }
 async function extractLocal(){let text='';for(let i=0;i<state.files.length;i++){const f=state.files[i];showStatus(`${i+1}/${state.files.length}：${f.name} を解析中...`,Math.round(i/state.files.length*80));if(f.type==='application/pdf')text+=await extractPdf(f);else text+=`\n【${f.name} OCR】\n${await ocrImage(f)}\n`;}return text.trim();}
 function b64(buffer){const bytes=new Uint8Array(buffer);let binary='';const chunk=0x8000;for(let i=0;i<bytes.length;i+=chunk)binary+=String.fromCharCode(...bytes.subarray(i,i+chunk));return btoa(binary);}
+function blobToJpegPart(blob){return new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>{try{const data=String(reader.result).split(',')[1];if(!data)throw new Error('画像データを変換できません');resolve({inlineData:{mimeType:'image/jpeg',data}});}catch(e){reject(e);}};reader.onerror=()=>reject(new Error('画像データを読み込めません'));reader.readAsDataURL(blob);});}
+async function compressImageFile(file,maxSide=1280,quality=.68){
+ let source,cleanup=null;
+ if(typeof createImageBitmap==='function'){source=await createImageBitmap(file);}
+ else{const url=URL.createObjectURL(file);cleanup=()=>URL.revokeObjectURL(url);source=await new Promise((resolve,reject)=>{const img=new Image();img.onload=()=>resolve(img);img.onerror=()=>reject(new Error(`${file.name} の画像を開けません`));img.src=url;});}
+ try{const scale=Math.min(1,maxSide/Math.max(source.width||source.naturalWidth,source.height||source.naturalHeight));const w=Math.max(1,Math.round((source.width||source.naturalWidth)*scale)),h=Math.max(1,Math.round((source.height||source.naturalHeight)*scale));const canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;const ctx=canvas.getContext('2d',{alpha:false});ctx.fillStyle='#fff';ctx.fillRect(0,0,w,h);ctx.drawImage(source,0,0,w,h);const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/jpeg',quality));canvas.width=canvas.height=1;if(!blob)throw new Error('画像を圧縮できませんでした');return await blobToJpegPart(blob);}finally{if(source&&typeof source.close==='function')source.close();if(cleanup)cleanup();}
+}
+async function renderPdfPagePart(page,maxSide=1280){const base=page.getViewport({scale:1});const scale=Math.min(1.35,maxSide/Math.max(base.width,base.height));const viewport=page.getViewport({scale});const canvas=document.createElement('canvas');canvas.width=Math.ceil(viewport.width);canvas.height=Math.ceil(viewport.height);const ctx=canvas.getContext('2d',{alpha:false});ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height);await page.render({canvasContext:ctx,viewport}).promise;const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/jpeg',.66));canvas.width=canvas.height=1;if(!blob)throw new Error('PDFページを画像化できません');return await blobToJpegPart(blob);}
+async function digestBlob(blob){try{const bytes=await blob.arrayBuffer();const digest=await crypto.subtle.digest('SHA-256',bytes);return [...new Uint8Array(digest)].map(x=>x.toString(16).padStart(2,'0')).join('');}catch{return `${blob.name||'blob'}:${blob.size}:${blob.lastModified||0}`;}}
+function quickContentHash(text){let a=2166136261,b=2246822519;for(let i=0;i<text.length;i++){const c=text.charCodeAt(i);a=Math.imul(a^c,16777619);b=Math.imul(b^(c+i),3266489917);}return `${a>>>0}:${b>>>0}:${text.length}`;}
+async function prepareGeminiMaterials(files,pageLimit){
+ const pdfjs=files.some(f=>f.type==='application/pdf')?await loadPdfJs():null;const parts=[],textPages=[],seenFiles=new Set(),seenPages=new Set(),seenImagePages=new Set();let used=0,skipped=0,duplicate=0,bytesSent=0,textChars=0;
+ for(let fi=0;fi<files.length;fi++){
+  const file=files[fi];if(used>=pageLimit){if(file.type==='application/pdf'&&pdfjs){try{const rest=await pdfjs.getDocument({data:new Uint8Array(await file.arrayBuffer())}).promise;skipped+=rest.numPages;await rest.destroy();}catch{skipped++;}}else skipped++;continue;}
+  const fileHash=await digestBlob(file);if(seenFiles.has(fileHash)){duplicate++;continue;}seenFiles.add(fileHash);
+  if(file.type==='application/pdf'){
+   const pdfBytes=new Uint8Array(await file.arrayBuffer());const pdf=await pdfjs.getDocument({data:pdfBytes}).promise;const take=Math.min(pdf.numPages,pageLimit-used);if(pdf.numPages>take)skipped+=pdf.numPages-take;
+   for(let pageNo=1;pageNo<=take;pageNo++){
+    showStatus(`${file.name}：ページ ${pageNo}/${pdf.numPages} を軽量化中...`,Math.min(72,8+Math.round((used+1)/pageLimit*60)));
+    const page=await pdf.getPage(pageNo);const content=await page.getTextContent();const line=content.items.map(x=>x.str||'').join(' ').replace(/[ \t]+/g,' ').trim();
+    if(line.replace(/\s/g,'').length>=45){const fingerprint=line.normalize('NFKC').replace(/\s/g,'');if(seenPages.has(fingerprint)){duplicate++;}else{seenPages.add(fingerprint);textPages.push(`【${file.name} / ${pageNo}ページ】\n${line.slice(0,2200)}`);textChars+=Math.min(line.length,2200);}}
+    else{const part=await renderPdfPagePart(page);const imageKey=quickContentHash(part.inlineData.data);if(seenImagePages.has(imageKey)){duplicate++;}else{seenImagePages.add(imageKey);const dataLen=part.inlineData.data.length;bytesSent+=Math.ceil(dataLen*3/4);parts.push({text:`【${file.name} / ${pageNo}ページの画像】`},part);}}
+    used++;
+   }
+   try{await pdf.destroy();}catch{}
+  }else{
+   showStatus(`${file.name}：写真を圧縮中...`,Math.min(72,8+Math.round((used+1)/pageLimit*60)));
+   const part=await compressImageFile(file);bytesSent+=Math.ceil(part.inlineData.data.length*3/4);parts.push({text:`【${file.name} / 写真】`},part);used++;
+  }
+ }
+ const text=textPages.join('\n\n').slice(0,11000);if(text)parts.unshift({text:`【PDFから抽出したページ本文】\n${text}`});
+ const note={pagesUsed:used,pagesSkipped:skipped,duplicates:duplicate,textChars:Math.min(textChars,11000),imageBytes:bytesSent,files:files.length};
+ if(!used||(!parts.length))throw new Error('解析対象ページを作れませんでした。PDFや写真を確認してください。');
+ if(bytesSent>12*1024*1024)throw new Error('圧縮後の画像合計が12MBを超えました。ページ上限を下げるか、ファイルを分けてください。');
+ return{parts,note};
+}
 const ANALYSIS_RESPONSE_SCHEMA={type:'OBJECT',properties:{
  subject:{type:'STRING'},grade:{type:'STRING'},chapters:{type:'ARRAY',items:{type:'STRING'}},keyPoints:{type:'ARRAY',items:{type:'STRING'}},
  problemPatterns:{type:'ARRAY',items:{type:'OBJECT',properties:{type:{type:'STRING'},pattern:{type:'STRING'},difficulty:{type:'STRING'},method:{type:'STRING'},exampleSummary:{type:'STRING'},sourcePage:{type:'STRING'}},required:['type','pattern','difficulty','method','exampleSummary','sourcePage']}},
@@ -368,10 +461,18 @@ const EXAM_RESPONSE_SCHEMA={type:'OBJECT',properties:{
   markingGuide:{type:'STRING'},explanation:{type:'STRING'},difficulty:{type:'STRING'},sourcePage:{type:'STRING'},answerSpaceRows:{type:'INTEGER'},points:{type:'NUMBER'}
  },required:['type','prompt','answer','markingGuide','explanation','points']}}
 },required:['title','subject','grade','scope','questions']};
+const ANSWER_AUDIT_SCHEMA={type:'OBJECT',properties:{
+ checks:{type:'ARRAY',items:{type:'OBJECT',properties:{
+  id:{type:'INTEGER'},verdict:{type:'STRING'},verifiedAnswer:{type:'STRING'},independentAnswer:{type:'STRING'},acceptableAnswers:{type:'ARRAY',items:{type:'STRING'}},
+  solutionCheck:{type:'BOOLEAN'},choiceUnique:{type:'BOOLEAN'},explanationConsistent:{type:'BOOLEAN'},sourceSupported:{type:'BOOLEAN'},confidence:{type:'NUMBER'},
+  reason:{type:'STRING'},verifiedExplanation:{type:'STRING'}
+ },required:['id','verdict','verifiedAnswer','independentAnswer','acceptableAnswers','solutionCheck','choiceUnique','explanationConsistent','sourceSupported','confidence','reason','verifiedExplanation']}}
+},required:['checks']};
 async function callGemini(parts, prompt, outputTokens=7000, responseSchema=null){
  const key=$('apiKey').value.trim();
- if(!key)throw new Error('Gemini APIキーを入力してください。取得先はGoogle AI Studioです。');
- const model=$('model').value||'gemini-3.8-flash';
+ if(!key)throw new Error('Gemini APIキーを入力してください。');
+ saveApiKeyIfRequested();
+ const model=$('model').value||'gemini-3.8-flash',operation=state.currentOperation||'AI処理';
  const generationConfig={temperature:0.2,responseMimeType:'application/json',maxOutputTokens:outputTokens};
  if(responseSchema)generationConfig.responseSchema=responseSchema;
  const body={contents:[{role:'user',parts:[{text:prompt},...parts]}],generationConfig};
@@ -379,10 +480,12 @@ async function callGemini(parts, prompt, outputTokens=7000, responseSchema=null)
  try{
   response=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`,{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':key},body:JSON.stringify(body)});
  }catch(e){
+  recordActivity('api_error','Gemini API通信エラー',`${operation} / ${model} / ${String(e.message||e).slice(0,130)}`);
   throw new Error(`通信エラー（${model}）：${e.message||'ネットワークに接続できません'}。自動再試行は行っていません。モデルを変更するか、通信環境を確認して手動で再実行してください。`);
  }
  if(!response.ok){
   const raw=await response.text();let msg=raw;try{msg=JSON.parse(raw).error?.message||raw}catch{}
+  recordActivity('api_error','Gemini APIエラー',`${operation} / ${model} / HTTP ${response.status} / ${String(msg).slice(0,110)}`);
   if(response.status===503||response.status===429||response.status===500||response.status===502||response.status===504){
    throw new Error(`Gemini APIエラー (${response.status})［${model}］：${msg}
 自動再試行・別モデルへの自動切替は行っていません。モデル選択欄から別モデルを手動で選び、もう一度実行してください。`);
@@ -394,12 +497,14 @@ async function callGemini(parts, prompt, outputTokens=7000, responseSchema=null)
  state.tokenUsage.input+=Number(usage.promptTokenCount)||0;
  state.tokenUsage.output+=Number(usage.candidatesTokenCount)||0;
  state.tokenUsage.total+=Number(usage.totalTokenCount)||0;
+ recordActivity('api','Gemini APIを利用',`${operation} / ${model} / 入力 ${(Number(usage.promptTokenCount)||0).toLocaleString()}・出力 ${(Number(usage.candidatesTokenCount)||0).toLocaleString()}・合計 ${(Number(usage.totalTokenCount)||0).toLocaleString()} トークン`,{model,inputTokens:Number(usage.promptTokenCount)||0,outputTokens:Number(usage.candidatesTokenCount)||0,totalTokens:Number(usage.totalTokenCount)||0});
  const note=$('tokenUsageNote');
  if(note)note.textContent=`今回の使用モデル：${model} ／ このページのAI利用量：入力 ${state.tokenUsage.input.toLocaleString()} / 出力 ${state.tokenUsage.output.toLocaleString()} / 合計 ${state.tokenUsage.total.toLocaleString()} トークン（採点時の追加消費 0）`;
  const candidate=data.candidates?.[0];
  const text=candidate?.content?.parts?.map(p=>p.text||'').join('\n')||'';
  if(!text)throw new Error(`AIから本文が返りませんでした［${model}］。終了理由：${candidate?.finishReason||'不明'}。安全フィルターや出力上限の可能性があります。`);
- const parsed=parseJson(text);
+ let parsed;
+ try{parsed=parseJson(text);}catch(e){recordActivity('api_error','Gemini応答の解析エラー',`${operation} / ${model} / ${String(e.message||e).slice(0,150)}`);throw e;}
  parsed._geminiFinishReason=candidate?.finishReason||'';
  return parsed;
 }
@@ -451,19 +556,122 @@ function parseJson(source){
   throw new Error(`Geminiの返答をJSONとして読み取れませんでした（${detail}）。返答が途中で切れた可能性があります。自動再試行は行いません。問題数を5問に減らすか、選択したモデルを手動で変更して再実行してください。`);
  }
 }
-$('analyzeBtn').addEventListener('click',async()=>{if(!state.files.length)return;setBusy(true);try{const mode=document.querySelector('input[name="mode"]:checked').value;let result;if(mode==='ai'){const total=state.files.reduce((a,f)=>a+f.size,0);if(total>18*1024*1024)throw new Error('AIに一度に送るファイルは合計18MB以下にしてください。ファイルを分けて解析してください。');showStatus('教材をGeminiに送信して解析中...',12);const parts=[];for(const f of state.files){parts.push({inlineData:{mimeType:f.type,data:b64(await f.arrayBuffer())}});}const prompt=`あなたは教材分析の専門家です。添付された日本語の問題集・授業プリントを読み、内容に忠実に分析してください。\nユーザー補足：${$('scopeNote').value||'なし'}\n問題そのものを長々と転載せず、類題生成に必要な構造を抽出します。読み取れない部分は推測せず明記。次のJSONのみ返してください：\n{"subject":"教科","grade":"学年レベル","chapters":["単元"],"keyPoints":["重要事項・公式"],"problemPatterns":[{"type":"問題形式","pattern":"問題の構造・何を問うか","difficulty":"基礎/標準/応用","method":"解法の手順","exampleSummary":"元問題の短い要約","sourcePage":"ファイル名・ページ。不明なら空文字"}],"extractedText":"読み取れた本文・数式・重要な条件を可能な範囲で整理。最大3500文字","warnings":["読み取り上の注意"]}.\n少なくとも見つけられる範囲で複数の問題パターンを抽出し、教材に存在しない内容を追加しないでください。`;result=await callGemini(parts,prompt,5200,ANALYSIS_RESPONSE_SCHEMA);if(!result||typeof result!=='object')throw new Error('教材分析結果が空でした。');
- }else{const text=await extractLocal();if(!text||text.replace(/\s/g,'').length<20)throw new Error('文字をほとんど読み取れませんでした。写真を鮮明にするか、テキストを含むPDFをお試しください。');result={subject:'自動判定（ローカル）',grade:'教材から推定できません',chapters:[],keyPoints:[],problemPatterns:[],extractedText:text,warnings:['AIなしモードでは、意味・解法の理解は行いません。OCR誤認識がないか本文を確認してください。']};}
- state.analysis=result;$('sourceText').value=result.extractedText||'';renderSummary(result);$('summary').classList.add('show');$('generateBtn').disabled=false;showStatus('解析が完了しました。内容を確認して模試を作成できます。',100);setTimeout(hideStatus,2400);
- }catch(e){console.error(e);showStatus('エラー：'+e.message,0);$('status').classList.add('show');}finally{setBusy(false);$('generateBtn').disabled=!state.analysis;}});
-function renderSummary(a){const tags=[...(a.chapters||[]),...(a.keyPoints||[])].slice(0,12);$('summaryBody').innerHTML=`<div><b>教科：</b>${escapeHtml(a.subject||'未判定')}　<b>レベル：</b>${escapeHtml(a.grade||'未判定')}</div><div class="tags">${tags.map(t=>`<span class="tag">${escapeHtml(t)}</span>`).join('')||'<span class="muted">単元・重要事項のタグなし</span>'}</div><div><b>問題パターン：</b>${(a.problemPatterns||[]).length}種類</div>${(a.warnings||[]).length?`<div class="notice warn">${(a.warnings||[]).map(escapeHtml).join('<br>')}</div>`:''}`;}
+$('analyzeBtn').addEventListener('click',async()=>{
+ if(!state.files.length)return;setBusy(true);const oldOperation=state.currentOperation;state.currentOperation='教材解析';
+ try{
+  const mode=document.querySelector('input[name="mode"]:checked').value;let result;
+  if(mode==='ai'){
+   const pageLimit=Number($('pageLimit').value)||15;
+   showStatus(`複数ページを整理中...（上限 ${pageLimit} ページ）`,5);
+   const prepared=await prepareGeminiMaterials(state.files,pageLimit);state.materialMeta=prepared.note;
+   const prompt=`日本語の教材を分析し、類題作成に必要な情報だけを抽出してください。ページラベルを保持し、本文の長い転載は避けてください。読めない箇所は推測せずwarningsに記載。最大6単元・8重要事項・6問題パターン、extractedTextは最大2200文字に圧縮。\n補足=${$('scopeNote').value||'なし'}\n対象ページ=${prepared.note.pagesUsed}、対象外=${prepared.note.pagesSkipped}、重複除外=${prepared.note.duplicates}。\n画像は図・スキャン部分です。\nJSONスキーマに従い、subject,grade,chapters,keyPoints,problemPatterns[{type,pattern,difficulty,method,exampleSummary,sourcePage}],extractedText,warningsを返す。教材外の知識は追加しない。`;
+   showStatus(`教材内容を解析中...（本文 ${prepared.note.textChars.toLocaleString()}文字・画像 ${prepared.note.imageBytes.toLocaleString()} bytes）`,76);
+   result=await callGemini(prepared.parts,prompt,3900,ANALYSIS_RESPONSE_SCHEMA);
+   result.materialMeta=prepared.note;
+  }else{
+   const text=await extractLocal();if(!text||text.replace(/\s/g,'').length<20)throw new Error('文字をほとんど読み取れませんでした。写真を鮮明にするか、テキストを含むPDFをお試しください。');
+   result={subject:'自動判定（ローカル）',grade:'教材から推定できません',chapters:[],keyPoints:[],problemPatterns:[],extractedText:text,warnings:['AIなしモードでは、意味・解法の理解は行いません。OCR誤認識がないか本文を確認してください。']};
+  }
+  if(!result||typeof result!=='object')throw new Error('教材分析結果が空でした。');
+  state.analysis=result;$('sourceText').value=result.extractedText||'';renderSummary(result);$('summary').classList.add('show');$('generateBtn').disabled=false;
+  const m=result.materialMeta||{};recordActivity('analysis','教材解析が完了',`${mode==='ai'?'Gemini':'端末内'} / ${m.pagesUsed||state.files.length}ページ処理・${m.pagesSkipped||0}ページ省略・${m.duplicates||0}重複除外`);
+  showStatus('解析が完了しました。内容を確認して模試を作成できます。',100);setTimeout(hideStatus,2400);
+ }catch(e){console.error(e);recordActivity('error','教材解析に失敗',String(e.message||e).slice(0,220));showStatus('エラー：'+e.message,0);$('status').classList.add('show');}
+ finally{state.currentOperation=oldOperation;setBusy(false);$('generateBtn').disabled=!state.analysis;}
+});
+function renderSummary(a){const tags=[...(a.chapters||[]),...(a.keyPoints||[])].slice(0,12);$('summaryBody').innerHTML=`<div><b>教科：</b>${escapeHtml(a.subject||'未判定')}　<b>レベル：</b>${escapeHtml(a.grade||'未判定')}</div><div class="tags">${tags.map(t=>`<span class="tag">${escapeHtml(t)}</span>`).join('')||'<span class="muted">単元・重要事項のタグなし</span>'}</div><div><b>問題パターン：</b>${(a.problemPatterns||[]).length}種類</div>${a.materialMeta?`<div class="small muted">解析ページ ${a.materialMeta.pagesUsed||0} / 省略 ${a.materialMeta.pagesSkipped||0} / 重複除外 ${a.materialMeta.duplicates||0} / 本文 ${a.materialMeta.textChars||0}文字 / 画像 ${Math.round((a.materialMeta.imageBytes||0)/1024)}KB</div>`:''}${(a.warnings||[]).length?`<div class="notice warn">${(a.warnings||[]).map(escapeHtml).join('<br>')}</div>`:''}`;}
 function getSettings(){return{subject:$('subject').value,grade:$('grade').value,count:Number($('count').value),difficulty:$('difficulty').value,minutes:$('minutes').value,mix:$('mixTypes').checked,strict:$('strictScope').checked,scopeNote:$('scopeNote').value};}
-$('generateBtn').addEventListener('click',async()=>{if(!state.analysis)return;setBusy(true);try{const mode=document.querySelector('input[name="mode"]:checked').value;const s=getSettings();let exam;if(mode==='ai'){showStatus('類題・選択肢・解答・解説を生成中...',15);const a={subject:state.analysis.subject||s.subject,grade:state.analysis.grade||s.grade,chapters:(state.analysis.chapters||[]).slice(0,8),keyPoints:(state.analysis.keyPoints||[]).slice(0,10),problemPatterns:(state.analysis.problemPatterns||[]).slice(0,7).map(p=>({type:String(p.type||'').slice(0,50),pattern:String(p.pattern||'').slice(0,180),difficulty:String(p.difficulty||'').slice(0,30),method:String(p.method||'').slice(0,180),exampleSummary:String(p.exampleSummary||'').slice(0,120),sourcePage:String(p.sourcePage||'').slice(0,50)})),extractedText:$('sourceText').value.trim().slice(0,5000),warnings:(state.analysis.warnings||[]).slice(0,3)};const prompt=`日本の高校の定期考査・模試を作る専門家として、以下の教材分析だけを根拠に、元教材と同じ知識・解法・形式を使った新しい類題を${s.count}問作成してください。元問題の文章をそのまま転載せず、数値・条件・表現を変えてください。
+$('generateBtn').addEventListener('click',async()=>{if(!state.analysis)return;setBusy(true);const oldOperation=state.currentOperation;state.currentOperation='問題生成';try{const mode=document.querySelector('input[name="mode"]:checked').value;const s=getSettings();let exam;if(mode==='ai'){showStatus('類題・選択肢・解答・解説を生成中...',15);const a={subject:state.analysis.subject||s.subject,grade:state.analysis.grade||s.grade,chapters:(state.analysis.chapters||[]).slice(0,8),keyPoints:(state.analysis.keyPoints||[]).slice(0,10),problemPatterns:(state.analysis.problemPatterns||[]).slice(0,7).map(p=>({type:String(p.type||'').slice(0,50),pattern:String(p.pattern||'').slice(0,180),difficulty:String(p.difficulty||'').slice(0,30),method:String(p.method||'').slice(0,180),exampleSummary:String(p.exampleSummary||'').slice(0,120),sourcePage:String(p.sourcePage||'').slice(0,50)})),extractedText:$('sourceText').value.trim().slice(0,3200),warnings:(state.analysis.warnings||[]).slice(0,2)};const prompt=`日本の高校の定期考査・模試を作る専門家として、以下の教材分析だけを根拠に、元教材と同じ知識・解法・形式を使った新しい類題を${s.count}問作成してください。元問題の文章をそのまま転載せず、数値・条件・表現を変えてください。
 設定：教科=${s.subject}、学年=${s.grade}、難易度=${s.difficulty}、試験時間=${s.minutes}分、形式混合=${s.mix}、教材外知識を避ける=${s.strict}、補足=${s.scopeNote||'なし'}。
 教材分析：${JSON.stringify(a).slice(0,12000)}
-出力条件：指定されたJSONスキーマに厳密に従う。問題数は${s.count}問、合計100点。選択問題は選択肢4つ、answerは選択肢と完全一致。全問に正答・採点基準・短い解説を付ける。解説は原則80文字以内、採点基準は60文字以内にまとめる。数値・数式は検算する。曖昧な問題や教材外の知識を問う問題は作らない。sourcePageは確実に分かる場合だけ記載。answerSpaceRowsは1〜7。数学は途中式・証明を求め、数式は通常文字（x²、√、≦、(a+b)/c）で表記。英語は語彙・文法・読解・英作文、国語は漢字・読解・記述、理科は単位・実験・考察、社会は年代・地名・資料を適切に扱う。JSON以外の文章やMarkdown記号は出力しない。`;exam=await callGemini([],prompt,Math.min(9000,Math.max(3200,s.count*420)),EXAM_RESPONSE_SCHEMA);
+出力条件：指定されたJSONスキーマに厳密に従う。問題数は${s.count}問、合計100点。選択問題は選択肢4つ、answerは選択肢と完全一致。全問に正答・採点基準・短い解説を付ける。解説は原則80文字以内、採点基準は60文字以内にまとめる。各問は問題文を作った後にもう一度独立して解き、正答・選択肢・解説の整合性を確認する。数値・数式は途中計算まで検算する。曖昧な問題や教材外の知識を問う問題は作らない。sourcePageは確実に分かる場合だけ記載。answerSpaceRowsは1〜7。数学は途中式・証明を求め、数式は通常文字（x²、√、≦、(a+b)/c）で表記。英語は語彙・文法・読解・英作文、国語は漢字・読解・記述、理科は単位・実験・考察、社会は年代・地名・資料を適切に扱う。JSON以外の文章やMarkdown記号は出力しない。`;exam=await callGemini([],prompt,Math.min(7800,Math.max(2800,s.count*340)),EXAM_RESPONSE_SCHEMA);
  }else{const text=$('sourceText').value.trim();if(!text)throw new Error('読み取った教材本文がありません。');exam=makeLocalExam(text,s,state.analysis);}
- if(!Array.isArray(exam.questions)||!exam.questions.length)throw new Error('問題が生成されませんでした。設定を変えて再試行してください。');state.questions=exam.questions.slice(0,s.count).map((q,i)=>{const type=['choice','short','calculation','essay'].includes(q.type)?q.type:(Array.isArray(q.choices)&&q.choices.length?'choice':'short');return({...q,id:i+1,type,points:Number(q.points)||10,choices:Array.isArray(q.choices)?q.choices:[],acceptableAnswers:Array.isArray(q.acceptableAnswers)?q.acceptableAnswers:[],answerSpaceRows:Math.max(1,Math.min(7,Number(q.answerSpaceRows)||(['essay'].includes(type)?6:['calculation'].includes(type)?4:type==='short'?2:1)))});});state.answers={};state.graded=false;state.examMode=mode;state.examMeta={...exam,settings:s};state.grading=null;renderExam(exam,mode,s);$('examSection').classList.add('show');$('testNavTitle').textContent=exam.title||'模試';openTestPage();hideStatus();
- }catch(e){console.error(e);showStatus('エラー：'+e.message,0);}finally{setBusy(false);$('generateBtn').disabled=!state.analysis;}});
+ if(!Array.isArray(exam.questions)||!exam.questions.length)throw new Error('問題が生成されませんでした。設定を変えて再実行してください。');state.questions=exam.questions.slice(0,s.count).map((q,i)=>{const type=['choice','short','calculation','essay'].includes(q.type)?q.type:(Array.isArray(q.choices)&&q.choices.length?'choice':'short');return({...q,id:i+1,type,points:Number(q.points)||10,choices:Array.isArray(q.choices)?q.choices:[],acceptableAnswers:Array.isArray(q.acceptableAnswers)?q.acceptableAnswers:[],_answerStatus:mode==='local'?'verified':'unverified',answerSpaceRows:Math.max(1,Math.min(7,Number(q.answerSpaceRows)||(['essay'].includes(type)?6:['calculation'].includes(type)?4:type==='short'?2:1)))});});
+ state.questions.forEach(q=>{if(q.type==='choice'){const idx=choiceIndex(q.answer,q);if(idx>=0)q.answer=q.choices[idx];}});
+ if(mode==='ai'&&$('verifyAnswers').checked){
+  try{showStatus('正答を多段階チェック中...（独立解答・選択肢整合・解説照合・根拠確認）',82);state.currentOperation='正答検証';exam._answerAudit=await verifyGeneratedAnswers(state.questions,s,state.analysis);state.currentOperation='問題生成';}
+  catch(auditError){state.questions.forEach(q=>{q._answerStatus='review';q._answerAuditReason='独立検証に失敗：'+String(auditError.message||auditError).slice(0,130);});exam._answerAudit={confirmed:0,corrected:0,review:state.questions.length};exam._answerAuditWarning=String(auditError.message||auditError);}
+ }else if(mode==='ai'){
+  state.questions.forEach(q=>{q._answerStatus='unverified';q._answerAuditReason='独立検証をOFFにしたため、正答は未確認です。';});exam._answerAudit={confirmed:0,corrected:0,review:state.questions.length};exam._answerAuditWarning='正答の独立検証がOFFです。AI生成の正答は自動採点しません。';
+ }
+ state.answers={};state.graded=false;state.examMode=mode;state.examMeta={...exam,settings:s};state.grading=null;renderExam(exam,mode,s);$('examSection').classList.add('show');$('testNavTitle').textContent=exam.title||'模試';openTestPage();hideStatus();
+  const audit=exam._answerAudit||{confirmed:0,corrected:0,review:0};recordActivity('exam','模試を作成',`${exam.subject||s.subject} / ${state.questions.length}問 / 正答確認 ${audit.confirmed||0}・修正 ${audit.corrected||0}・保留 ${audit.review||0}`);
+ }catch(e){console.error(e);recordActivity('error','模試生成に失敗',String(e.message||e).slice(0,220));showStatus('エラー：'+e.message,0);}finally{state.currentOperation=oldOperation;setBusy(false);$('generateBtn').disabled=!state.analysis;}});
+function evalBasicArithmetic(expression){
+ const source=String(expression||'').normalize('NFKC').replace(/[×＊]/g,'*').replace(/[÷／]/g,'/').replace(/[−–]/g,'-').replace(/＋/g,'+').replace(/\s/g,'');
+ if(!source||!/[+*/-]/.test(source)||!/^[0-9.()+*/-]+$/.test(source))return null;
+ const tokens=source.match(/\d+(?:\.\d+)?|[()+*/-]/g)||[];if(tokens.join('')!==source)return null;
+ let i=0;function factor(){let sign=1;if(tokens[i]==='+'||tokens[i]==='-'){if(tokens[i]==='-')sign=-1;i++;}let v;if(tokens[i]==='('){i++;v=expr();if(tokens[i]!==')')throw new Error('括弧');i++;}else{const t=tokens[i++];if(!t||!/^\d+(?:\.\d+)?$/.test(t))throw new Error('数値');v=Number(t);}return sign*v;}
+ function term(){let v=factor();while(tokens[i]==='*'||tokens[i]==='/'){const op=tokens[i++],r=factor();if(op==='/'&&r===0)throw new Error('ゼロ除算');v=op==='*'?v*r:v/r;}return v;}
+ function expr(){let v=term();while(tokens[i]==='+'||tokens[i]==='-'){const op=tokens[i++],r=term();v=op==='+'?v+r:v-r;}return v;}
+ try{const value=expr();return i===tokens.length&&Number.isFinite(value)?value:null;}catch{return null;}
+}
+function simpleArithmeticInQuestion(prompt){
+ for(const line of String(prompt||'').split(/\r?\n/)){const trimmed=line.normalize('NFKC').trim().replace(/[?？]\s*$/,'').replace(/\s*[=＝]\s*$/,'').trim();if(!trimmed)continue;const candidate=trimmed.match(/(?:^|[：:]\s*)([0-9０-９().+＋\-−×＊*÷／/\s]+)$/);if(!candidate)continue;const result=evalBasicArithmetic(candidate[1]);if(result!==null)return result;}
+ return null;
+}
+function numericFromAnswer(value){const direct=numericAnswer(value);if(direct!==null)return direct;const m=String(value||'').normalize('NFKC').match(/[+-]?(?:\d+(?:\.\d*)?|\.\d+)/);return m?Number(m[0]):null;}
+async function verifyGeneratedAnswers(questions, settings, analysis){
+ // 5 gates: client structure, safe arithmetic, independent solve, consistency flags, confidence threshold.
+ const precheck=new Map(),mathExpected=new Map();const seenPrompt=new Set();
+ for(const q of questions){
+  const issues=[];const p=norm(q.prompt||'');
+  if(p.length<8)issues.push('問題文が短すぎます');
+  if(seenPrompt.has(p))issues.push('問題文が重複しています');seenPrompt.add(p);
+  if(!String(q.answer||'').trim())issues.push('生成時の正答が空欄です');
+  if(!Number.isFinite(Number(q.points))||Number(q.points)<=0)issues.push('配点が不正です');
+  const looksLikeCalculation=q.type==='calculation'||/計算|式の値|演算|計算しなさい/.test(String(q.prompt||''));
+  const simpleResult=looksLikeCalculation?simpleArithmeticInQuestion(q.prompt):null;
+  if(simpleResult!==null)mathExpected.set(q.id,simpleResult);
+  if(q.type==='choice'){
+   const choices=(q.choices||[]).map(norm);
+   if(choices.length!==4)issues.push('選択肢が4個ではありません');
+   if(new Set(choices).size!==choices.length)issues.push('選択肢が重複しています');
+  }
+  precheck.set(q.id,issues);
+ }
+ const compact=questions.map(q=>({id:q.id,type:q.type,question:String(q.prompt||'').slice(0,900),choices:(q.choices||[]).slice(0,4).map(x=>String(x).slice(0,90)),proposedAnswer:String(q.answer||'').slice(0,150),explanation:String(q.explanation||'').slice(0,100)}));
+ const reference={subject:analysis?.subject||settings.subject,topics:(analysis?.chapters||[]).slice(0,5),keyPoints:(analysis?.keyPoints||[]).slice(0,6),source:String(analysis?.extractedText||'').slice(0,1000)};
+ const prompt=`あなたは問題作成AIとは独立した試験校閲者です。全問について、候補解答をいったん無視して独立に解いてください。短くても次の5検査を必ず実施します。
+A:独立解答を導出。
+B:可能なら別解・代入・逆算・単位確認で再検算。
+C:選択式は全選択肢を照合し、正解がちょうど1つか確認。非選択式ではchoiceUnique=true。
+D:解説が独立解答と矛盾しないか照合。
+E:教材の範囲・条件・定義に合うか根拠確認。
+教科=${reference.subject}。範囲=${JSON.stringify(reference.topics)}。要点=${JSON.stringify(reference.keyPoints)}。教材根拠=${reference.source}
+問題=${JSON.stringify(compact)}
+各検査で少しでも不確実ならREVIEWにしてください。CONFIRMEDは提案解答と独立解答が一致し、solutionCheck/explanationConsistent/sourceSupported=true、confidence>=0.92の場合のみ。CORRECTEDは提案解答が明確に誤りで、修正答を一意に決められ、同じ3フラグがtrue、confidence>=0.92の場合のみ。複数正解・選択肢不足・曖昧・根拠不足はREVIEW。独立解答 independentAnswer と verifiedAnswer は同じ確定答を入れる。選択問題はverifiedAnswerを選択肢本文と完全一致させる。reviewではverifiedAnswerとindependentAnswerは空文字、confidenceは0〜1。reasonは具体的な短い理由、verifiedExplanationは再検算根拠を70文字以内。全IDを一度ずつ返す。JSON以外は出力しない。`;
+ state.currentOperation='正答の多段階検証';
+ const result=await callGemini([],prompt,Math.min(6200,Math.max(1000,questions.length*170)),ANSWER_AUDIT_SCHEMA);
+ const checks=Array.isArray(result.checks)?result.checks:[];const byId=new Map();for(const c of checks){const id=Number(c.id);if(byId.has(id)){byId.set(id,null);}else byId.set(id,c);}
+ const summary={confirmed:0,corrected:0,review:0};
+ for(const q of questions){
+  const c=byId.get(Number(q.id));const issues=precheck.get(q.id)||[];
+  const verdict=String(c?.verdict||'REVIEW').trim().toUpperCase();
+  const answer=String(c?.verifiedAnswer||'').trim();const independentlySolved=String(c?.independentAnswer||'').trim();
+  const confidence=Number(c?.confidence);
+  let valid=!!c&&!issues.length&&!!answer&&!!independentlySolved&&['CONFIRMED','CORRECTED'].includes(verdict)
+   &&c.solutionCheck===true&&c.explanationConsistent===true&&c.sourceSupported===true&&Number.isFinite(confidence)&&confidence>=.92
+   &&norm(answer)===norm(independentlySolved);
+  if(valid&&mathExpected.has(q.id)){const auditValue=q.type==='choice'?(q.choices||[]).find(x=>norm(x)===norm(answer)):answer;const n=numericFromAnswer(auditValue);valid=n!==null&&Math.abs(n-mathExpected.get(q.id))<1e-9;}
+  let acceptable=Array.isArray(c?.acceptableAnswers)?c.acceptableAnswers.map(x=>String(x).trim()).filter(Boolean).slice(0,4):[];
+  if(valid&&q.type==='choice'){
+   const opts=(q.choices||[]).map(norm);valid=opts.length===4&&new Set(opts).size===4&&c.choiceUnique===true&&opts.includes(norm(answer));
+   acceptable=acceptable.filter(x=>opts.includes(norm(x)));
+  }else if(valid&&c.choiceUnique!==true){valid=false;}
+  if(valid&&verdict==='CONFIRMED'&&norm(answer)!==norm(q.answer||''))valid=false;
+  if(valid&&verdict==='CORRECTED'&&norm(answer)===norm(q.answer||''))valid=false;
+  if(!valid){q._answerStatus='review';q._answerAuditReason=[...issues,String(c?.reason||'全検査条件を満たしませんでした。')].filter(Boolean).join(' / ').slice(0,220);summary.review++;continue;}
+  q._answerStatus='verified';q._answerAuditReason=`${verdict==='CORRECTED'?'正答を修正':'独立解答と一致'}。信頼度 ${Math.round(confidence*100)}%。${String(c.reason||'').slice(0,100)}`;
+  q.answer=answer;q.acceptableAnswers=acceptable;q._answerAuditVerdict=verdict;q._answerConfidence=confidence;
+  if(c.verifiedExplanation)q.explanation=String(c.verifiedExplanation).slice(0,240);
+  if(verdict==='CORRECTED')summary.corrected++;else summary.confirmed++;
+ }
+ if(checks.length!==questions.length||byId.size!==questions.length){for(const q of questions){if(!q._answerStatus||q._answerStatus!=='verified'&&!(q._answerAuditReason||'').includes('全検査条件')){q._answerStatus='review';q._answerAuditReason='検証結果のIDが欠落または重複しています。';}}}
+ summary.review=questions.filter(q=>q._answerStatus!=='verified').length;summary.confirmed=questions.filter(q=>q._answerStatus==='verified'&&q._answerAuditVerdict==='CONFIRMED').length;summary.corrected=questions.filter(q=>q._answerStatus==='verified'&&q._answerAuditVerdict==='CORRECTED').length;
+ return summary;
+}
+
 function makeLocalExam(text,s,analysis){const qs=[];const lines=text.split(/[\n。！？!?；;]/).map(x=>x.trim()).filter(x=>x.length>=8);const seen=new Set();
  const patterns=[...text.matchAll(/(\d{1,4})\s*([+＋−\-×＊*÷／/])\s*(\d{1,4})\s*(?:=|＝)\s*(\d{1,5})/g)];
  for(const m of patterns){const op=m[2],a=Number(m[1]),b=Number(m[3]);let symbol=op,ans;if(op==='+'||op==='＋')ans=a+b;else if(op==='-'||op==='−'||op==='−')ans=a-b;else if(op==='×'||op==='＊'||op==='*')ans=a*b;else if(op==='÷'||op==='／'||op==='/'){if(b===0||a%b!==0)continue;ans=a/b;}else continue;for(let j=0;j<2&&qs.length<s.count;j++){let x=a+(j+1)*(2+(a%3)),y=b+(j+1)*(1+(b%4)),z;if(symbol==='+'||symbol==='＋')z=x+y;else if(symbol==='-'||symbol==='−')z=x-y;else if(symbol==='×'||symbol==='＊'||symbol==='*')z=x*y;else{if(y===0||x%y!==0)continue;z=x/y;}qs.push({type:'short',prompt:`次の計算をしなさい。\n${x} ${symbol} ${y} = ?`,answer:String(z),acceptableAnswers:[String(z)],explanation:`同じ演算形式の類題です。${x} ${symbol} ${y} = ${z}。`,difficulty:'教材の計算形式',sourcePage:'教材内の同形式の式',points:10});}}
@@ -505,7 +713,7 @@ function printHeadMarkup(kind='question'){
 function writingLines(rows){return `<div class="print-writing-space">${Array.from({length:rows},()=>'<div class="print-line"></div>').join('')}</div>`;}
 function renderExam(exam,mode,s){
  const total=state.questions.reduce((n,q)=>n+q.points,0),template=subjectTemplate(exam.subject||s.subject);$('examSection').dataset.subject=template.key;$('testPaper').dataset.subject=template.key;
- $('examTitle').textContent=exam.title||'オリジナル模試';$('examMeta').textContent=`${template.label} · ${exam.subject||s.subject} · ${exam.grade||s.grade} · ${exam.scope||'教材範囲'}`;$('examMode').textContent=mode==='ai'?'Gemini AI生成':'端末内・簡易生成';$('qCount').textContent=state.questions.length;$('totalPoints').textContent=total;$('timeLimit').textContent=s.minutes==='時間制限なし'?'なし':s.minutes+'分';$('examNotice').textContent='採点は端末内で実行（Geminiへの採点送信なし）。記述・計算過程の部分点は手動確認になります。'+(exam._jsonRecovered?` 注意：AIの返答が途中で切れたため、完全に読み取れた${state.questions.length}問だけを採用しました。問題数を減らすと安定します。`:exam._geminiFinishReason==='MAX_TOKENS'?' 注意：AIの出力上限に達しました。問題数を減らして再作成してください。':Array.isArray(exam.questions)&&exam.questions.length<(s.count||0)?` 注意：指定${s.count}問に対して${exam.questions.length}問だけ生成されました。必要なら問題数を減らして再作成してください。`:'');
+ $('examTitle').textContent=exam.title||'オリジナル模試';$('examMeta').textContent=`${template.label} · ${exam.subject||s.subject} · ${exam.grade||s.grade} · ${exam.scope||'教材範囲'}`;$('examMode').textContent=mode==='ai'?'Gemini AI生成':'端末内・簡易生成';$('qCount').textContent=state.questions.length;$('totalPoints').textContent=total;$('timeLimit').textContent=s.minutes==='時間制限なし'?'なし':s.minutes+'分';const audit=exam._answerAudit;const auditText=audit?` 正答検証（多段階）：確認 ${audit.confirmed}問・修正 ${audit.corrected}問・要確認 ${audit.review}問。構造・独立解答・再検算・選択肢一意性・解説整合・教材根拠を確認。要確認は採点保留。`:'';$('examNotice').textContent='採点は端末内で実行（Geminiへの採点送信なし）。記述・計算過程の部分点は手動確認になります。'+auditText+(exam._answerAuditWarning?` 検証上の注意：${exam._answerAuditWarning}`:'')+(exam._jsonRecovered?` 注意：AIの返答が途中で切れたため、完全に読み取れた${state.questions.length}問だけを採用しました。問題数を減らすと安定します。`:exam._geminiFinishReason==='MAX_TOKENS'?' 注意：AIの出力上限に達しました。問題数を減らして再作成してください。':Array.isArray(exam.questions)&&exam.questions.length<(s.count||0)?` 注意：指定${s.count}問に対して${exam.questions.length}問だけ生成されました。必要なら問題数を減らして再作成してください。`:'');
  $('questionPrintHead').innerHTML=printHeadMarkup('question');
  const timeLabel=s.minutes==='時間制限なし'?'時間制限なし':`試験時間 ${escapeHtml(s.minutes)} 分`;const topNote=`<div class="subject-paper-note"><div>${escapeHtml(template.note)}</div><div class="paper-meta-strip"><span>${escapeHtml(timeLabel)}</span><span>満点 ${total} 点</span><span>${state.questions.length} 問</span></div></div>`;
  $('questionList').innerHTML=topNote+state.questions.map((q,i)=>{const kind=q.type==='choice'?'選択':q.type==='essay'?'論述':q.type==='calculation'?'計算・過程':'短答';const section=subjectSectionLabel(exam.subject||s.subject,q,i);
@@ -514,7 +722,7 @@ function renderExam(exam,mode,s){
   return `<article class="qcard" data-q="${q.id}">${section?`<div class="subject-section-label">${escapeHtml(section)}</div>`:''}<div class="qtop"><span><span class="q-number">問 ${String(i+1).padStart(2,'0')}</span><span class="question-kind">${kind}</span> <span class="small">${escapeHtml(q.difficulty||'')}</span></span><span>〔 ${q.points} 点 〕</span></div><h3>${promptMarkup(q.prompt,exam.subject||s.subject)}</h3>${answerControl}${rows?writingLines(rows):''}<div class="small muted source-note" style="margin-top:8px">${q.sourcePage?'出題範囲参照：'+escapeHtml(q.sourcePage):''}</div></article>`;
  }).join('');
  $('answerSheetPrint').innerHTML=printHeadMarkup('answer-sheet')+`<h2 class="print-section-title">解答欄</h2><table class="answer-sheet-table"><thead><tr><th>問題</th><th>解答欄</th><th>配点</th></tr></thead><tbody>${state.questions.map(q=>`<tr><th>問${q.id}</th><td>${q.type==='choice'?'選択肢の記号を記入（　　　　　）':q.type==='essay'||q.type==='calculation'?'<div style="height:72px"></div>':'<div style="height:35px"></div>'}</td><td>${q.points}点</td></tr>`).join('')}</tbody></table>`;
- $('answerKeyPrint').innerHTML=printHeadMarkup('key')+`<h2 class="print-section-title">模範解答・解説・採点基準</h2><table class="key-table"><thead><tr><th>問題</th><th>模範解答</th><th>採点基準・解説</th><th>配点</th></tr></thead><tbody>${state.questions.map(q=>`<tr><th>問${q.id}</th><td>${escapeHtml(q.answer||'要確認')}</td><td>${escapeHtml(q.markingGuide||'')}${q.markingGuide&&q.explanation?'<hr>':''}${escapeHtml(q.explanation||'')}</td><td>${q.points}点</td></tr>`).join('')}</tbody></table>`;
+ $('answerKeyPrint').innerHTML=printHeadMarkup('key')+`<h2 class="print-section-title">模範解答・解説・採点基準</h2><table class="key-table"><thead><tr><th>問題</th><th>模範解答</th><th>採点基準・解説</th><th>配点</th></tr></thead><tbody>${state.questions.map(q=>`<tr><th>問${q.id}</th><td>${q._answerStatus==='verified'?escapeHtml(q.answer||'要確認'):'独立検証未完了・採点保留'}</td><td>${escapeHtml(q._answerAuditReason||'')}${q._answerAuditReason?'<hr>':''}${escapeHtml(q.markingGuide||'')}${q.markingGuide&&q.explanation?'<hr>':''}${escapeHtml(q.explanation||'')}</td><td>${q.points}点</td></tr>`).join('')}</tbody></table>`;
  $('resultBox').classList.remove('show');$('gradeBtn').textContent='答案を採点する（端末内）';$('submitExamBtn').textContent='答案を提出・採点';
 }
 $('questionList').addEventListener('input',e=>{const el=e.target;if(el.matches('[data-answer]'))state.answers[el.dataset.answer]=el.value;if(el.matches('input[type=radio]'))state.answers[el.name.slice(1)]=el.value;});
@@ -564,7 +772,7 @@ function applyTeacherMarks(results){
   if(!q||!card)continue;
   const status=r.status|| (r.needsReview?'review':r.score>=q.points?'correct':'incorrect');
   card.classList.add(status==='correct'?'is-correct':status==='review'?'is-review':'is-incorrect');
-  if(q.type==='choice'&&q.choices.length){
+  if(q._answerStatus==='verified'&&q.type==='choice'&&q.choices.length){
    const accepted=[q.answer,...(q.acceptableAnswers||[])].filter(v=>v!==undefined&&v!==null&&String(v).trim()!=='');
    const correctIndexes=new Set(accepted.map(v=>choiceIndex(v,q)).filter(i=>i>=0));
    const selected=card.querySelector('input[type="radio"]:checked');
@@ -579,14 +787,14 @@ function applyTeacherMarks(results){
   const reason=status==='correct'?'正答と一致しています。':status==='review'?(r.reason||'記述内容・途中式の確認が必要です。'):(r.reason||'正答と一致しません。');
   const given=String(state.answers[q.id]??'').trim();
   const correctAnswer=String(q.answer??'').trim();
-  const detail=status==='correct'?'':status==='review'?'手動確認：部分点が必要な場合は答案と採点基準を確認してください。':`正答：${escapeHtml(correctAnswer||'模範解答を確認')}`;
+  const detail=q._answerStatus!=='verified'?'正答：独立検証未完了のため非表示・採点保留':status==='correct'?'':status==='review'?'手動確認：部分点が必要な場合は答案と採点基準を確認してください。':`正答：${escapeHtml(correctAnswer||'模範解答を確認')}`;
   card.insertAdjacentHTML('beforeend',`<div class="teacher-marking ${status}"><span class="mark-stamp">${symbol}</span><div><b>${title}　${Math.max(0,Number(r.score)||0)} / ${q.points}点</b><small>${escapeHtml(reason)}</small>${given?`<small>あなたの解答：${escapeHtml(given)}</small>`:'<small>未回答</small>'}${detail?`<small>${detail}</small>`:''}</div></div>`);
  }
 }
 function showGradeResults(results,overallFeedback='',weakAreas=[]){
  const total=state.questions.reduce((n,q)=>n+q.points,0),score=results.reduce((n,r)=>n+Math.max(0,Math.min(Number(r.maxPoints)||0,Number(r.score)||0)),0),pct=total?Math.round(score/total*100):0;
  const reviewCount=results.filter(r=>r.needsReview).length;
- $('resultBox').innerHTML=`<div class="grade-score">${reviewCount?'仮得点':'得点'}　${score} / ${total} 点</div><div><b>得点率 ${pct}%</b></div><div class="grading-note">端末内の自動採点です。Geminiへの採点リクエストは送信していません。${reviewCount?` ${reviewCount}問は途中式・記述の確認待ちです。`:''}</div><div class="grade-detail"><h4>総合結果</h4><div>${escapeHtml(overallFeedback||'採点が完了しました。')}</div>${weakAreas.length?`<p><b>復習したい分野：</b>${weakAreas.map(escapeHtml).join('、')}</p>`:''}</div>${results.map(r=>{const q=state.questions.find(x=>x.id===Number(r.id));if(!q)return '';const sc=Math.max(0,Math.min(q.points,Number(r.score)||0));const status=r.status|| (r.needsReview?'review':sc>=q.points?'correct':'incorrect');return `<div class="grade-detail"><h4>第${q.id}問　${sc}/${q.points}点　${status==='correct'?'○ 正解':status==='review'?'△ 要確認':'× 不正解'}</h4><div><b>あなたの解答：</b>${escapeHtml(state.answers[q.id]||'未回答')}</div><div><b>正答：</b>${escapeHtml(q.answer||'要手動確認')}</div><div><b>解説：</b>${escapeHtml(q.explanation||r.reason||'解説はありません。')}</div>${r.needsReview?'<div class="grading-note">記述・途中式を見て部分点を判断してください。</div>':''}</div>`;}).join('')}`;
+ $('resultBox').innerHTML=`<div class="grade-score">${reviewCount?'仮得点':'得点'}　${score} / ${total} 点</div><div><b>得点率 ${pct}%</b></div><div class="grading-note">端末内の自動採点です。Geminiへの採点リクエストは送信していません。${reviewCount?` ${reviewCount}問は途中式・記述の確認待ちです。`:''}</div><div class="grade-detail"><h4>総合結果</h4><div>${escapeHtml(overallFeedback||'採点が完了しました。')}</div>${weakAreas.length?`<p><b>復習したい分野：</b>${weakAreas.map(escapeHtml).join('、')}</p>`:''}</div>${results.map(r=>{const q=state.questions.find(x=>x.id===Number(r.id));if(!q)return '';const sc=Math.max(0,Math.min(q.points,Number(r.score)||0));const status=r.status|| (r.needsReview?'review':sc>=q.points?'correct':'incorrect');return `<div class="grade-detail"><h4>第${q.id}問　${sc}/${q.points}点　${status==='correct'?'○ 正解':status==='review'?'△ 要確認':'× 不正解'}</h4><div><b>あなたの解答：</b>${escapeHtml(state.answers[q.id]||'未回答')}</div><div><b>正答：</b>${q._answerStatus==='verified'?escapeHtml(q.answer||'要手動確認'):'独立検証未完了・採点保留'}</div><div><b>解説：</b>${escapeHtml(q.explanation||r.reason||'解説はありません。')}</div>${r.needsReview?'<div class="grading-note">記述・途中式を見て部分点を判断してください。</div>':''}</div>`;}).join('')}`;
  $('resultBox').classList.add('show');
  applyTeacherMarks(results);
  $('resultBox').scrollIntoView({behavior:'smooth',block:'nearest'});
@@ -609,7 +817,9 @@ function gradeLocally(){
   const given=String(state.answers[q.id]??'').trim(),correct=answerMatches(q,given),hasAnswer=!!given;
   let status='incorrect',score=0,reason='';
   if(!hasAnswer){reason='未回答のため0点です。';}
-  else if(q.type==='essay'){
+  else if(q._answerStatus!=='verified'){
+   status='review';reason='模範解答の独立検証が未完了です。誤った正答で採点しないため、この問題は採点保留にしています。';
+  }else if(q.type==='essay'){
    status='review';reason='論述問題は表現・論理・根拠を確認する必要があるため、自動で点数を確定していません。';
   }else if(q.type==='calculation'&&!correct){
    status='review';reason='最終答案は模範解答と一致しません。途中式による部分点を確認してください。';
@@ -620,6 +830,7 @@ function gradeLocally(){
  const reviewCount=results.filter(r=>r.needsReview).length;
  showGradeResults(results,`自動採点 ${results.length-reviewCount}問／確認待ち ${reviewCount}問。採点処理はこの端末内で完了しました。`,[]);
  $('gradeBtn').textContent='もう一度採点する';
+ recordActivity('grading','模試を採点',`${state.questions.length}問 / ${score}点・採点処理は端末内`);
  showStatus('端末内で採点が完了しました。Gemini APIの追加消費はありません。',100);setTimeout(hideStatus,2300);
 }
 $('gradeBtn').addEventListener('click',()=>{
@@ -630,11 +841,11 @@ $('gradeBtn').addEventListener('click',()=>{
  finally{$('gradeBtn').disabled=false;}
 });
 $('questionList').addEventListener('change',e=>{const el=e.target;if(el.matches('input[type=radio]'))state.answers[el.name.slice(1)]=el.value;});
-function printInMode(mode){document.body.dataset.printMode=mode;const clean=()=>{delete document.body.dataset.printMode;window.removeEventListener('afterprint',clean);};window.addEventListener('afterprint',clean);window.print();setTimeout(clean,60000);}
+function printInMode(mode){recordActivity('print','印刷・PDF出力',mode==='question'?'問題用紙':mode==='answer-sheet'?'解答用紙':'模範解答');document.body.dataset.printMode=mode;const clean=()=>{delete document.body.dataset.printMode;window.removeEventListener('afterprint',clean);};window.addEventListener('afterprint',clean);window.print();setTimeout(clean,60000);}
 $('printBtn').addEventListener('click',()=>printInMode('question'));
 $('printAnswerSheetBtn').addEventListener('click',()=>printInMode('answer-sheet'));
 $('printKeyBtn').addEventListener('click',()=>printInMode('key'));
-$('answerKeyBtn').addEventListener('click',()=>{const lines=state.questions.map(q=>`【第${q.id}問・${q.points}点】\n模範解答：${q.answer??'手動確認'}\n採点基準：${q.markingGuide||'なし'}\n解説：${q.explanation||''}`).join('\n\n');downloadText('模試_模範解答と採点基準.txt',lines);});
+$('answerKeyBtn').addEventListener('click',()=>{const lines=state.questions.map(q=>`【第${q.id}問・${q.points}点】\n模範解答：${q._answerStatus==='verified'?(q.answer??'手動確認'):'独立検証未完了・採点保留'}\n検証メモ：${q._answerAuditReason||'なし'}\n採点基準：${q.markingGuide||'なし'}\n解説：${q.explanation||''}`).join('\n\n');downloadText('模試_模範解答と採点基準.txt',lines);});
 function downloadText(name,txt){const blob=new Blob([txt],{type:'text/plain;charset=utf-8'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
 window.addEventListener('beforeunload',()=>{if(state.tesseract)state.tesseract.terminate();});
 </script>
