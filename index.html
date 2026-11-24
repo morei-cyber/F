@@ -202,12 +202,20 @@ body.test-mode{background:#edf0f4!important;color:#171717!important;color-scheme
       <div id="aiSettings">
         <div class="label">Gemini APIキー</div>
         <input class="input" id="apiKey" type="password" autocomplete="off" placeholder="AIza...">
-        <div class="row" style="margin-top:8px">
-          <div><label class="label" for="model">モデル</label><input class="input" id="model" value="gemini-3.8-flash" autocapitalize="off"></div>
+        <div class="row" style="margin-top:8px;align-items:end">
+          <div style="flex:1;min-width:0"><label class="label" for="model">使用モデル（5種類から選択）</label>
+            <select class="input" id="model">
+              <option value="gemini-3.8-flash" selected>Gemini 3.8 Flash（標準・高性能）</option>
+              <option value="gemini-3.7-flash">Gemini 3.7 Flash（バランス）</option>
+              <option value="gemini-3.6-flash">Gemini 3.6 Flash（前世代）</option>
+              <option value="gemini-3.5-flash">Gemini 3.5 Flash（標準）</option>
+              <option value="gemini-3.5-flash-lite">Gemini 3.5 Flash-Lite（軽量・低負荷）</option>
+            </select>
+          </div>
           <div style="flex:0 0 auto;align-self:end"><a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener">APIキー取得 ↗</a></div>
         </div>
-        <div class="small muted" style="margin-top:7px">APIキーはこのページ内だけで使用し、保存しません。無料枠・利用条件はGoogle側の制限に従います。</div>
-        <div id="tokenUsageNote">AI利用は教材解析・問題生成のみ。採点ではGemini APIを呼び出しません。503混雑時は自動再試行し、必要なら軽量モデルへ切り替えます。</div>
+        <div class="small muted" style="margin-top:7px">モデルはここで手動選択します。選択したモデルに1回だけ送信し、混雑・エラー時に別モデルへ自動切替や自動再試行はしません。モデルの利用可否・無料枠はGoogle側のアカウント条件に従います。</div>
+        <div id="tokenUsageNote">AI利用は教材解析・問題生成のみ。採点ではGemini APIを呼び出しません。通信は選択したモデルへ各処理1回だけ送信します。</div>
       </div>
       <div id="localInfo" class="notice warn hidden">AIなしモードは端末内処理です。写真OCRは初回に日本語辞書（数MB〜）をダウンロードするため、通信環境によっては数分かかる場合があります。120秒で進まない場合はエラー表示します。自由な類題生成はできません。</div>
       <div class="label">教科</div>
@@ -351,43 +359,21 @@ function b64(buffer){const bytes=new Uint8Array(buffer);let binary='';const chun
 async function callGemini(parts, prompt, outputTokens=7000){
  const key=$('apiKey').value.trim();
  if(!key)throw new Error('Gemini APIキーを入力してください。取得先はGoogle AI Studioです。');
- const primaryModel=$('model').value.trim()||'gemini-3.8-flash';
- const fallbackModel='gemini-3.5-flash-lite';
+ const model=$('model').value||'gemini-3.8-flash';
  const body={contents:[{role:'user',parts:[{text:prompt},...parts]}],generationConfig:{temperature:0.25,responseMimeType:'application/json',maxOutputTokens:outputTokens}};
- async function request(model, attempts){
-  let lastError='';
-  for(let attempt=0;attempt<attempts;attempt++){
-   let response;
-   try{
-    response=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`,{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':key},body:JSON.stringify(body)});
-   }catch(e){
-    lastError='通信エラー：'+(e.message||'ネットワークに接続できません');
-    if(attempt<attempts-1){const wait=1200*Math.pow(2,attempt);showStatus(`${model} への接続に失敗。${Math.ceil(wait/1000)}秒後に再試行します...`,12);await new Promise(r=>setTimeout(r,wait));continue;}
-    throw new Error(lastError+'。通信環境を確認して再試行してください。');
-   }
-   if(response.ok)return response;
-   const raw=await response.text();let msg=raw;try{msg=JSON.parse(raw).error?.message||raw}catch{}
-   lastError=`Gemini APIエラー (${response.status})：${msg}`;
-   const retryable=[408,429,500,502,503,504].includes(response.status);
-   if(!retryable||attempt===attempts-1){
-    const err=new Error(lastError);err.status=response.status;throw err;
-   }
-   const retryAfter=Number(response.headers.get('Retry-After'));
-   const wait=Number.isFinite(retryAfter)&&retryAfter>0?Math.min(15000,retryAfter*1000):Math.min(10000,1500*Math.pow(2,attempt));
-   showStatus(`Gemini側が混雑しています（${response.status}）。${Math.ceil(wait/1000)}秒後に自動再試行します...`,12+attempt*5);
-   await new Promise(r=>setTimeout(r,wait));
-  }
-  throw new Error(lastError||'Gemini APIに接続できませんでした。');
- }
- let response,usedModel=primaryModel;
+ let response;
  try{
-  response=await request(primaryModel,3);
+  response=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`,{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':key},body:JSON.stringify(body)});
  }catch(e){
-  if(e.status!==503&&e.status!==500&&e.status!==502&&e.status!==504)throw e;
-  if(primaryModel===fallbackModel)throw e;
-  showStatus(`標準モデルが混雑中です。軽量モデル ${fallbackModel} に切り替えて再試行します...`,28);
-  try{response=await request(fallbackModel,2);usedModel=fallbackModel;}
-  catch(fallbackError){throw new Error('標準モデル・軽量モデルの両方が混雑しています。少し時間をおいてから、もう一度実行してください。\n詳細：'+fallbackError.message);}
+  throw new Error(`通信エラー（${model}）：${e.message||'ネットワークに接続できません'}。自動再試行は行っていません。モデルを変更するか、通信環境を確認して手動で再実行してください。`);
+ }
+ if(!response.ok){
+  const raw=await response.text();let msg=raw;try{msg=JSON.parse(raw).error?.message||raw}catch{}
+  if(response.status===503||response.status===429||response.status===500||response.status===502||response.status===504){
+   throw new Error(`Gemini APIエラー (${response.status})［${model}］：${msg}
+自動再試行・別モデルへの自動切替は行っていません。モデル選択欄から別モデルを手動で選び、もう一度実行してください。`);
+  }
+  throw new Error(`Gemini APIエラー (${response.status})［${model}］：${msg}`);
  }
  const raw=await response.text();
  const data=JSON.parse(raw),usage=data.usageMetadata||{};
@@ -395,9 +381,9 @@ async function callGemini(parts, prompt, outputTokens=7000){
  state.tokenUsage.output+=Number(usage.candidatesTokenCount)||0;
  state.tokenUsage.total+=Number(usage.totalTokenCount)||0;
  const note=$('tokenUsageNote');
- if(note)note.textContent=`今回の使用モデル：${usedModel} ／ このページのAI利用量：入力 ${state.tokenUsage.input.toLocaleString()} / 出力 ${state.tokenUsage.output.toLocaleString()} / 合計 ${state.tokenUsage.total.toLocaleString()} トークン（採点時の追加消費 0）`;
+ if(note)note.textContent=`今回の使用モデル：${model} ／ このページのAI利用量：入力 ${state.tokenUsage.input.toLocaleString()} / 出力 ${state.tokenUsage.output.toLocaleString()} / 合計 ${state.tokenUsage.total.toLocaleString()} トークン（採点時の追加消費 0）`;
  const text=data.candidates?.[0]?.content?.parts?.map(p=>p.text||'').join('\n')||'';
- if(!text)throw new Error('AIから本文が返りませんでした。安全フィルターや出力上限の可能性があります。');
+ if(!text)throw new Error(`AIから本文が返りませんでした［${model}］。安全フィルターや出力上限の可能性があります。`);
  return parseJson(text);
 }
 function parseJson(s){let v=s.trim().replace(/^```(?:json)?\s*/i,'').replace(/```$/,'').trim();try{return JSON.parse(v)}catch{const a=v.indexOf('{'),b=v.lastIndexOf('}');if(a>=0&&b>a)return JSON.parse(v.slice(a,b+1));throw new Error('AIの返答をJSONとして読み取れませんでした。問題数を減らして再試行してください。');}}
