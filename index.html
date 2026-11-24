@@ -9,14 +9,151 @@
 :root{color-scheme:dark;--bg:#0b1220;--panel:#121d2e;--panel2:#172438;--line:#293a52;--text:#edf4ff;--muted:#9eb0c8;--accent:#6ea8ff;--accent2:#8b7cff;--green:#48d7a0;--yellow:#f6c86b;--red:#ff7b86;--radius:18px;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Noto Sans JP",Meiryo,sans-serif}
 *{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 80% -10%,#253a61 0,transparent 35%),var(--bg);color:var(--text);line-height:1.65}button,input,select,textarea{font:inherit}button{cursor:pointer}a{color:#9cc4ff}.wrap{max-width:1040px;margin:0 auto;padding:22px 16px 70px}.top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:22px}.brand{display:flex;align-items:center;gap:12px}.logo{width:44px;height:44px;border-radius:14px;display:grid;place-items:center;background:linear-gradient(135deg,#3987ff,#8768ff);font-size:22px;box-shadow:0 8px 30px #376bca55}.brand small{display:block;color:var(--muted);font-size:10px;letter-spacing:.18em;font-weight:800}.brand strong{font-size:18px;letter-spacing:.03em}.pill{border:1px solid var(--line);border-radius:999px;padding:6px 11px;color:var(--muted);font-size:12px}.hero{padding:24px;border:1px solid #33496a;border-radius:24px;background:linear-gradient(115deg,#172a46dd,#171e37dd);margin-bottom:18px;overflow:hidden;position:relative}.hero:after{content:"";position:absolute;width:230px;height:230px;border-radius:50%;right:-90px;top:-120px;background:#568bff22;filter:blur(4px)}.eyebrow{color:#95b9ff;letter-spacing:.14em;font-size:11px;font-weight:800}.hero h1{font-size:clamp(27px,5vw,42px);line-height:1.15;margin:8px 0}.hero p{color:#b8c8dc;margin:0;max-width:680px}.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:18px 0 22px}.step{border:1px solid var(--line);border-radius:13px;padding:10px;background:#111b2b;color:var(--muted);font-size:12px}.step b{display:block;color:var(--text);font-size:13px}.step span{color:#7daeff;margin-right:6px}.grid{display:grid;grid-template-columns:1.05fr .95fr;gap:16px}.panel{border:1px solid var(--line);border-radius:var(--radius);background:linear-gradient(180deg,#142136,#101a2a);padding:18px;margin-bottom:16px;box-shadow:0 12px 34px #0002}.panel h2{font-size:17px;margin:0 0 4px}.sub{color:var(--muted);font-size:12px;margin:0 0 15px}.section-head{display:flex;align-items:center;justify-content:space-between;gap:10px}.label{display:block;color:#cbd8e9;font-size:12px;font-weight:700;margin:13px 0 7px}.input,select,textarea{width:100%;border:1px solid #34465f;background:#0c1625;color:var(--text);border-radius:11px;padding:11px 12px;outline:none}.input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px #5595ff22}.row{display:flex;gap:10px;align-items:center}.row>*{flex:1;min-width:0}.drop{border:1.5px dashed #54729e;border-radius:16px;padding:22px 14px;text-align:center;background:#0c192b;transition:.2s}.drop.over{border-color:var(--green);background:#12302c}.drop .big{font-size:30px}.drop strong{display:block;margin:4px 0}.drop p{font-size:12px;color:var(--muted);margin:0 0 13px}.btn{border:0;border-radius:11px;padding:11px 15px;font-weight:800;color:#071322;background:linear-gradient(135deg,#83bcff,#8c8bff);box-shadow:0 5px 18px #5d92e633}.btn:disabled{opacity:.45;cursor:not-allowed}.btn.secondary{background:#243650;color:#e5efff;box-shadow:none;border:1px solid #3a5274}.btn.ghost{background:transparent;color:var(--muted);box-shadow:none;border:1px solid var(--line)}.btn.green{background:linear-gradient(135deg,#63e0af,#39be98)}.btn.full{width:100%;margin-top:12px}.files{display:grid;gap:8px;margin-top:12px}.file{border:1px solid var(--line);border-radius:12px;padding:10px 12px;display:flex;align-items:center;gap:10px;background:#111c2c}.file .ficon{font-size:20px}.file .fname{min-width:0;flex:1;font-size:12px;overflow-wrap:anywhere}.file .meta{display:block;color:var(--muted);font-size:10px}.file button{background:transparent;border:0;color:#ff9ba2;font-size:18px;padding:4px 7px}.notice{padding:10px 12px;border-radius:11px;background:#142b42;border:1px solid #2c5274;color:#b9d8ff;font-size:12px;margin-top:10px}.notice.warn{background:#342b1b;border-color:#66532c;color:#f6d99b}.notice.good{background:#112f2c;border-color:#245e50;color:#9be9c9}.switchline{display:flex;align-items:center;gap:9px;color:#d5e2f3;font-size:12px;margin-top:12px}.switchline input{accent-color:#79aaff;width:17px;height:17px}.status{display:none;margin-top:12px;border-radius:12px;padding:11px 13px;background:#101d30;border:1px solid var(--line);font-size:12px;color:#c4d6ee}.status.show{display:block}.bar{height:6px;background:#26354b;border-radius:99px;overflow:hidden;margin-top:8px}.bar>i{display:block;height:100%;width:0;background:linear-gradient(90deg,#68aaff,#8d80ff);transition:width .25s}.summary{display:none;margin-top:14px;border:1px solid #315b59;background:#102824;border-radius:14px;padding:14px}.summary.show{display:block}.tags{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}.tag{border:1px solid #3d5574;border-radius:999px;padding:4px 9px;font-size:11px;color:#c6d8ef}.muted{color:var(--muted)}.small{font-size:11px}.actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:12px}.exam{display:none}.exam.show{display:block}.qcard{padding:16px;border:1px solid var(--line);border-radius:15px;background:#111d2e;margin:12px 0}.qtop{display:flex;justify-content:space-between;gap:10px;color:var(--muted);font-size:11px}.qcard h3{font-size:15px;margin:10px 0 13px;white-space:pre-wrap}.choice{display:flex;align-items:flex-start;gap:9px;padding:9px 10px;border:1px solid #34465f;border-radius:10px;margin:7px 0;background:#0d1828;font-size:13px}.choice input{accent-color:#7eaaff;margin-top:4px}.answerbox{width:100%;min-height:43px;background:#0b1625;color:var(--text);border:1px solid #3b4e69;border-radius:10px;padding:10px}.resultbox{display:none;border:1px solid #426a64;background:#112a27;border-radius:16px;padding:16px;margin:16px 0}.resultbox.show{display:block}.score{font-size:35px;font-weight:900;color:#8be6c1}.explain{border-top:1px solid #35534f;padding-top:9px;margin-top:9px;font-size:12px;color:#c3d9d1}.correct{color:#76e5b1}.incorrect{color:#ff9da5}.footer{text-align:center;color:#7588a3;font-size:10px;margin-top:28px}.hidden{display:none!important}.kpi{display:flex;gap:10px;flex-wrap:wrap}.kpi div{background:#0c1a2a;border:1px solid var(--line);padding:10px 13px;border-radius:12px;min-width:100px}.kpi b{display:block;font-size:19px}.kpi span{font-size:10px;color:var(--muted)}
 @media(max-width:760px){.wrap{padding:14px 12px 50px}.grid{grid-template-columns:1fr}.hero{padding:19px}.steps{grid-template-columns:repeat(2,1fr)}.panel{padding:15px}.top{align-items:flex-start}.pill{font-size:10px}.row.mobile-stack{flex-direction:column;align-items:stretch}.row.mobile-stack>*{width:100%}}
-@media print{body{background:#fff;color:#111}.top,.hero,.steps,.panel:not(.exam),.footer,.exam-controls,.resultbox{display:none!important}.wrap{padding:0;max-width:none}.exam{display:block!important}.qcard{background:#fff;color:#111;border:1px solid #bbb;break-inside:avoid}.qtop,.muted{color:#555}.choice{background:#fff;color:#111;border-color:#bbb}.answerbox{display:none}.print-title{display:block!important;color:#111}}
+.exam-head{border:1px solid var(--line);border-radius:14px;padding:14px;margin:14px 0;background:#0e1a2b}.student-fields{display:grid;grid-template-columns:1fr 1fr 2fr;gap:8px;margin-top:12px}.student-field{border-bottom:1px solid #8b9bb0;min-height:28px;font-size:12px;padding:3px}.exam-instructions{font-size:12px;color:var(--muted);margin-top:10px}.exam-toolbar{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0}.answerarea{min-height:100px;resize:vertical}.print-writing-space{display:none}.print-only{display:none}.print-head{color:#111}.print-school-line{display:flex;justify-content:space-between;font-size:10pt;border-bottom:1px solid #222;padding-bottom:4px}.print-head h1{font-size:19pt;text-align:center;margin:9px 0 5px}.print-subline{display:flex;justify-content:space-between;gap:10px;font-size:10pt}.print-student-fields{display:grid;grid-template-columns:1fr 1fr 2fr;border:1px solid #222;margin:10px 0}.print-student-fields div{padding:7px 8px;min-height:34px;border-right:1px solid #222;font-size:10pt}.print-student-fields div:last-child{border-right:0}.print-instructions{font-size:9pt;margin:7px 0 13px}.q-number{font-weight:800}.answer-sheet-table,.key-table{width:100%;border-collapse:collapse;margin-top:10px;font-size:10pt}.answer-sheet-table th,.answer-sheet-table td,.key-table th,.key-table td{border:1px solid #555;padding:7px;text-align:left;vertical-align:top}.answer-sheet-table th{width:13%}.key-table th{white-space:nowrap}.print-lines{margin-top:10px}.print-line{height:25px;border-bottom:1px solid #888}.print-choice-answer{display:none;margin-top:8px;font-size:10pt}.question-kind{font-size:10px;border:1px solid #687b94;border-radius:4px;padding:1px 5px;margin-left:6px}.grading-note{font-size:12px;color:var(--muted);margin-top:7px}.grade-detail{border-top:1px solid #35534f;margin-top:10px;padding-top:10px}.grade-detail h4{margin:0 0 5px}.grade-score{font-size:30px;font-weight:900;color:#8be6c1}
+@page{size:A4;margin:14mm 15mm 15mm}
+@media print{
+  html,body{background:#fff!important;color:#111!important;font-family:"Yu Mincho","Hiragino Mincho ProN","Noto Serif JP",serif!important;font-size:10pt!important;line-height:1.55!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  #builderPage{display:none!important}.test-page{display:block!important;background:#fff!important}.test-nav{display:none!important}.test-paper{box-shadow:none!important;border:0!important}
+  .wrap{padding:0!important;max-width:none!important;margin:0!important}.top,.hero,.steps,.grid,.footer,.exam-controls,.examNotice,.kpi,.screen-only,.resultbox{display:none!important}
+  .exam{display:block!important;border:0!important;background:#fff!important;padding:0!important;margin:0!important;box-shadow:none!important}.exam-head,.exam>.section-head{display:none!important}
+  .print-only{display:block!important}.print-head{display:block!important;margin-bottom:12px;color:#111!important}.print-meta{display:flex;justify-content:space-between;gap:8px;border-top:1px solid #222;border-bottom:1px solid #222;padding:5px 0;font-size:9pt}
+  .test-paper .subject-paper-note{background:#fff!important;color:#111!important}
+  .test-paper .prompt-line.formula-line{background:#fff!important;border-color:#777!important;color:#111!important}
+  .qcard{background:#fff!important;color:#111!important;border:0!important;border-bottom:1px solid #bbb!important;border-radius:0!important;padding:9px 0 12px!important;margin:0 0 8px!important;box-shadow:none!important;break-inside:avoid;page-break-inside:avoid}
+  .qtop{color:#222!important;font-size:9pt!important}.qcard h3{font-family:inherit!important;font-size:10.5pt!important;line-height:1.7!important;margin:7px 0!important;white-space:pre-wrap!important;color:#111!important}
+  .choice{display:flex!important;background:#fff!important;color:#111!important;border:0!important;border-radius:0!important;padding:2px 0!important;margin:2px 0!important;font-size:10pt!important}.choice input{display:none!important}.answerbox{display:none!important}.print-writing-space{display:block!important}.print-choice-answer{display:block!important}.print-line{border-bottom:1px solid #777;height:24px}.print-choice-answer{display:block!important}
+  .qtop .muted,.muted{color:#333!important}.source-note{display:none!important}
+  body[data-print-mode="question"] #answerSheetPrint,body[data-print-mode="question"] #answerKeyPrint{display:none!important}
+  body[data-print-mode="answer-sheet"] #questionList,body[data-print-mode="answer-sheet"] #questionPrintHead,body[data-print-mode="answer-sheet"] #answerKeyPrint{display:none!important}
+  body[data-print-mode="key"] #questionList,body[data-print-mode="key"] #questionPrintHead,body[data-print-mode="key"] #answerSheetPrint{display:none!important}
+  body[data-print-mode="answer-sheet"] #answerSheetPrint,body[data-print-mode="key"] #answerKeyPrint{display:block!important}
+  body[data-print-mode="answer-sheet"] .print-head,body[data-print-mode="key"] .print-head{display:block!important}
+  .answer-sheet-table tr,.key-table tr{break-inside:avoid;page-break-inside:avoid}.answer-sheet-table th,.answer-sheet-table td,.key-table th,.key-table td{border:1px solid #333!important;color:#111!important;background:#fff!important}
+  .print-section-title{font-size:15pt;text-align:center;margin:8px 0}.print-footer{margin-top:12px;text-align:center;font-size:8pt;color:#555}
+}
+
+/* Dedicated high-school examination page */
+.test-page{display:none;min-height:100vh;background:#edf0f4;color:#171717;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Noto Sans JP",Meiryo,sans-serif}
+.test-page.active{display:block}
+body.test-mode{background:#edf0f4!important;color:#171717!important;color-scheme:light}
+.test-nav{position:sticky;top:0;z-index:20;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:12px;padding:11px max(16px,calc((100vw - 980px)/2));background:#fff;border-bottom:1px solid #d8dde5;box-shadow:0 2px 12px #18243a0a}
+.test-nav-back,.test-nav-submit{border:1px solid #d3d9e2;border-radius:9px;padding:9px 12px;background:#fff;color:#273142;font-size:13px;font-weight:700;white-space:nowrap}
+.test-nav-submit{justify-self:end;background:#172b46;color:#fff;border-color:#172b46}
+.test-nav-center{display:flex;align-items:center;justify-content:center;gap:8px;color:#667085;font-size:12px;white-space:nowrap}
+.test-nav-center strong{color:#202939;font-size:13px;max-width:32vw;overflow:hidden;text-overflow:ellipsis}
+.test-live-dot{width:7px;height:7px;border-radius:50%;background:#299b70;box-shadow:0 0 0 3px #299b701a}
+.test-page-status{display:none;max-width:850px;margin:12px auto 0;padding:10px 14px;border:1px solid #c6d0dc;background:#fff;color:#26364a;border-radius:6px;font-size:12px}
+.test-page-status.show{display:block}
+.test-page-status.error{border-color:#d99;background:#fff7f7;color:#8a2424}
+.test-paper-wrap{padding:26px 14px 70px}
+.test-paper{width:min(100%,850px);min-height:1120px;margin:0 auto;background:#fff;box-shadow:0 8px 34px #24334c18;border:1px solid #e0e3e8}
+.test-paper .exam{display:none;margin:0;padding:52px 62px 70px;border:0;border-radius:0;background:#fff;color:#171717;box-shadow:none}
+.test-paper .exam.show{display:block}
+.test-paper .section-head{display:block;border-bottom:2px solid #222;padding-bottom:14px;margin-bottom:16px}
+.test-paper .section-head .eyebrow{color:#555;font-size:9px;letter-spacing:.17em}
+.test-paper .section-head h2{font-family:"Yu Mincho","Hiragino Mincho ProN","Noto Serif JP",serif;color:#111;font-size:25px;line-height:1.4;margin:5px 0}
+.test-paper .section-head .sub{color:#555;font-size:11px}
+.test-paper #examMode{display:inline-block;color:#333;border:1px solid #888;background:#fff;border-radius:2px}
+.test-paper .exam-head{background:#fff;border:0;border-radius:0;padding:0;margin:17px 0 20px}
+.test-paper .student-fields{grid-template-columns:.8fr .8fr 2fr;gap:0;border:1px solid #333}
+.test-paper .student-field{border:0;border-right:1px solid #555;min-height:42px;padding:9px 10px;color:#222;font-family:"Yu Mincho","Hiragino Mincho ProN",serif;font-size:12px}
+.test-paper .student-field:last-child{border-right:0}
+.test-paper .exam-instructions{color:#333;font-size:11px;line-height:1.8}
+.test-paper .kpi{display:none}
+.test-paper .examNotice{background:#f7f7f7;border:1px solid #bbb;color:#333;border-radius:0;font-size:10px;padding:8px 10px;margin:12px 0}
+.test-paper .exam>.section-head{display:block}
+.test-paper .qcard{position:relative;background:#fff;color:#171717;border:0;border-top:1px solid #b8b8b8;border-radius:0;padding:18px 0 22px;margin:0;box-shadow:none;break-inside:avoid}
+.test-paper .qcard:first-child{border-top:2px solid #333}
+.test-paper .qtop{align-items:center;color:#333;font-size:11px}
+.test-paper .q-number{font-family:"Yu Mincho","Hiragino Mincho ProN","Noto Serif JP",serif;font-size:14px;color:#111}
+.test-paper .question-kind{border:1px solid #888;border-radius:2px;color:#333;font-size:9px;padding:1px 5px}
+.test-paper .qcard h3{margin:11px 0 15px;color:#111;font-family:"Yu Mincho","Hiragino Mincho ProN","Noto Serif JP",serif;font-size:15px;font-weight:500;line-height:1.9;white-space:normal}
+.test-paper .prompt-line{display:block;min-height:1.55em;white-space:pre-wrap;overflow-wrap:anywhere}
+.test-paper .prompt-line.formula-line{font-family:"Times New Roman","Cambria Math",serif;font-size:18px;letter-spacing:.02em;text-align:center;padding:8px 12px;margin:8px auto;max-width:95%;background:#fafafa;border-top:1px solid #ddd;border-bottom:1px solid #ddd;white-space:pre-wrap}
+.test-paper .subject-section-label{display:block;margin:0 0 5px;color:#444;font-family:-apple-system,BlinkMacSystemFont,"Noto Sans JP",sans-serif;font-size:10px;font-weight:800;letter-spacing:.08em}
+.test-paper .choice{display:flex;align-items:flex-start;gap:10px;background:#fff;color:#111;border:0;border-radius:0;padding:6px 4px;margin:3px 0;font-family:"Yu Mincho","Hiragino Mincho ProN",serif;font-size:13px;line-height:1.65}
+.test-paper .choice input{accent-color:#222;margin-top:5px}
+.test-paper .choice-letter{display:inline-grid;place-items:center;flex:0 0 21px;width:21px;height:21px;border:1px solid #555;border-radius:50%;font-family:Arial,sans-serif;font-size:11px}
+.test-paper .answerbox{background:#fff;color:#111;border:0;border-bottom:1px solid #333;border-radius:0;padding:8px 3px;font-family:"Yu Mincho","Hiragino Mincho ProN",serif;font-size:15px;outline:none;box-shadow:none}
+.test-paper .answerbox:focus{border-bottom:2px solid #111;box-shadow:none}
+.test-paper textarea.answerbox{border:1px solid #999;min-height:118px;padding:10px;line-height:1.8;resize:vertical}
+.test-paper[data-subject="math"] textarea.answerbox{min-height:155px;background-image:linear-gradient(#e7e7e7 1px,transparent 1px),linear-gradient(90deg,#e7e7e7 1px,transparent 1px);background-size:22px 22px}
+.test-paper[data-subject="english"] textarea.answerbox{min-height:125px;background-image:linear-gradient(transparent calc(100% - 1px),#ddd 1px);background-size:100% 28px}
+.test-paper[data-subject="math"] textarea.answerbox{min-height:155px;background-image:linear-gradient(#e7e7e7 1px,transparent 1px),linear-gradient(90deg,#e7e7e7 1px,transparent 1px);background-size:22px 22px}
+.test-paper[data-subject="english"] textarea.answerbox{min-height:125px;background-image:linear-gradient(transparent calc(100% - 1px),#ddd 1px);background-size:100% 28px}
+.test-paper .print-writing-space{display:none}
+.test-paper .math-work-area{margin-top:12px;border:1px solid #bbb;background-image:linear-gradient(#e5e5e5 1px,transparent 1px),linear-gradient(90deg,#e5e5e5 1px,transparent 1px);background-size:22px 22px;min-height:100px;padding:8px}
+.test-paper .math-work-label{font-size:9px;color:#666;background:#fff;display:inline-block;padding:1px 4px}
+.test-paper .subject-paper-note{border:1px solid #888;padding:7px 10px;margin:12px 0 18px;color:#333;font-size:10px;line-height:1.7}
+.test-paper .paper-meta-strip{display:flex;justify-content:flex-end;gap:18px;border-top:1px solid #aaa;padding-top:5px;margin-top:6px;font-weight:800}
+.test-paper[data-subject="english"] .qcard h3{font-family:Georgia,"Times New Roman","Yu Mincho",serif;font-size:15px;line-height:1.85}
+.test-paper[data-subject="english"] .prompt-line{white-space:pre-wrap}
+.test-paper[data-subject="english"] .answerbox{font-family:Georgia,"Times New Roman",serif}
+.test-paper[data-subject="japanese"] .qcard h3{line-height:2.05}
+.test-paper[data-subject="science"] .qcard h3{line-height:1.85}
+.test-paper[data-subject="social"] .qcard h3{line-height:1.95}
+.test-paper .exam-toolbar{position:sticky;bottom:0;z-index:10;margin:26px -62px -70px;padding:12px 62px;background:#fffffff2;border-top:1px solid #d5d5d5;backdrop-filter:blur(8px)}
+.test-paper .exam-toolbar .btn{font-size:11px;padding:9px 10px;border-radius:5px;box-shadow:none}
+.test-paper .exam-toolbar .btn.secondary{background:#fff;color:#222;border:1px solid #777}
+.test-paper .exam-toolbar .btn.ghost{color:#333;border:1px solid #aaa}
+.test-paper .exam-toolbar .btn.green{background:#222;color:#fff}
+.test-paper .resultbox{background:#fff;border:1px solid #999;border-radius:0;color:#111}
+.test-paper .grade-score{color:#111}
+.test-paper .grade-detail{border-color:#bbb;color:#222}
+.test-paper .grade-detail .notice.warn{background:#fff8e8;color:#4c3b16}
+.test-paper .source-note{color:#666}
+.test-paper .print-head{color:#111}
+.test-paper .print-only{display:none}
+/* Teacher-style marking: fully local, no AI call during grading */
+.test-paper .teacher-marking{display:flex;align-items:flex-start;gap:11px;margin:14px 0 2px;padding:10px 12px;border-top:1px dashed #c9c9c9;background:#fff;color:#222;font-size:12px}
+.test-paper .teacher-marking .mark-stamp{flex:0 0 34px;width:34px;height:34px;display:grid;place-items:center;border:2.5px solid #d21f2b;border-radius:50%;color:#d21f2b;font-family:serif;font-size:22px;font-weight:900;line-height:1;transform:rotate(-9deg)}
+.test-paper .teacher-marking.incorrect .mark-stamp{border:0;font-family:Arial,sans-serif;font-size:31px;transform:rotate(-8deg)}
+.test-paper .teacher-marking.review .mark-stamp{border:2px solid #b66a00;color:#a65b00;font-size:18px;transform:none}
+.test-paper .teacher-marking b{display:block;color:#b51e28;margin:0 0 3px}
+.test-paper .teacher-marking.review b{color:#925100}
+.test-paper .teacher-marking small{display:block;color:#444;line-height:1.7}
+.test-paper .choice.choice-correct{position:relative;outline:2px solid #d21f2b;outline-offset:-2px;border-radius:999px!important;padding-left:9px;padding-right:9px}
+.test-paper .choice.choice-wrong{position:relative;color:#8d1c24}
+.test-paper .choice-mark{margin-left:auto;flex:0 0 auto;color:#d21f2b;font-weight:900;font-size:22px;line-height:1;transform:rotate(-8deg)}
+.test-paper .choice-wrong .choice-mark{font-size:25px}
+.test-paper .qcard.is-correct{border-left:3px solid #d21f2b;padding-left:12px}
+.test-paper .qcard.is-incorrect{border-left:3px solid #d21f2b;padding-left:12px}
+.test-paper .qcard.is-review{border-left:3px solid #b66a00;padding-left:12px}
+.test-paper .grade-score{color:#b51e28}
+#tokenUsageNote{margin-top:7px;color:#667085;font-size:11px;line-height:1.6}
+@media(max-width:700px){
+ .test-nav{grid-template-columns:auto 1fr auto;gap:6px;padding:9px 8px}
+ .test-nav-back,.test-nav-submit{font-size:10px;padding:8px 9px}
+ .test-nav-center{font-size:10px;gap:5px}
+ .test-nav-center strong{display:none}
+ .test-paper-wrap{padding:0 0 35px}
+ .test-paper{width:100%;min-height:100vh;border:0;box-shadow:none}
+ .test-paper .exam{padding:28px 20px 54px}
+ .test-paper .exam-toolbar{margin:22px -20px -54px;padding:10px 15px;gap:6px}
+ .test-paper .exam-toolbar .btn{flex:1 1 42%;white-space:normal}
+ .test-paper .qcard h3{font-size:14px}
+ .test-paper .student-field{font-size:10px;padding:8px 6px}
+ .test-paper .paper-meta-strip{justify-content:space-between;gap:7px;font-size:9px}
+}
+@media print{
+ .test-page{display:block!important;background:#fff!important;min-height:0!important}
+ .test-nav{display:none!important}
+ .test-paper-wrap{padding:0!important}
+ .test-paper{width:auto!important;min-height:0!important;margin:0!important;border:0!important;box-shadow:none!important}
+ .test-paper .exam{padding:0!important}
+ .test-paper .exam-toolbar{display:none!important}
+ .test-paper .subject-paper-note{border:0;padding:0}
+ .test-page-status{display:none!important}
+ .test-paper .math-work-area{background:none!important;border:0!important;min-height:0!important}
+}
+
 </style>
 </head>
 <body>
-<div class="wrap">
+<div class="wrap" id="builderPage">
   <header class="top">
     <div class="brand"><div class="logo">✦</div><div><small>AI STUDY WORKSHOP</small><strong>EXAM FORGE <span style="color:#7eaaff">/ 模試メーカー</span></strong></div></div>
-    <div class="pill">iPad / Safari 対応 · 試作版 0.1</div>
+    <div class="pill">iPad / Safari 対応 · 試作版 0.4</div>
   </header>
   <section class="hero">
     <div class="eyebrow">FROM YOUR MATERIALS TO YOUR MOCK EXAM</div>
@@ -70,8 +207,9 @@
           <div style="flex:0 0 auto;align-self:end"><a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener">APIキー取得 ↗</a></div>
         </div>
         <div class="small muted" style="margin-top:7px">APIキーはこのページ内だけで使用し、保存しません。無料枠・利用条件はGoogle側の制限に従います。</div>
+        <div id="tokenUsageNote">AI利用は教材解析・問題生成のみ。採点ではGemini APIを呼び出しません。</div>
       </div>
-      <div id="localInfo" class="notice warn hidden">AIなしモードは端末内処理です。PDFの文字抽出・写真OCRと、文章の穴埋め／一部の計算式パターンから問題を作成します。自由な類題生成はできません。</div>
+      <div id="localInfo" class="notice warn hidden">AIなしモードは端末内処理です。写真OCRは初回に日本語辞書（数MB〜）をダウンロードするため、通信環境によっては数分かかる場合があります。120秒で進まない場合はエラー表示します。自由な類題生成はできません。</div>
       <div class="label">教科</div>
       <select id="subject"><option>自動判定</option><option>国語</option><option>数学</option><option>英語</option><option>理科</option><option>社会</option><option>その他</option></select>
       <div class="row">
@@ -91,20 +229,42 @@
 
   <section class="panel exam" id="examSection">
     <div class="section-head"><div><div class="eyebrow">YOUR GENERATED EXAM</div><h2 id="examTitle">模試</h2><p class="sub" id="examMeta" style="margin:4px 0 0"></p></div><span class="tag" id="examMode">AI生成</span></div>
+    <div class="exam-head screen-only"><div class="student-fields"><div class="student-field">年　　　組</div><div class="student-field">出席番号</div><div class="student-field">氏名</div></div><div class="exam-instructions">解答欄に記入してください。記述問題は、途中の考え方や計算過程も入力してください。</div></div>
     <div class="kpi" style="margin:14px 0"><div><b id="qCount">0</b><span>問題数</span></div><div><b id="totalPoints">0</b><span>満点</span></div><div><b id="timeLimit">50分</b><span>制限時間</span></div></div>
-    <div class="notice" id="examNotice">解答を入力して、最後に採点してください。</div>
+    <div class="notice examNotice" id="examNotice">解答を入力して、最後に採点してください。</div>
+    <div class="print-only print-head" id="questionPrintHead"></div>
     <div id="questionList"></div>
-    <div class="exam-controls actions"><button class="btn green" id="gradeBtn" type="button">解答を提出して採点</button><button class="btn secondary" id="printBtn" type="button">印刷 / PDF保存</button><button class="btn ghost" id="answerKeyBtn" type="button">解答一覧</button></div>
+    <div class="print-only" id="answerSheetPrint"></div>
+    <div class="print-only" id="answerKeyPrint"></div>
+    <div class="exam-controls exam-toolbar"><button class="btn green" id="gradeBtn" type="button">答案を採点する（端末内）</button><button class="btn secondary" id="printBtn" type="button">問題用紙を印刷 / PDF</button><button class="btn secondary" id="printAnswerSheetBtn" type="button">解答用紙を印刷</button><button class="btn secondary" id="printKeyBtn" type="button">解答・採点基準を印刷</button><button class="btn ghost" id="answerKeyBtn" type="button">解答一覧 TXT</button></div>
     <div class="resultbox" id="resultBox"></div>
   </section>
   <div class="footer">EXAM FORGE prototype · 教材の読み取り・生成結果には誤認識や誤答が含まれる場合があります。正式な試験前に必ず確認してください。</div>
 </div>
+
+<main id="testPage" class="test-page" aria-hidden="true">
+  <header class="test-nav">
+    <button type="button" class="test-nav-back" id="backToBuilder">← 作成画面へ戻る</button>
+    <div class="test-nav-center"><span class="test-live-dot"></span><span>模試受験ページ</span><strong id="testNavTitle">テスト</strong></div>
+    <button type="button" class="test-nav-submit" id="submitExamBtn">答案を提出・採点</button>
+  </header>
+  <div id="testPageStatus" class="test-page-status" role="status" aria-live="polite"></div>
+  <div class="test-paper-wrap">
+    <div class="test-paper" id="testPaper"></div>
+  </div>
+</main>
 <script type="module">
 const $ = id => document.getElementById(id);
-const state = { files: [], analysis: null, questions: [], answers: {}, graded: false, pdfjs: null, tesseract: null };
+const state = { files: [], analysis: null, questions: [], answers: {}, graded: false, examMode: 'ai', examMeta: {}, grading: null, pdfjs: null, tesseract: null, tesseractLoading: null, tokenUsage: { input: 0, output: 0, total: 0 } };
+// The generated exam lives in its own white examination page, not inside the dark builder.
+$('testPaper').appendChild($('examSection'));
+function openTestPage(){ $('builderPage').classList.add('hidden'); $('testPage').classList.add('active'); $('testPage').setAttribute('aria-hidden','false'); document.body.classList.add('test-mode'); window.scrollTo({top:0,behavior:'auto'}); }
+function returnToBuilder(){ $('testPage').classList.remove('active'); $('testPage').setAttribute('aria-hidden','true'); $('builderPage').classList.remove('hidden'); document.body.classList.remove('test-mode'); window.scrollTo({top:0,behavior:'auto'}); }
+$('backToBuilder').addEventListener('click',returnToBuilder);
+$('submitExamBtn').addEventListener('click',()=>{ $('gradeBtn').click(); });
 const MAX_FILES = 10, MAX_FILE_BYTES = 20 * 1024 * 1024;
-function showStatus(message, percent=0){ $('status').classList.add('show'); $('statusText').textContent=message; $('progressBar').style.width=Math.max(0,Math.min(100,percent))+'%'; }
-function hideStatus(){ $('status').classList.remove('show'); }
+function showStatus(message, percent=0){ $('status').classList.add('show'); $('statusText').textContent=message; $('progressBar').style.width=Math.max(0,Math.min(100,percent))+'%'; if($('testPage')?.classList.contains('active')){ $('testPageStatus').textContent=message; $('testPageStatus').classList.add('show'); $('testPageStatus').classList.toggle('error',percent===0); } }
+function hideStatus(){ $('status').classList.remove('show'); $('testPageStatus')?.classList.remove('show','error'); }
 function setBusy(busy){ $('analyzeBtn').disabled=busy||!state.files.length; $('generateBtn').disabled=busy||!state.analysis; $('pickFiles').disabled=busy; }
 function fmtSize(n){return n<1024*1024?(n/1024).toFixed(0)+' KB':(n/1024/1024).toFixed(1)+' MB';}
 function escapeHtml(v=''){return String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
@@ -116,7 +276,71 @@ $('pickFiles').addEventListener('click',()=>$('fileInput').click());$('fileInput
 $('fileList').addEventListener('click',e=>{const b=e.target.closest('[data-remove]');if(!b)return;state.files.splice(Number(b.dataset.remove),1);state.analysis=null;$('summary').classList.remove('show');renderFiles();});
 const dz=$('dropZone');dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('over')});dz.addEventListener('dragleave',()=>dz.classList.remove('over'));dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('over');addFiles(e.dataTransfer.files)});
 async function loadPdfJs(){if(state.pdfjs)return state.pdfjs;showStatus('PDF解析ライブラリを読み込み中...',5);const lib=await import('https://cdn.jsdelivr.net/npm/pdfjs-dist@5.4.624/build/pdf.min.mjs');lib.GlobalWorkerOptions.workerSrc='https://cdn.jsdelivr.net/npm/pdfjs-dist@5.4.624/build/pdf.worker.min.mjs';state.pdfjs=lib;return lib;}
-async function loadTesseract(){if(state.tesseract)return state.tesseract;showStatus('写真OCRエンジンを読み込み中...',10);await new Promise((resolve,reject)=>{const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js';s.onload=resolve;s.onerror=()=>reject(new Error('OCRライブラリの読み込みに失敗しました。通信環境を確認してください。'));document.head.appendChild(s)});state.tesseract=await Tesseract.createWorker('jpn+eng',1,{logger:m=>{if(m.status==='recognizing text')showStatus('写真をOCRで読み取り中...',15+Math.round((m.progress||0)*70));}});return state.tesseract;}
+async function loadTesseractScript(){
+ if(window.Tesseract)return 'https://cdn.jsdelivr.net/npm';
+ const cdns=[
+  {base:'https://cdn.jsdelivr.net/npm',src:'https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js'},
+  {base:'https://unpkg.com',src:'https://unpkg.com/tesseract.js@5.1.1/dist/tesseract.min.js'}
+ ];
+ const errors=[];
+ for(const cdn of cdns){
+  showStatus('OCRライブラリを読み込み中...（接続先を確認）',12);
+  try{
+   await new Promise((resolve,reject)=>{
+    const script=document.createElement('script');let done=false;
+    const finish=(fn,value)=>{if(done)return;done=true;clearTimeout(timer);script.onload=null;script.onerror=null;fn(value);};
+    const timer=setTimeout(()=>{script.remove();finish(reject,new Error('読み込みが20秒でタイムアウトしました'));},20000);
+    script.src=cdn.src;script.async=true;
+    script.onload=()=>finish(resolve);
+    script.onerror=()=>{script.remove();finish(reject,new Error('CDNからライブラリを取得できませんでした'));};
+    document.head.appendChild(script);
+   });
+   if(window.Tesseract)return cdn.base;
+   errors.push(cdn.base+'：ライブラリ本体が見つかりません');
+  }catch(e){errors.push(cdn.base+'：'+e.message);}
+ }
+ throw new Error('OCRライブラリを取得できませんでした。Safariの通信制限・コンテンツブロッカー・Wi-Fiを確認してください。詳細：'+errors.join(' / '));
+}
+async function loadTesseract(){
+ if(state.tesseract)return state.tesseract;
+ if(state.tesseractLoading)return state.tesseractLoading;
+ state.tesseractLoading=(async()=>{
+  const cdnBase=await loadTesseractScript();
+  showStatus('日本語OCRエンジンを起動中...（辞書・認識プログラムを初回取得）',20);
+  const workerOptions={
+   workerPath:cdnBase+'/tesseract.js@5.1.1/dist/worker.min.js',
+   langPath:'https://tessdata.projectnaptha.com/4.0.0',
+   corePath:cdnBase+'/tesseract.js-core@5.0.0',
+   cacheMethod:'write',
+   logger:m=>{
+    const status=m.status||'';const progress=Math.max(0,Math.min(1,Number(m.progress)||0));
+    if(status==='loading tesseract core')showStatus('OCR認識プログラムを取得中...',22+Math.round(progress*12));
+    else if(status==='initializing tesseract')showStatus('OCRエンジンを初期化中...',35+Math.round(progress*8));
+    else if(status==='loading language traineddata')showStatus('日本語OCR辞書をダウンロード中... 初回は時間がかかります',43+Math.round(progress*25));
+    else if(status==='loaded language traineddata')showStatus('日本語OCR辞書を準備中...',70);
+    else if(status==='initializing api')showStatus('OCRエンジンを仕上げています...',76+Math.round(progress*10));
+    else if(status==='recognizing text')showStatus('写真をOCRで読み取り中...',86+Math.round(progress*13));
+    else if(status)showStatus('OCR準備中：'+status,Math.max(18,Math.min(90,20+Math.round(progress*65))));
+   },
+   errorHandler:err=>console.error('Tesseract worker error:',err)
+  };
+  let workerPromise;
+  try{workerPromise=window.Tesseract.createWorker('jpn+eng',1,workerOptions);}
+  catch(e){throw new Error('OCRエンジンを開始できませんでした：'+e.message);}
+  let timeoutId;
+  const timeoutPromise=new Promise((_,reject)=>{timeoutId=setTimeout(()=>reject(new Error('日本語OCR辞書または認識エンジンの読み込みが120秒でタイムアウトしました。通信環境を確認するか、AI APIありモードを使ってください。')),120000);});
+  try{
+   const worker=await Promise.race([workerPromise,timeoutPromise]);
+   clearTimeout(timeoutId);state.tesseract=worker;showStatus('写真OCRエンジンの準備が完了しました。',84);return worker;
+  }catch(e){
+   clearTimeout(timeoutId);
+   workerPromise.then(worker=>worker.terminate()).catch(()=>{});
+   throw e;
+  }
+ })();
+ try{return await state.tesseractLoading;}
+ catch(e){state.tesseractLoading=null;throw e;}
+}
 async function ocrImage(file){const worker=await loadTesseract();const result=await worker.recognize(file);return result.data.text||'';}
 async function extractPdf(file){const pdfjs=await loadPdfJs();const bytes=new Uint8Array(await file.arrayBuffer());const pdf=await pdfjs.getDocument({data:bytes}).promise;let text='';const pages=Math.min(pdf.numPages,35);for(let p=1;p<=pages;p++){showStatus(`${file.name}：PDF ${p}/${pages}ページを読み取り中...`,10+Math.round(p/pages*65));const page=await pdf.getPage(p);const content=await page.getTextContent();const line=content.items.map(x=>x.str||'').join(' ').replace(/[ \t]+/g,' ').trim();if(line.length>5)text+=`\n【${file.name} / ${p}ページ】\n${line}\n`;}
   if(text.replace(/\s/g,'').length<80){showStatus(`${file.name}：スキャンPDFのためOCRを実行中...`,25);const worker=await loadTesseract();for(let p=1;p<=Math.min(pdf.numPages,8);p++){const page=await pdf.getPage(p);const viewport=page.getViewport({scale:1.35});const canvas=document.createElement('canvas');canvas.width=viewport.width;canvas.height=viewport.height;await page.render({canvasContext:canvas.getContext('2d'),viewport}).promise;const res=await worker.recognize(canvas);text+=`\n【${file.name} / ${p}ページ OCR】\n${res.data.text}\n`;canvas.width=canvas.height=1;}}
@@ -124,18 +348,34 @@ async function extractPdf(file){const pdfjs=await loadPdfJs();const bytes=new Ui
 }
 async function extractLocal(){let text='';for(let i=0;i<state.files.length;i++){const f=state.files[i];showStatus(`${i+1}/${state.files.length}：${f.name} を解析中...`,Math.round(i/state.files.length*80));if(f.type==='application/pdf')text+=await extractPdf(f);else text+=`\n【${f.name} OCR】\n${await ocrImage(f)}\n`;}return text.trim();}
 function b64(buffer){const bytes=new Uint8Array(buffer);let binary='';const chunk=0x8000;for(let i=0;i<bytes.length;i+=chunk)binary+=String.fromCharCode(...bytes.subarray(i,i+chunk));return btoa(binary);}
-async function callGemini(parts, prompt, outputTokens=7000){const key=$('apiKey').value.trim();if(!key)throw new Error('Gemini APIキーを入力してください。取得先はGoogle AI Studioです。');const model=$('model').value.trim()||'gemini-3.8-flash';const body={contents:[{role:'user',parts:[{text:prompt},...parts]}],generationConfig:{temperature:0.35,responseMimeType:'application/json',maxOutputTokens:outputTokens}};const response=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`,{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':key},body:JSON.stringify(body)});const raw=await response.text();if(!response.ok){let msg=raw;try{msg=JSON.parse(raw).error?.message||raw}catch{};if(response.status===400)throw new Error('APIリクエストが拒否されました：'+msg);if(response.status===403)throw new Error('APIキーまたはモデルの利用権限を確認してください：'+msg);if(response.status===429)throw new Error('APIの利用上限に達した可能性があります。時間をおくか利用枠を確認してください：'+msg);throw new Error(`Gemini APIエラー (${response.status})：${msg}`);}
- const data=JSON.parse(raw);const text=data.candidates?.[0]?.content?.parts?.map(p=>p.text||'').join('\n')||'';if(!text)throw new Error('AIから本文が返りませんでした。安全フィルターや出力上限の可能性があります。');return parseJson(text);}
+async function callGemini(parts, prompt, outputTokens=7000){
+ const key=$('apiKey').value.trim();
+ if(!key)throw new Error('Gemini APIキーを入力してください。取得先はGoogle AI Studioです。');
+ const model=$('model').value.trim()||'gemini-3.8-flash';
+ const body={contents:[{role:'user',parts:[{text:prompt},...parts]}],generationConfig:{temperature:0.25,responseMimeType:'application/json',maxOutputTokens:outputTokens}};
+ const response=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`,{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':key},body:JSON.stringify(body)});
+ const raw=await response.text();
+ if(!response.ok){let msg=raw;try{msg=JSON.parse(raw).error?.message||raw}catch{};if(response.status===400)throw new Error('APIリクエストが拒否されました：'+msg);if(response.status===403)throw new Error('APIキーまたはモデルの利用権限を確認してください：'+msg);if(response.status===429)throw new Error('APIの利用上限に達した可能性があります。時間をおくか利用枠を確認してください：'+msg);throw new Error(`Gemini APIエラー (${response.status})：${msg}`);}
+ const data=JSON.parse(raw),usage=data.usageMetadata||{};
+ state.tokenUsage.input+=Number(usage.promptTokenCount)||0;
+ state.tokenUsage.output+=Number(usage.candidatesTokenCount)||0;
+ state.tokenUsage.total+=Number(usage.totalTokenCount)||0;
+ const note=$('tokenUsageNote');
+ if(note)note.textContent=`このページのAI利用量：入力 ${state.tokenUsage.input.toLocaleString()} / 出力 ${state.tokenUsage.output.toLocaleString()} / 合計 ${state.tokenUsage.total.toLocaleString()} トークン（採点時の追加消費 0）`;
+ const text=data.candidates?.[0]?.content?.parts?.map(p=>p.text||'').join('\n')||'';
+ if(!text)throw new Error('AIから本文が返りませんでした。安全フィルターや出力上限の可能性があります。');
+ return parseJson(text);
+}
 function parseJson(s){let v=s.trim().replace(/^```(?:json)?\s*/i,'').replace(/```$/,'').trim();try{return JSON.parse(v)}catch{const a=v.indexOf('{'),b=v.lastIndexOf('}');if(a>=0&&b>a)return JSON.parse(v.slice(a,b+1));throw new Error('AIの返答をJSONとして読み取れませんでした。問題数を減らして再試行してください。');}}
-$('analyzeBtn').addEventListener('click',async()=>{if(!state.files.length)return;setBusy(true);try{const mode=document.querySelector('input[name="mode"]:checked').value;let result;if(mode==='ai'){const total=state.files.reduce((a,f)=>a+f.size,0);if(total>18*1024*1024)throw new Error('AIに一度に送るファイルは合計18MB以下にしてください。ファイルを分けて解析してください。');showStatus('教材をGeminiに送信して解析中...',12);const parts=[];for(const f of state.files){parts.push({inlineData:{mimeType:f.type,data:b64(await f.arrayBuffer())}});}const prompt=`あなたは教材分析の専門家です。添付された日本語の問題集・授業プリントを読み、内容に忠実に分析してください。\nユーザー補足：${$('scopeNote').value||'なし'}\n問題そのものを長々と転載せず、類題生成に必要な構造を抽出します。読み取れない部分は推測せず明記。次のJSONのみ返してください：\n{"subject":"教科","grade":"学年レベル","chapters":["単元"],"keyPoints":["重要事項・公式"],"problemPatterns":[{"type":"問題形式","pattern":"問題の構造・何を問うか","difficulty":"基礎/標準/応用","method":"解法の手順","exampleSummary":"元問題の短い要約","sourcePage":"ファイル名・ページ。不明なら空文字"}],"extractedText":"読み取れた本文・数式・重要な条件を可能な範囲で整理。最大9000文字","warnings":["読み取り上の注意"]}.\n少なくとも見つけられる範囲で複数の問題パターンを抽出し、教材に存在しない内容を追加しないでください。`;result=await callGemini(parts,prompt,7500);if(!result||typeof result!=='object')throw new Error('教材分析結果が空でした。');
+$('analyzeBtn').addEventListener('click',async()=>{if(!state.files.length)return;setBusy(true);try{const mode=document.querySelector('input[name="mode"]:checked').value;let result;if(mode==='ai'){const total=state.files.reduce((a,f)=>a+f.size,0);if(total>18*1024*1024)throw new Error('AIに一度に送るファイルは合計18MB以下にしてください。ファイルを分けて解析してください。');showStatus('教材をGeminiに送信して解析中...',12);const parts=[];for(const f of state.files){parts.push({inlineData:{mimeType:f.type,data:b64(await f.arrayBuffer())}});}const prompt=`あなたは教材分析の専門家です。添付された日本語の問題集・授業プリントを読み、内容に忠実に分析してください。\nユーザー補足：${$('scopeNote').value||'なし'}\n問題そのものを長々と転載せず、類題生成に必要な構造を抽出します。読み取れない部分は推測せず明記。次のJSONのみ返してください：\n{"subject":"教科","grade":"学年レベル","chapters":["単元"],"keyPoints":["重要事項・公式"],"problemPatterns":[{"type":"問題形式","pattern":"問題の構造・何を問うか","difficulty":"基礎/標準/応用","method":"解法の手順","exampleSummary":"元問題の短い要約","sourcePage":"ファイル名・ページ。不明なら空文字"}],"extractedText":"読み取れた本文・数式・重要な条件を可能な範囲で整理。最大3500文字","warnings":["読み取り上の注意"]}.\n少なくとも見つけられる範囲で複数の問題パターンを抽出し、教材に存在しない内容を追加しないでください。`;result=await callGemini(parts,prompt,5200);if(!result||typeof result!=='object')throw new Error('教材分析結果が空でした。');
  }else{const text=await extractLocal();if(!text||text.replace(/\s/g,'').length<20)throw new Error('文字をほとんど読み取れませんでした。写真を鮮明にするか、テキストを含むPDFをお試しください。');result={subject:'自動判定（ローカル）',grade:'教材から推定できません',chapters:[],keyPoints:[],problemPatterns:[],extractedText:text,warnings:['AIなしモードでは、意味・解法の理解は行いません。OCR誤認識がないか本文を確認してください。']};}
  state.analysis=result;$('sourceText').value=result.extractedText||'';renderSummary(result);$('summary').classList.add('show');$('generateBtn').disabled=false;showStatus('解析が完了しました。内容を確認して模試を作成できます。',100);setTimeout(hideStatus,2400);
  }catch(e){console.error(e);showStatus('エラー：'+e.message,0);$('status').classList.add('show');}finally{setBusy(false);$('generateBtn').disabled=!state.analysis;}});
 function renderSummary(a){const tags=[...(a.chapters||[]),...(a.keyPoints||[])].slice(0,12);$('summaryBody').innerHTML=`<div><b>教科：</b>${escapeHtml(a.subject||'未判定')}　<b>レベル：</b>${escapeHtml(a.grade||'未判定')}</div><div class="tags">${tags.map(t=>`<span class="tag">${escapeHtml(t)}</span>`).join('')||'<span class="muted">単元・重要事項のタグなし</span>'}</div><div><b>問題パターン：</b>${(a.problemPatterns||[]).length}種類</div>${(a.warnings||[]).length?`<div class="notice warn">${(a.warnings||[]).map(escapeHtml).join('<br>')}</div>`:''}`;}
 function getSettings(){return{subject:$('subject').value,grade:$('grade').value,count:Number($('count').value),difficulty:$('difficulty').value,minutes:$('minutes').value,mix:$('mixTypes').checked,strict:$('strictScope').checked,scopeNote:$('scopeNote').value};}
-$('generateBtn').addEventListener('click',async()=>{if(!state.analysis)return;setBusy(true);try{const mode=document.querySelector('input[name="mode"]:checked').value;const s=getSettings();let exam;if(mode==='ai'){showStatus('類題・選択肢・解答・解説を生成中...',15);const a={...state.analysis,extractedText:$('sourceText').value.slice(0,14000)};const prompt=`あなたは日本の学校試験を作る専門の作問者です。以下の教材分析だけを根拠に、元問題と同じ学習事項・解法・形式を使った「新しい類題」を作成してください。元問題の文章や数値をそのままコピーしない。設定：教科=${s.subject}、学年=${s.grade}、問題数=${s.count}、難易度=${s.difficulty}、制限時間=${s.minutes}分、形式混合=${s.mix}、教材外知識を避ける=${s.strict}、補足=${s.scopeNote||'なし'}。\n教材分析JSON：${JSON.stringify(a).slice(0,26000)}\nルール：1) 全問に正解と、学習者向けの具体的な解説を付ける。2) 数学・理科の数値問題は自分で再計算して正答を検算する。3) 選択問題はchoicesを4つ作り、正解はchoicesの文字列のいずれかと完全一致させる。4) 記述問題はacceptableAnswersに同義の許容解を入れる。5) sourcePageが分かるときだけ設定。6) 教材の記述で判断できない知識を問わない。7) 似た問題でも数値・条件・表現は変える。8) 回答が一意にならない曖昧な問題は作らない。\n次のJSONのみ：{"title":"模試タイトル","subject":"教科","grade":"レベル","scope":"出題範囲","questions":[{"type":"choice または short","prompt":"問題文","choices":["選択肢1","選択肢2","選択肢3","選択肢4"],"answer":"正解","acceptableAnswers":["許容解"],"explanation":"解説と解き方","difficulty":"基礎/標準/応用","sourcePage":"出典ページまたは空文字","points":10}]}. questionsは必ず指定数${s.count}問。`;exam=await callGemini([],prompt,8500);
+$('generateBtn').addEventListener('click',async()=>{if(!state.analysis)return;setBusy(true);try{const mode=document.querySelector('input[name="mode"]:checked').value;const s=getSettings();let exam;if(mode==='ai'){showStatus('類題・選択肢・解答・解説を生成中...',15);const a={subject:state.analysis.subject||s.subject,grade:state.analysis.grade||s.grade,chapters:(state.analysis.chapters||[]).slice(0,8),keyPoints:(state.analysis.keyPoints||[]).slice(0,10),problemPatterns:(state.analysis.problemPatterns||[]).slice(0,7).map(p=>({type:String(p.type||'').slice(0,50),pattern:String(p.pattern||'').slice(0,180),difficulty:String(p.difficulty||'').slice(0,30),method:String(p.method||'').slice(0,180),exampleSummary:String(p.exampleSummary||'').slice(0,120),sourcePage:String(p.sourcePage||'').slice(0,50)})),extractedText:$('sourceText').value.trim().slice(0,5000),warnings:(state.analysis.warnings||[]).slice(0,3)};const prompt=`あなたは日本の高校の定期考査・模試を作る専門の作問者です。教材分析だけを根拠に、元問題と同じ学習事項・解法・形式を使った新しい類題を作成してください。元問題をそのまま転載せず、数値・条件・表現を変えてください。設定：教科=${s.subject}、学年=${s.grade}、問題数=${s.count}、難易度=${s.difficulty}、制限時間=${s.minutes}分、形式混合=${s.mix}、教材外知識を避ける=${s.strict}、補足=${s.scopeNote||'なし'}。\n教材分析JSON：${JSON.stringify(a).slice(0,15000)}\n作問ルール：1) 問題は高校の試験用紙に載せられる明確な日本語にする。2) 全問に模範解答・具体的解説・採点基準(markingGuide)を付ける。3) 記述問題は正答の要点と部分点条件を採点基準に書く。4) 数学・理科は計算を再検算し、途中式も解説する。5) 選択問題はchoicesを4つ、answerは選択肢の文字列と完全一致。6) sourcePageは特定できる時だけ記載。7) 教材にない知識を問わない。8) 一意に採点できない問題を作らず、曖昧なら出題しない。9) 合計配点は100点にする。10) 記述の長さに合わせてanswerSpaceRowsを1〜7で設定する。11) 教科ごとの試験形式に従う。数学は式・途中式・証明の記述を中心にし、問題文中の数式は独立した行にする。数式はMathJax依存のLaTeXコードではなく、x²・√・≦・分数は（a＋b）/cのような通常文字で読みやすく表記する。英語は英文・語彙文法・読解・英作文の形式を区別する。国語は本文読解・漢字語句・記述を区別する。理科は単位・実験条件・考察を明確にし、社会は年代・地名・資料の数値を明確にする。12) 各問のpromptは改行を適切に使い、印刷したとき読みやすい文章にする。\n次のJSONのみ：{"title":"模試タイトル","subject":"教科","grade":"学年","scope":"出題範囲","questions":[{"type":"choice / short / calculation / essay","prompt":"問題文","choices":["選択肢1","選択肢2","選択肢3","選択肢4"],"answer":"模範解答","acceptableAnswers":["許容解"],"markingGuide":"採点基準・部分点条件","explanation":"解説と解き方","difficulty":"基礎/標準/応用","sourcePage":"出典ページまたは空文字","answerSpaceRows":3,"points":10}]}. questionsは必ず指定数${s.count}問。配点合計は100点。`;exam=await callGemini([],prompt,Math.min(9000,Math.max(2600,s.count*420)));
  }else{const text=$('sourceText').value.trim();if(!text)throw new Error('読み取った教材本文がありません。');exam=makeLocalExam(text,s,state.analysis);}
- if(!Array.isArray(exam.questions)||!exam.questions.length)throw new Error('問題が生成されませんでした。設定を変えて再試行してください。');state.questions=exam.questions.slice(0,s.count).map((q,i)=>({...q,id:i+1,type:q.type==='choice'?'choice':'short',points:Number(q.points)||10,choices:Array.isArray(q.choices)?q.choices:[],acceptableAnswers:Array.isArray(q.acceptableAnswers)?q.acceptableAnswers:[]}));state.answers={};state.graded=false;renderExam(exam,mode,s);$('examSection').classList.add('show');$('examSection').scrollIntoView({behavior:'smooth',block:'start'});hideStatus();
+ if(!Array.isArray(exam.questions)||!exam.questions.length)throw new Error('問題が生成されませんでした。設定を変えて再試行してください。');state.questions=exam.questions.slice(0,s.count).map((q,i)=>{const type=['choice','short','calculation','essay'].includes(q.type)?q.type:(Array.isArray(q.choices)&&q.choices.length?'choice':'short');return({...q,id:i+1,type,points:Number(q.points)||10,choices:Array.isArray(q.choices)?q.choices:[],acceptableAnswers:Array.isArray(q.acceptableAnswers)?q.acceptableAnswers:[],answerSpaceRows:Math.max(1,Math.min(7,Number(q.answerSpaceRows)||(['essay'].includes(type)?6:['calculation'].includes(type)?4:type==='short'?2:1)))});});state.answers={};state.graded=false;state.examMode=mode;state.examMeta={...exam,settings:s};state.grading=null;renderExam(exam,mode,s);$('examSection').classList.add('show');$('testNavTitle').textContent=exam.title||'模試';openTestPage();hideStatus();
  }catch(e){console.error(e);showStatus('エラー：'+e.message,0);}finally{setBusy(false);$('generateBtn').disabled=!state.analysis;}});
 function makeLocalExam(text,s,analysis){const qs=[];const lines=text.split(/[\n。！？!?；;]/).map(x=>x.trim()).filter(x=>x.length>=8);const seen=new Set();
  const patterns=[...text.matchAll(/(\d{1,4})\s*([+＋−\-×＊*÷／/])\s*(\d{1,4})\s*(?:=|＝)\s*(\d{1,5})/g)];
@@ -145,12 +385,169 @@ function makeLocalExam(text,s,analysis){const qs=[];const lines=text.split(/[\n�
  let cursor=0;while(qs.length<s.count&&terms.length){const term=terms[cursor%terms.length];const line=lines.find(x=>x.includes(term)&&!seen.has(x+'|'+term));cursor++;if(!line){if(cursor>terms.length*2)break;continue;}seen.add(line+'|'+term);const blank=line.replace(term,'（　　　　　）');qs.push({type:'short',prompt:`次の教材の文章の空欄に入る語句を答えなさい。\n「${blank}」`,answer:term,acceptableAnswers:[term],explanation:`教材の該当箇所から重要語句を抜き出した確認問題です。該当文：${line}`,difficulty:'基礎・用語確認',sourcePage:'アップロード教材',points:10});}
  if(qs.length<s.count){for(let i=0;i<lines.length&&qs.length<s.count;i++){const l=lines[i];if(seen.has(l))continue;qs.push({type:'short',prompt:`教材の記述をもとに、次の内容を自分の言葉で説明しなさい。\n「${l.slice(0,160)}」`,answer:'教材の該当記述を確認',acceptableAnswers:[],explanation:'この問題はAIを使わない簡易モードのため、自動採点できません。教材の記述と照合して確認してください。',difficulty:'内容確認',sourcePage:'アップロード教材',points:10});}}
  if(!qs.length)throw new Error('類題に変換できる文章や計算式を検出できませんでした。AIありモードを利用するか、文字が鮮明な教材を使ってください。');return{title:`教材確認模試（AIなし）`,subject:s.subject,grade:s.grade,scope:'アップロード教材から抽出した語句・式',questions:qs.slice(0,s.count)};}
-function renderExam(exam,mode,s){const total=state.questions.reduce((n,q)=>n+q.points,0);$('examTitle').textContent=exam.title||'オリジナル模試';$('examMeta').textContent=`${exam.subject||s.subject} · ${exam.grade||s.grade} · ${exam.scope||'教材範囲'}`;$('examMode').textContent=mode==='ai'?'Gemini AI生成':'端末内・簡易生成';$('qCount').textContent=state.questions.length;$('totalPoints').textContent=total;$('timeLimit').textContent=s.minutes==='時間制限なし'?'なし':s.minutes+'分';$('examNotice').textContent=mode==='local'?'AIなしの簡易問題です。文章の穴埋め・計算形式の類題が中心で、自由記述は自動採点できない場合があります。':'教材の内容に基づく類題です。採点結果は必ず解説と教材を照合してください。';$('questionList').innerHTML=state.questions.map(q=>`<article class="qcard" data-q="${q.id}"><div class="qtop"><span>QUESTION ${String(q.id).padStart(2,'0')} · ${escapeHtml(q.difficulty||'')}</span><span>${q.points} 点</span></div><h3>${escapeHtml(q.prompt||'問題文なし')}</h3>${q.type==='choice'&&q.choices.length?`<div>${q.choices.map((c,i)=>`<label class="choice"><input type="radio" name="q${q.id}" value="${escapeHtml(c)}"><span>${String.fromCharCode(65+i)}. ${escapeHtml(c)}</span></label>`).join('')}</div>`:`<input class="answerbox" type="text" inputmode="text" autocomplete="off" data-answer="${q.id}" placeholder="解答を入力してください">`}<div class="small muted" style="margin-top:8px">${q.sourcePage?'参考：'+escapeHtml(q.sourcePage):''}</div><div class="explain hidden" id="explain${q.id}"></div></article>`).join('');$('resultBox').classList.remove('show');}
+function subjectTemplate(subject=''){
+ const raw=String(subject||'').toLowerCase();
+ if(raw.includes('数学')||raw.includes('math'))return{key:'math',label:'数学科',title:'計算・証明・応用問題',instructions:'解答は指定欄に記入すること。計算問題では途中式・考え方を省略せず、必要な根拠を示すこと。特に指定がない場合、答えだけでは減点となることがある。',note:'数学科答案上の注意：式の変形、使用した公式、結論を順序立てて記述すること。'};
+ if(raw.includes('英語')||raw.includes('english'))return{key:'english',label:'英語科',title:'語彙・文法・読解・英作文',instructions:'問題文の指示に従って解答すること。英語で答える問題では、綴り・語順・文法にも注意すること。記述問題は指定された語数・形式を守ること。',note:'English Examination：Write clearly. Check spelling, grammar, punctuation and word order.'};
+ if(raw.includes('国語')||raw.includes('japanese'))return{key:'japanese',label:'国語科',title:'漢字・語句・読解・記述',instructions:'本文や設問をよく読み、問いに即して簡潔かつ正確に答えること。記述問題は指定字数を意識し、根拠となる表現を踏まえること。',note:'国語答案上の注意：設問の条件を確認し、本文中の根拠と自分の説明を区別して記述すること。'};
+ if(raw.includes('理科')||raw.includes('science'))return{key:'science',label:'理科',title:'知識・計算・実験考察',instructions:'単位・有効数字・符号に注意すること。計算問題では式と単位を示し、実験・観察問題では条件と結果の関係を説明すること。',note:'理科答案上の注意：数値には単位を付け、グラフ・実験条件・因果関係を確認すること。'};
+ if(raw.includes('社会')||raw.includes('social'))return{key:'social',label:'地理歴史・公民',title:'基礎知識・資料読解・論述',instructions:'用語は正確に記入すること。資料を用いる問題では、資料中の数値・年代・地域・立場を確認し、根拠を示して答えること。',note:'社会科答案上の注意：資料の出典・時期・単位を確認し、理由を問う問題では因果関係を説明すること。'};
+ return{key:'general',label:'教科共通',title:'知識・理解・応用',instructions:'問題をよく読み、解答は指定欄に記入すること。記述問題は理由や考え方も含めて答えること。',note:'答案上の注意：設問の条件を確認し、読みやすく記入すること。'};
+}
+function subjectSectionLabel(subject,q,index){
+ const t=subjectTemplate(subject),type=q.type;
+ if(t.key==='math')return index===0?'第Ⅰ部　小問・基本計算':index===4?'第Ⅱ部　標準問題':index===8?'第Ⅲ部　応用・総合問題':'';
+ if(t.key==='english')return type==='essay'?'PART 3　WRITING':(index===0?'PART 1　語彙・文法':(index===4?'PART 2　READING':''));
+ if(t.key==='japanese')return type==='essay'?'第二部　読解・記述':(index===0?'第一部　漢字・語句・基礎問題':(index===4?'第二部　読解問題':''));
+ if(t.key==='science')return type==='essay'?'第Ⅱ部　実験・考察':(index===0?'第Ⅰ部　知識・基本計算':(index===4?'第Ⅱ部　計算・資料問題':''));
+ if(t.key==='social')return type==='essay'?'第Ⅱ部　資料読解・論述':(index===0?'第Ⅰ部　基礎知識':(index===4?'第Ⅱ部　資料・歴史・地理問題':''));
+ return index===0?'第1部　問題':'';
+}
+function promptMarkup(prompt,subject){
+ const template=subjectTemplate(subject);const lines=String(prompt||'問題文なし').split(/\r?\n/);
+ return lines.map(line=>{const trimmed=line.trim();if(!trimmed)return '<div class="prompt-line">&nbsp;</div>';
+  const formula=template.key==='math'&&(/[=＝≠≤≥±√∫∑^_]|\\frac|\\sqrt|[0-9０-９]\s*[+＋\-−×＊÷／/]/.test(trimmed)&&trimmed.length<150);
+  return `<div class="prompt-line${formula?' formula-line':''}">${escapeHtml(line)}</div>`;
+ }).join('');
+}
+function printHeadMarkup(kind='question'){
+ const meta=state.examMeta||{},qs=state.questions,total=qs.reduce((n,q)=>n+q.points,0),set=meta.settings||{},t=subjectTemplate(meta.subject||set.subject);
+ const label=kind==='answer-sheet'?'解答用紙':kind==='key'?'模範解答・採点基準':'問題用紙';
+ return `<div class="print-school-line"><span>令和　　　年度</span><span>${escapeHtml(t.label)}　${escapeHtml(label)}</span><span>${kind==='key'?'教員用':'実施日：　　　年　　月　　日'}</span></div><h1>${escapeHtml(meta.title||'実力確認テスト')}</h1><div class="print-meta"><span>教科：${escapeHtml(meta.subject||set.subject||'')}</span><span>学年：${escapeHtml(meta.grade||set.grade||'')}</span><span>試験時間：${escapeHtml(set.minutes==='時間制限なし'?'指定なし':(set.minutes||'50')+'分')}</span><span>満点：${total}点</span></div>${kind==='key'?'':'<div class="print-student-fields"><div>年　　　組</div><div>出席番号</div><div>氏名</div></div>'}<div class="print-instructions">${escapeHtml(kind==='key'?'採点基準・解説を含む教員用資料です。':t.instructions)}</div>`;
+}
+function writingLines(rows){return `<div class="print-writing-space">${Array.from({length:rows},()=>'<div class="print-line"></div>').join('')}</div>`;}
+function renderExam(exam,mode,s){
+ const total=state.questions.reduce((n,q)=>n+q.points,0),template=subjectTemplate(exam.subject||s.subject);$('examSection').dataset.subject=template.key;$('testPaper').dataset.subject=template.key;
+ $('examTitle').textContent=exam.title||'オリジナル模試';$('examMeta').textContent=`${template.label} · ${exam.subject||s.subject} · ${exam.grade||s.grade} · ${exam.scope||'教材範囲'}`;$('examMode').textContent=mode==='ai'?'Gemini AI生成':'端末内・簡易生成';$('qCount').textContent=state.questions.length;$('totalPoints').textContent=total;$('timeLimit').textContent=s.minutes==='時間制限なし'?'なし':s.minutes+'分';$('examNotice').textContent='採点は端末内で実行（Geminiへの採点送信なし）。記述・計算過程の部分点は手動確認になります。';
+ $('questionPrintHead').innerHTML=printHeadMarkup('question');
+ const timeLabel=s.minutes==='時間制限なし'?'時間制限なし':`試験時間 ${escapeHtml(s.minutes)} 分`;const topNote=`<div class="subject-paper-note"><div>${escapeHtml(template.note)}</div><div class="paper-meta-strip"><span>${escapeHtml(timeLabel)}</span><span>満点 ${total} 点</span><span>${state.questions.length} 問</span></div></div>`;
+ $('questionList').innerHTML=topNote+state.questions.map((q,i)=>{const kind=q.type==='choice'?'選択':q.type==='essay'?'論述':q.type==='calculation'?'計算・過程':'短答';const section=subjectSectionLabel(exam.subject||s.subject,q,i);
+  const answerControl=q.type==='choice'&&q.choices.length?`<div class="choice-list">${q.choices.map((c,j)=>`<label class="choice" data-choice-index="${j}"><input type="radio" name="q${q.id}" value="${escapeHtml(c)}"><span class="choice-letter">${String.fromCharCode(65+j)}</span><span>${escapeHtml(c)}</span></label>`).join('')}</div><div class="print-choice-answer">解答欄（記号）：（　　　　　　）</div>`:q.type==='essay'||q.type==='calculation'?`<textarea class="answerbox answerarea" rows="${Math.min(8,Math.max(3,q.answerSpaceRows))}" data-answer="${q.id}" placeholder="解答・途中式を入力してください"></textarea>`:`<input class="answerbox" type="text" inputmode="text" autocomplete="off" data-answer="${q.id}" placeholder="解答を入力してください">`;
+  const rows=q.type==='choice'?0:q.answerSpaceRows;
+  return `<article class="qcard" data-q="${q.id}">${section?`<div class="subject-section-label">${escapeHtml(section)}</div>`:''}<div class="qtop"><span><span class="q-number">問 ${String(i+1).padStart(2,'0')}</span><span class="question-kind">${kind}</span> <span class="small">${escapeHtml(q.difficulty||'')}</span></span><span>〔 ${q.points} 点 〕</span></div><h3>${promptMarkup(q.prompt,exam.subject||s.subject)}</h3>${answerControl}${rows?writingLines(rows):''}<div class="small muted source-note" style="margin-top:8px">${q.sourcePage?'出題範囲参照：'+escapeHtml(q.sourcePage):''}</div></article>`;
+ }).join('');
+ $('answerSheetPrint').innerHTML=printHeadMarkup('answer-sheet')+`<h2 class="print-section-title">解答欄</h2><table class="answer-sheet-table"><thead><tr><th>問題</th><th>解答欄</th><th>配点</th></tr></thead><tbody>${state.questions.map(q=>`<tr><th>問${q.id}</th><td>${q.type==='choice'?'選択肢の記号を記入（　　　　　）':q.type==='essay'||q.type==='calculation'?'<div style="height:72px"></div>':'<div style="height:35px"></div>'}</td><td>${q.points}点</td></tr>`).join('')}</tbody></table>`;
+ $('answerKeyPrint').innerHTML=printHeadMarkup('key')+`<h2 class="print-section-title">模範解答・解説・採点基準</h2><table class="key-table"><thead><tr><th>問題</th><th>模範解答</th><th>採点基準・解説</th><th>配点</th></tr></thead><tbody>${state.questions.map(q=>`<tr><th>問${q.id}</th><td>${escapeHtml(q.answer||'要確認')}</td><td>${escapeHtml(q.markingGuide||'')}${q.markingGuide&&q.explanation?'<hr>':''}${escapeHtml(q.explanation||'')}</td><td>${q.points}点</td></tr>`).join('')}</tbody></table>`;
+ $('resultBox').classList.remove('show');$('gradeBtn').textContent='答案を採点する（端末内）';$('submitExamBtn').textContent='答案を提出・採点';
+}
 $('questionList').addEventListener('input',e=>{const el=e.target;if(el.matches('[data-answer]'))state.answers[el.dataset.answer]=el.value;if(el.matches('input[type=radio]'))state.answers[el.name.slice(1)]=el.value;});
-function norm(s){return String(s??'').normalize('NFKC').replace(/[\s　,，。．]/g,'').toLowerCase();}
-$('gradeBtn').addEventListener('click',()=>{if(!state.questions.length)return;let score=0,total=0,auto=0;const details=[];for(const q of state.questions){total+=q.points;const given=state.answers[q.id]??'';let correct=false,gradable=true;const accepts=[q.answer,...(q.acceptableAnswers||[])].filter(x=>x!==undefined&&x!==null&&String(x)!=='');if(!accepts.length){gradable=false;}else{correct=accepts.some(x=>norm(x)===norm(given));}if(gradable){auto+=q.points;if(correct)score+=q.points;}details.push({q,given,correct,gradable});const box=$('explain'+q.id);box.classList.remove('hidden');box.innerHTML=`<div class="${!gradable?'muted':correct?'correct':'incorrect'}"><b>${!gradable?'自動採点対象外':correct?'正解':'不正解'}</b> · あなたの解答：${escapeHtml(given||'未回答')}</div><div>正解：<b>${escapeHtml(q.answer??'手動で確認')}</b></div><div style="margin-top:5px">${escapeHtml(q.explanation||'解説はありません。')}</div>`;}
- const pct=auto?Math.round(score/auto*100):0;$('resultBox').innerHTML=`<div class="score">${score} / ${auto} 点</div><div><b>${auto?`自動採点対象 ${auto} 点中 ${pct}%`:'自動採点できる問題がありません'}</b></div><p class="small muted">全配点：${total}点 · 自動採点対象外の記述問題は解説を見て確認してください。</p><div class="kpi"><div><b>${details.filter(d=>d.correct&&d.gradable).length}</b><span>正解</span></div><div><b>${details.filter(d=>!d.correct&&d.gradable).length}</b><span>不正解・未回答</span></div><div><b>${details.filter(d=>!d.gradable).length}</b><span>手動確認</span></div></div><div style="margin-top:12px;font-size:12px">${details.map(d=>`<div>問${d.q.id}：<span class="${!d.gradable?'muted':d.correct?'correct':'incorrect'}">${!d.gradable?'手動確認':d.correct?'○ 正解':'× 不正解'}</span></div>`).join('')}</div>`;$('resultBox').classList.add('show');$('resultBox').scrollIntoView({behavior:'smooth',block:'nearest'});state.graded=true;});
-$('printBtn').addEventListener('click',()=>window.print());$('answerKeyBtn').addEventListener('click',()=>{const lines=state.questions.map(q=>`【問${q.id}】${q.answer??'手動確認'}\n${q.explanation||''}`).join('\n\n');downloadText('模試_解答解説.txt',lines);});
+function norm(s){
+ return String(s??'').normalize('NFKC').toLowerCase().replace(/[\s　]+/g,'').replace(/[、。「」『』]/g,'').replace(/，/g,',');
+}
+function numericAnswer(s){
+ const v=norm(s).replace(/,/g,'');
+ if(/^[+-]?(?:\d+(?:\.\d*)?|\.\d+)$/.test(v))return Number(v);
+ const f=v.match(/^([+-]?\d+)\/(\d+)$/);
+ if(f&&Number(f[2])!==0)return Number(f[1])/Number(f[2]);
+ return null;
+}
+function choiceIndex(value,q){
+ const v=norm(value);
+ const direct=q.choices.findIndex(c=>norm(c)===v);
+ if(direct>=0)return direct;
+ const letter=v.match(/^(?:選択肢)?([a-d])$/i);
+ if(letter)return letter[1].toLowerCase().charCodeAt(0)-97;
+ const kana=v.match(/^([アイウエ])$/);
+ if(kana)return 'アイウエ'.indexOf(kana[1]);
+ const number=v.match(/^[1-4]$/);
+ if(number)return Number(v)-1;
+ return -1;
+}
+function answerMatches(q,given){
+ const accepted=[q.answer,...(q.acceptableAnswers||[])].filter(v=>v!==undefined&&v!==null&&String(v).trim()!=='');
+ if(!accepted.length||!String(given??'').trim())return false;
+ if(q.type==='choice'){
+  const expected=accepted.map(v=>choiceIndex(v,q)).filter(i=>i>=0);
+  const actual=choiceIndex(given,q);
+  if(actual>=0&&expected.includes(actual))return true;
+ }
+ const actualText=norm(given);
+ if(accepted.some(v=>norm(v)===actualText))return true;
+ const actualNumber=numericAnswer(given);
+ if(actualNumber!==null&&accepted.some(v=>{const n=numericAnswer(v);return n!==null&&Math.abs(n-actualNumber)<1e-9;}))return true;
+ return false;
+}
+function clearQuestionMarks(){
+ document.querySelectorAll('#questionList .qcard').forEach(card=>{card.classList.remove('is-correct','is-incorrect','is-review');card.querySelectorAll('.teacher-marking,.choice-mark').forEach(el=>el.remove());card.querySelectorAll('.choice').forEach(el=>el.classList.remove('choice-correct','choice-wrong'));});
+}
+function applyTeacherMarks(results){
+ clearQuestionMarks();
+ for(const r of results){
+  const q=state.questions.find(x=>x.id===Number(r.id)),card=document.querySelector(`#questionList [data-q="${Number(r.id)}"]`);
+  if(!q||!card)continue;
+  const status=r.status|| (r.needsReview?'review':r.score>=q.points?'correct':'incorrect');
+  card.classList.add(status==='correct'?'is-correct':status==='review'?'is-review':'is-incorrect');
+  if(q.type==='choice'&&q.choices.length){
+   const accepted=[q.answer,...(q.acceptableAnswers||[])].filter(v=>v!==undefined&&v!==null&&String(v).trim()!=='');
+   const correctIndexes=new Set(accepted.map(v=>choiceIndex(v,q)).filter(i=>i>=0));
+   const selected=card.querySelector('input[type="radio"]:checked');
+   card.querySelectorAll('.choice[data-choice-index]').forEach(label=>{
+    const idx=Number(label.dataset.choiceIndex),isCorrect=correctIndexes.has(idx),isSelected=selected&&selected.closest('.choice')===label;
+    if(isCorrect){label.classList.add('choice-correct');label.insertAdjacentHTML('beforeend','<span class="choice-mark" aria-label="正解">○</span>');}
+    else if(isSelected){label.classList.add('choice-wrong');label.insertAdjacentHTML('beforeend','<span class="choice-mark" aria-label="不正解">×</span>');}
+   });
+  }
+  const symbol=status==='correct'?'○':status==='review'?'△':'×';
+  const title=status==='correct'?'正解':status==='review'?'要確認':'不正解';
+  const reason=status==='correct'?'正答と一致しています。':status==='review'?(r.reason||'記述内容・途中式の確認が必要です。'):(r.reason||'正答と一致しません。');
+  const given=String(state.answers[q.id]??'').trim();
+  const correctAnswer=String(q.answer??'').trim();
+  const detail=status==='correct'?'':status==='review'?'手動確認：部分点が必要な場合は答案と採点基準を確認してください。':`正答：${escapeHtml(correctAnswer||'模範解答を確認')}`;
+  card.insertAdjacentHTML('beforeend',`<div class="teacher-marking ${status}"><span class="mark-stamp">${symbol}</span><div><b>${title}　${Math.max(0,Number(r.score)||0)} / ${q.points}点</b><small>${escapeHtml(reason)}</small>${given?`<small>あなたの解答：${escapeHtml(given)}</small>`:'<small>未回答</small>'}${detail?`<small>${detail}</small>`:''}</div></div>`);
+ }
+}
+function showGradeResults(results,overallFeedback='',weakAreas=[]){
+ const total=state.questions.reduce((n,q)=>n+q.points,0),score=results.reduce((n,r)=>n+Math.max(0,Math.min(Number(r.maxPoints)||0,Number(r.score)||0)),0),pct=total?Math.round(score/total*100):0;
+ const reviewCount=results.filter(r=>r.needsReview).length;
+ $('resultBox').innerHTML=`<div class="grade-score">${reviewCount?'仮得点':'得点'}　${score} / ${total} 点</div><div><b>得点率 ${pct}%</b></div><div class="grading-note">端末内の自動採点です。Geminiへの採点リクエストは送信していません。${reviewCount?` ${reviewCount}問は途中式・記述の確認待ちです。`:''}</div><div class="grade-detail"><h4>総合結果</h4><div>${escapeHtml(overallFeedback||'採点が完了しました。')}</div>${weakAreas.length?`<p><b>復習したい分野：</b>${weakAreas.map(escapeHtml).join('、')}</p>`:''}</div>${results.map(r=>{const q=state.questions.find(x=>x.id===Number(r.id));if(!q)return '';const sc=Math.max(0,Math.min(q.points,Number(r.score)||0));const status=r.status|| (r.needsReview?'review':sc>=q.points?'correct':'incorrect');return `<div class="grade-detail"><h4>第${q.id}問　${sc}/${q.points}点　${status==='correct'?'○ 正解':status==='review'?'△ 要確認':'× 不正解'}</h4><div><b>あなたの解答：</b>${escapeHtml(state.answers[q.id]||'未回答')}</div><div><b>正答：</b>${escapeHtml(q.answer||'要手動確認')}</div><div><b>解説：</b>${escapeHtml(q.explanation||r.reason||'解説はありません。')}</div>${r.needsReview?'<div class="grading-note">記述・途中式を見て部分点を判断してください。</div>':''}</div>`;}).join('')}`;
+ $('resultBox').classList.add('show');
+ applyTeacherMarks(results);
+ $('resultBox').scrollIntoView({behavior:'smooth',block:'nearest'});
+ state.graded=true;state.grading={results,overallFeedback,weakAreas,total,score,reviewCount};
+}
+function collectAnswers(){
+ for(const q of state.questions){
+  if(q.type==='choice'){
+   const selected=document.querySelector(`#questionList input[name="q${q.id}"]:checked`);
+   if(selected)state.answers[q.id]=selected.value;
+  }else{
+   const field=document.querySelector(`#questionList [data-answer="${q.id}"]`);
+   if(field)state.answers[q.id]=field.value;
+  }
+ }
+}
+function gradeLocally(){
+ collectAnswers();
+ const results=state.questions.map(q=>{
+  const given=String(state.answers[q.id]??'').trim(),correct=answerMatches(q,given),hasAnswer=!!given;
+  let status='incorrect',score=0,reason='';
+  if(!hasAnswer){reason='未回答のため0点です。';}
+  else if(q.type==='essay'){
+   status='review';reason='論述問題は表現・論理・根拠を確認する必要があるため、自動で点数を確定していません。';
+  }else if(q.type==='calculation'&&!correct){
+   status='review';reason='最終答案は模範解答と一致しません。途中式による部分点を確認してください。';
+  }else if(correct){status='correct';score=q.points;reason='登録された正答または許容解と一致しました。';}
+  else{status='incorrect';reason='登録された正答・許容解と一致しません。';}
+  return{id:q.id,score,maxPoints:q.points,status,judgement:status==='correct'?'正解':status==='review'?'要確認':'不正解',reason,needsReview:status==='review'};
+ });
+ const reviewCount=results.filter(r=>r.needsReview).length;
+ showGradeResults(results,`自動採点 ${results.length-reviewCount}問／確認待ち ${reviewCount}問。採点処理はこの端末内で完了しました。`,[]);
+ $('gradeBtn').textContent='もう一度採点する';
+ showStatus('端末内で採点が完了しました。Gemini APIの追加消費はありません。',100);setTimeout(hideStatus,2300);
+}
+$('gradeBtn').addEventListener('click',()=>{
+ if(!state.questions.length)return;
+ $('gradeBtn').disabled=true;
+ try{gradeLocally();}
+ catch(e){console.error(e);showStatus('採点エラー：'+e.message,0);$('status').classList.add('show');}
+ finally{$('gradeBtn').disabled=false;}
+});
+$('questionList').addEventListener('change',e=>{const el=e.target;if(el.matches('input[type=radio]'))state.answers[el.name.slice(1)]=el.value;});
+function printInMode(mode){document.body.dataset.printMode=mode;const clean=()=>{delete document.body.dataset.printMode;window.removeEventListener('afterprint',clean);};window.addEventListener('afterprint',clean);window.print();setTimeout(clean,60000);}
+$('printBtn').addEventListener('click',()=>printInMode('question'));
+$('printAnswerSheetBtn').addEventListener('click',()=>printInMode('answer-sheet'));
+$('printKeyBtn').addEventListener('click',()=>printInMode('key'));
+$('answerKeyBtn').addEventListener('click',()=>{const lines=state.questions.map(q=>`【第${q.id}問・${q.points}点】\n模範解答：${q.answer??'手動確認'}\n採点基準：${q.markingGuide||'なし'}\n解説：${q.explanation||''}`).join('\n\n');downloadText('模試_模範解答と採点基準.txt',lines);});
 function downloadText(name,txt){const blob=new Blob([txt],{type:'text/plain;charset=utf-8'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
 window.addEventListener('beforeunload',()=>{if(state.tesseract)state.tesseract.terminate();});
 </script>
