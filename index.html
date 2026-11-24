@@ -127,12 +127,12 @@ body.test-mode{background:#edf0f4!important;color:#171717!important;color-scheme
 .allocation-strip{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:10px 0}
 .allocation-item{border:1px solid var(--line);border-radius:12px;background:#0c1726;padding:10px;min-width:0}
 .allocation-item strong{display:block;font-size:17px}.allocation-item span{display:block;color:var(--muted);font-size:10px}
-.allocation-item.gemini{border-top:3px solid #4285f4}.allocation-item.openai{border-top:3px solid #16a36a}.allocation-item.deepseek{border-top:3px solid #8b68d8}
+.allocation-item.gemini{border-top:3px solid #4285f4}.allocation-item.groq{border-top:3px solid #16a36a}.allocation-item.sambanova{border-top:3px solid #8b68d8}
 .provider-usage-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:10px}
 .provider-usage{border:1px solid var(--line);border-radius:11px;background:#0c1726;padding:9px;font-size:11px}.provider-usage b{display:block;font-size:14px}.provider-usage small{color:var(--muted)}
 .provider-card{min-width:0;border:1px solid #334a69;border-radius:14px;background:linear-gradient(160deg,#14243a,#0e1929);padding:13px}
-.provider-card.openai{border-top:3px solid #62d6ad}
-.provider-card.deepseek{border-top:3px solid #7daeff}
+.provider-card.groq{border-top:3px solid #62d6ad}
+.provider-card.sambanova{border-top:3px solid #7daeff}
 .provider-title{display:flex;align-items:center;gap:8px;margin-bottom:8px}
 .provider-mark{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;background:#20344f;font-size:15px;font-weight:900}
 .provider-title strong{display:block;font-size:14px;line-height:1.25}
@@ -204,7 +204,7 @@ body.test-mode{background:#edf0f4!important;color:#171717!important;color-scheme
         <div><label class="label" for="pageLimit">複数ページの解析上限</label><select class="input" id="pageLimit"><option value="5">5ページ</option><option value="10" selected>10ページ（節約）</option><option value="15">15ページ</option><option value="20">20ページ</option><option value="30">30ページ</option></select></div>
         <div class="small muted" style="padding-bottom:8px">文字PDFはテキスト抽出を優先し、スキャンページ・写真だけを圧縮画像で送信します。</div>
       </div>
-      <div class="notice">📌 AIありモードでは教材ページ・生成問題・独立検証をGemini 25%／OpenAI 40%／DeepSeek 35%の目標配分で分担します。個人情報や公開できない教材は送信しないでください。</div>
+      <div class="notice">📌 AIありモードでは教材ページ・生成問題・独立検証をGemini 25%／Groq 40%／SambaNova 35%の目標配分で分担します。個人情報や公開できない教材は送信しないでください。</div>
       <div class="label">出題対象の補足（任意）</div>
       <textarea id="scopeNote" rows="2" placeholder="例：このプリントの問1〜問8。二次関数の最大・最小を中心に。"></textarea>
       <div class="actions"><button class="btn full" id="analyzeBtn" type="button" disabled>教材を解析する</button></div>
@@ -246,50 +246,50 @@ body.test-mode{background:#edf0f4!important;color:#171717!important;color-scheme
           <div style="flex:0 0 auto;align-self:end"><a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener">APIキー取得 ↗</a></div>
         </div>
         <div class="small muted" style="margin-top:7px">モデルはここで手動選択します。選択したモデルに1回だけ送信し、混雑・エラー時に別モデルへ自動切替や自動再試行はしません。モデルの利用可否・無料枠はGoogle側のアカウント条件に従います。</div>
-        <div id="tokenUsageNote">Gemini 25%・OpenAI 40%・DeepSeek 35%で教材解析・問題生成・検証を分担します。通常採点は端末内で行い、採点時にAPI通信しません。自動再試行・他社への代替なし。</div>
+        <div id="tokenUsageNote">Gemini 25%・Groq 40%・SambaNova 35%で教材解析・問題生成・検証を分担します。通常採点は端末内で行い、採点時にAPI通信しません。自動再試行・他社への代替なし。</div>
       </div>
       <section class="panel" style="margin:12px 0 0;padding:13px;background:#101b2b;border-color:#3b5271">
         <div class="section-head"><h3 style="margin:0;font-size:14px">マルチAI設定</h3><span class="tag">役割別分配</span></div>
         <p class="small muted" style="margin:6px 0 10px">3社が教材解析・問題生成・独立検証を分担します。生成したAIとは別のAIが検証し、難問は残りの1社でも追加確認します。</p>
         <div class="allocation-strip" aria-label="AI処理配分">
           <div class="allocation-item gemini"><strong>Gemini · 25%</strong><span>教材解析・生成・検証</span></div>
-          <div class="allocation-item openai"><strong>OpenAI · 40%</strong><span>教材解析・生成・検証</span></div>
-          <div class="allocation-item deepseek"><strong>DeepSeek · 35%</strong><span>教材解析・生成・検証</span></div>
+          <div class="allocation-item groq"><strong>Groq · 40%</strong><span>教材解析・生成・検証</span></div>
+          <div class="allocation-item sambanova"><strong>SambaNova · 35%</strong><span>教材解析・生成・検証</span></div>
         </div>
         <div class="provider-grid">
           <section class="provider-card" style="border-top:3px solid #4285f4">
             <div class="provider-title"><div class="provider-mark">✦</div><div><strong>Gemini · 25%</strong><small>ページ単位の教材解析・生成・検証</small></div></div>
             <div class="provider-description">上のGemini APIキー・モデル設定を使用。担当ページと担当問題だけを処理し、全教材を毎回送信しません。</div>
           </section>
-          <section class="provider-card openai">
-            <div class="provider-title"><div class="provider-mark">◎</div><div><strong>OpenAI · 40%</strong><small>教材解析・問題生成・独立検証</small></div></div>
-            <label class="label" for="openaiApiKey">APIキー</label>
-            <input class="input" id="openaiApiKey" type="password" autocomplete="off" placeholder="sk-...">
-            <div class="small" style="margin-top:5px"><a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener">OpenAI APIキーを取得 ↗</a></div>
-            <label class="label" for="openaiModel">使用モデル（3種類）</label>
-            <select class="input" id="openaiModel">
-              <option value="gpt-6.2-astra" selected>GPT-6.2 Astra · 最高精度</option>
-              <option value="gpt-6.2-sol">GPT-6.2 Sol · バランス</option>
-              <option value="gpt-6.1-sol">GPT-6.1 Sol · コスト重視</option>
+          <section class="provider-card groq">
+            <div class="provider-title"><div class="provider-mark">G</div><div><strong>Groq · 40%</strong><small>教材解析・問題生成・独立検証</small></div></div>
+            <label class="label" for="groqApiKey">APIキー</label>
+            <input class="input" id="groqApiKey" type="password" autocomplete="off" placeholder="gsk_...">
+            <div class="small" style="margin-top:5px"><a href="https://console.groq.com/keys" target="_blank" rel="noopener">Groq APIキー管理 ↗</a></div>
+            <label class="label" for="groqModel">使用モデル（無料枠で公開されている3種類）</label>
+            <select class="input" id="groqModel">
+              <option value="qwen/qwen3.8-27b" selected>Qwen 3.8 27B · 画像対応</option>
+              <option value="openai/gpt-oss-120b">GPT-OSS 120B · 高精度推論（テキスト）</option>
+              <option value="openai/gpt-oss-20b">GPT-OSS 20B · 軽量・高速（テキスト）</option>
             </select>
-            <div class="provider-description">割り当てられた教材ページと問題を処理し、生成元とは別の問題の独立検証も担当します。</div>
+            <div class="provider-description">Qwenは画像入力に対応。GPT-OSSを選んだ場合、スキャン画像を含む教材は処理できません。選択モデルをそのまま使用し、別モデルへ自動切替はしません。</div>
           </section>
-          <section class="provider-card deepseek">
-            <div class="provider-title"><div class="provider-mark">✳</div><div><strong>DeepSeek · 35%</strong><small>教材解析・問題生成・独立検証</small></div></div>
-            <label class="label" for="deepseekApiKey">APIキー</label>
-            <input class="input" id="deepseekApiKey" type="password" autocomplete="off" placeholder="DeepSeek APIキーを入力">
-            <div class="small" style="margin-top:5px"><a href="https://platform.deepseek.com/api_keys" target="_blank" rel="noopener">DeepSeek APIキーを取得 ↗</a></div>
-            <label class="label" for="deepseekModel">モデル・推論設定（3種類）</label>
-            <select class="input" id="deepseekModel">
-              <option value="deepseek-v4-pro|high" selected>V4 Pro · 高精度・難問向け</option>
-              <option value="deepseek-flash|high">V4.1 Flash · 推論重視</option>
-              <option value="deepseek-flash|none">V4.1 Flash · 高速モード</option>
+          <section class="provider-card sambanova">
+            <div class="provider-title"><div class="provider-mark">S</div><div><strong>SambaNova · 35%</strong><small>教材解析・問題生成・独立検証</small></div></div>
+            <label class="label" for="sambanovaApiKey">APIキー</label>
+            <input class="input" id="sambanovaApiKey" type="password" autocomplete="off" placeholder="SambaNova APIキー">
+            <div class="small" style="margin-top:5px"><a href="https://cloud.sambanova.ai/dashboard" target="_blank" rel="noopener">SambaNova APIキー管理 ↗</a></div>
+            <label class="label" for="sambanovaModel">使用モデル（公式Free Tier掲載モデル）</label>
+            <select class="input" id="sambanovaModel">
+              <option value="gemma-4-31B-it" selected>Gemma 4 31B · 画像対応</option>
+              <option value="gpt-oss-120b">GPT-OSS 120B · 高精度推論（テキスト）</option>
             </select>
-            <div class="provider-description">教材解析・問題生成・独立検証を分担します。V4 ProとV4.1 Flashの2系統から選び、Flashは推論重視／高速を切り替えます。画像ページを担当する場合は画像対応のFlashを使用します。</div>
+            <div class="provider-description">Gemma 4は画像入力対応。GPT-OSS 120Bはテキスト専用。公式の無料枠モデル一覧に載るモデルだけを初期選択肢にしています。</div>
           </section>
         </div>
-        <div class="notice warn" style="margin-top:10px">重要：GitHub Pagesのブラウザから直接APIを呼ぶ方式です。APIキーはこの端末のブラウザに保存できますが、暗号化されず、ブラウザ内では完全に秘匿できません。共有端末では保存せず、利用額上限を設定した専用APIキーを使ってください。公開サービスとして安全に配布する場合は、サーバー側中継が必要です。</div>
-        <div class="small muted" id="multiApiStatus" style="margin-top:7px">AIありモードでは3社すべてのAPIキーが必要です。教材解析・問題生成・検証を25/40/35で分担し、APIエラー時は自動再試行・他社への代替をせず停止します。</div>
+        <div class="notice warn" style="margin-top:10px">無料枠について：SambaNovaのRate Limits公式文書では、支払方法未登録のアカウントはFree Tierとなり、gemma-4-31B-it／gpt-oss-120bはモデルごとに20リクエスト/日・20リクエスト/分・200,000トークン/日です。ただし同社のPlansページには初回リクエストにクレジット購入が必要との案内もあるため、実際の利用可否はアカウントのUsage／Credits表示が優先です。Groqもモデル別の無料枠上限があり、アカウントのLimits表示が優先されます。どちらも上限・利用資格の問題が出たら停止し、有料モデルや別会社へ自動切替しません。</div>
+        <div class="notice warn" style="margin-top:10px">重要：GitHub Pagesのブラウザから直接APIを呼ぶ方式です。APIキーはこの端末のブラウザに保存できますが、暗号化されず、ブラウザ内では完全に秘匿できません。共有端末では保存せず、キーを第三者に見せないでください。公開サービスとして安全に配布する場合は、サーバー側中継が必要です。</div>
+        <div class="small muted" id="multiApiStatus" style="margin-top:7px">AIありモードではGemini・Groq・SambaNovaの3社すべてのAPIキーが必要です。目標配分25/40/35。APIエラー時は自動再試行・他社への代替をせず停止します。</div>
       </section>
       <div id="localInfo" class="notice warn hidden">AIなしモードは端末内処理です。写真OCRは初回に日本語辞書（数MB〜）をダウンロードするため、通信環境によっては数分かかる場合があります。120秒で進まない場合はエラー表示します。自由な類題生成はできません。</div>
       <div class="label">教科</div>
@@ -352,16 +352,16 @@ body.test-mode{background:#edf0f4!important;color:#171717!important;color-scheme
 </main>
 <script type="module">
 const $ = id => document.getElementById(id);
-const PROVIDERS=['Gemini','OpenAI','DeepSeek'];
-const PROVIDER_WEIGHTS={Gemini:25,OpenAI:40,DeepSeek:35};
+const PROVIDERS=['Gemini','Groq','SambaNova'];
+const PROVIDER_WEIGHTS={Gemini:25,Groq:40,SambaNova:35};
 const state = { files: [], analysis: null, questions: [], answers: {}, graded: false, examMode: 'ai', examMeta: {}, grading: null, pdfjs: null, tesseract: null, tesseractLoading: null, tokenUsage: { input: 0, output: 0, total: 0 }, currentOperation: 'AI処理', materialMeta: null, providerAssignments:{analysis:{},generation:{},verification:{}} };
 const HISTORY_STORAGE_KEY='examForge.activity.v1';
 const API_KEY_STORAGE_KEY='examForge.geminiKey.v1';
-const OPENAI_KEY_STORAGE_KEY='examForge.openaiKey.v1';
-const DEEPSEEK_KEY_STORAGE_KEY='examForge.deepseekKey.v1';
+const GROQ_KEY_STORAGE_KEY='examForge.groqKey.v1';
+const SAMBANOVA_KEY_STORAGE_KEY='examForge.sambanovaKey.v1';
 const MODEL_STORAGE_KEY='examForge.model.v1';
-const OPENAI_MODEL_STORAGE_KEY='examForge.openaiModel.v1';
-const DEEPSEEK_MODEL_STORAGE_KEY='examForge.deepseekModel.v1';
+const GROQ_MODEL_STORAGE_KEY='examForge.groqModel.v1';
+const SAMBANOVA_MODEL_STORAGE_KEY='examForge.sambanovaModel.v1';
 
 function renderProviderUsage(list=readHistory()){
  const root=$('providerUsageGrid');if(!root)return;
@@ -381,15 +381,15 @@ function weightedSchedule(total){
  while(out.length<total){for(const p of PROVIDERS)credits[p]+=PROVIDER_WEIGHTS[p];const candidates=PROVIDERS.filter(p=>remaining[p]>0).sort((a,b)=>credits[b]-credits[a]||PROVIDERS.indexOf(a)-PROVIDERS.indexOf(b));const pick=candidates[0];out.push(pick);remaining[pick]--;credits[pick]-=100;}
  return {schedule:out,counts};
 }
-function providerKeyField(provider){return provider==='Gemini'?'apiKey':provider==='OpenAI'?'openaiApiKey':'deepseekApiKey';}
+function providerKeyField(provider){return provider==='Gemini'?'apiKey':provider==='Groq'?'groqApiKey':'sambanovaApiKey';}
 function ensureProviderKeys(providers){const missing=[...new Set(providers)].filter(p=>!$(providerKeyField(p))?.value.trim());if(missing.length)throw new Error(`${missing.join('・')}のAPIキーが必要です。この処理では3社の役割を固定分配し、キー未設定の会社を別会社で代替しません。`);}
 function uniqueStrings(values,max=20){const out=[],seen=new Set();for(const value of values||[]){const text=String(value||'').trim();const key=text.normalize('NFKC').replace(/\s+/g,' ');if(text&&!seen.has(key)){seen.add(key);out.push(text);if(out.length>=max)break;}}return out;}
 function splitUnitsByProvider(units){const plan=weightedSchedule(units.length),groups=Object.fromEntries(PROVIDERS.map(p=>[p,[]]));units.forEach((unit,i)=>groups[plan.schedule[i]].push(unit));return{groups,counts:plan.counts,schedule:plan.schedule};}
 function splitListByProvider(items){const values=Array.isArray(items)?items:[],plan=weightedSchedule(values.length),groups=Object.fromEntries(PROVIDERS.map(p=>[p,[]]));values.forEach((item,i)=>groups[plan.schedule[i]].push(item));return groups;}
 async function callProvider(provider,prompt,outputTokens,schema,parts=[]){
  if(provider==='Gemini')return callGemini(parts,prompt,outputTokens,schema);
- if(provider==='OpenAI')return callOpenAI(prompt,outputTokens,schema,parts);
- if(provider==='DeepSeek')return callDeepSeek(prompt,outputTokens,schema,parts);
+ if(provider==='Groq')return callGroqCompatible('Groq',prompt,outputTokens,schema,parts);
+ if(provider==='SambaNova')return callGroqCompatible('SambaNova',prompt,outputTokens,schema,parts);
  throw new Error(`未対応のAIプロバイダーです：${provider}`);
 }
 function readHistory(){try{const v=JSON.parse(localStorage.getItem(HISTORY_STORAGE_KEY)||'[]');return Array.isArray(v)?v:[];}catch{return[];}}
@@ -429,7 +429,7 @@ async function persistentSet(key,value){try{localStorage.setItem(key,value);retu
 async function persistentRemove(key){let localOk=false;try{localStorage.removeItem(key);localOk=true;}catch(e){}try{await idbRemove(key);}catch(e){if(!localOk)throw e;}}
 async function saveApiKeyIfRequested(){
  const checked=$('rememberApiKey')?.checked;
- const fields=[['apiKey',API_KEY_STORAGE_KEY],['openaiApiKey',OPENAI_KEY_STORAGE_KEY],['deepseekApiKey',DEEPSEEK_KEY_STORAGE_KEY]];
+ const fields=[['apiKey',API_KEY_STORAGE_KEY],['groqApiKey',GROQ_KEY_STORAGE_KEY],['sambanovaApiKey',SAMBANOVA_KEY_STORAGE_KEY]];
  try{
   if(checked){let backend='Safari標準領域',saved=0;for(const [id,key] of fields){const value=$(id)?.value.trim()||'';if(value){backend=await persistentSet(key,value);saved++;}else await persistentRemove(key);}
    $('apiKeyStatus').textContent=saved?`APIキー ${saved}件を${backend}に保存しました。次回から入力を省略できます。`:'保存するAPIキーがまだ入力されていません。';
@@ -437,19 +437,19 @@ async function saveApiKeyIfRequested(){
  }catch(e){$('apiKeyStatus').textContent=`保存できませんでした：${e.message||e}`;}
 }
 async function setupLocalPersistence(){
- ['apiKey','openaiApiKey','deepseekApiKey'].forEach(id=>$(id).addEventListener('change',()=>{if($('rememberApiKey').checked)saveApiKeyIfRequested();}));
+ ['apiKey','groqApiKey','sambanovaApiKey'].forEach(id=>$(id).addEventListener('change',()=>{if($('rememberApiKey').checked)saveApiKeyIfRequested();}));
  $('rememberApiKey').addEventListener('change',saveApiKeyIfRequested);
- $('clearSavedApiKey').addEventListener('click',async()=>{for(const key of [API_KEY_STORAGE_KEY,OPENAI_KEY_STORAGE_KEY,DEEPSEEK_KEY_STORAGE_KEY,'examForge.claudeKey.v1','examForge.claudeModel.v1']){try{await persistentRemove(key);}catch(e){}}['apiKey','openaiApiKey','deepseekApiKey'].forEach(id=>$(id).value='');$('rememberApiKey').checked=false;$('apiKeyStatus').textContent='保存済みAPIキーを削除しました。';});
+ $('clearSavedApiKey').addEventListener('click',async()=>{for(const key of [API_KEY_STORAGE_KEY,GROQ_KEY_STORAGE_KEY,SAMBANOVA_KEY_STORAGE_KEY,'examForge.openaiKey.v1','examForge.openaiModel.v1','examForge.deepseekKey.v1','examForge.deepseekModel.v1','examForge.claudeKey.v1','examForge.claudeModel.v1']){try{await persistentRemove(key);}catch(e){}}['apiKey','groqApiKey','sambanovaApiKey'].forEach(id=>$(id).value='');$('rememberApiKey').checked=false;$('apiKeyStatus').textContent='保存済みAPIキーを削除しました。';});
  $('model').addEventListener('change',()=>persistentSet(MODEL_STORAGE_KEY,$('model').value).catch(()=>{}));
- $('openaiModel').addEventListener('change',()=>persistentSet(OPENAI_MODEL_STORAGE_KEY,$('openaiModel').value).catch(()=>{}));
- $('deepseekModel').addEventListener('change',()=>persistentSet(DEEPSEEK_MODEL_STORAGE_KEY,$('deepseekModel').value).catch(()=>{}));
+ $('groqModel').addEventListener('change',()=>persistentSet(GROQ_MODEL_STORAGE_KEY,$('groqModel').value).catch(()=>{}));
+ $('sambanovaModel').addEventListener('change',()=>persistentSet(SAMBANOVA_MODEL_STORAGE_KEY,$('sambanovaModel').value).catch(()=>{}));
  $('clearHistoryBtn').addEventListener('click',()=>{if(!confirm('この端末に保存した利用・訪問履歴をすべて削除しますか？'))return;try{localStorage.removeItem(HISTORY_STORAGE_KEY);}catch{}renderActivityHistory();});
  try{
-  const pairs=[['apiKey',API_KEY_STORAGE_KEY],['openaiApiKey',OPENAI_KEY_STORAGE_KEY],['deepseekApiKey',DEEPSEEK_KEY_STORAGE_KEY]];let restored=0,backend='Safari標準領域';
+  const pairs=[['apiKey',API_KEY_STORAGE_KEY],['groqApiKey',GROQ_KEY_STORAGE_KEY],['sambanovaApiKey',SAMBANOVA_KEY_STORAGE_KEY]];let restored=0,backend='Safari標準領域';
   for(const [id,key] of pairs){const saved=await persistentGet(key);if(saved){$(id).value=saved;restored++;try{if(localStorage.getItem(key)===null)backend='IndexedDB';}catch(e){backend='IndexedDB';}}}
   const model=await persistentGet(MODEL_STORAGE_KEY);if(model&&[...$('model').options].some(o=>o.value===model))$('model').value=model;
-  const openaiModel=await persistentGet(OPENAI_MODEL_STORAGE_KEY);if(openaiModel&&[...$('openaiModel').options].some(o=>o.value===openaiModel))$('openaiModel').value=openaiModel;
-  const deepseekModel=await persistentGet(DEEPSEEK_MODEL_STORAGE_KEY);if(deepseekModel&&[...$('deepseekModel').options].some(o=>o.value===deepseekModel))$('deepseekModel').value=deepseekModel;
+  const groqModel=await persistentGet(GROQ_MODEL_STORAGE_KEY);if(groqModel&&[...$('groqModel').options].some(o=>o.value===groqModel))$('groqModel').value=groqModel;
+  const sambanovaModel=await persistentGet(SAMBANOVA_MODEL_STORAGE_KEY);if(sambanovaModel&&[...$('sambanovaModel').options].some(o=>o.value===sambanovaModel))$('sambanovaModel').value=sambanovaModel;
   try{localStorage.removeItem('examForge.claudeKey.v1');localStorage.removeItem('examForge.claudeModel.v1');}catch(e){}
   if(restored){$('rememberApiKey').checked=true;$('apiKeyStatus').textContent=`保存済みAPIキー ${restored}/3件を${backend}から読み込みました。`;}else $('apiKeyStatus').textContent='保存先を確認しました。キーを入力して「この端末に保存」をONにすると次回から省略できます。';
  }catch(e){$('apiKeyStatus').textContent=`保存領域を確認できません：${e.message||e}。Safariの通常モードでGitHub Pagesを開いてください。`;}
@@ -613,17 +613,35 @@ function mergeAnalysisResults(results,materialMeta){
  output.warnings=uniqueStrings([...output.warnings,`AI教材解析の担当：${results.map(x=>`${x.provider} ${x.pages}ページ`).join(' / ')}。`],20);
  return output;
 }
+function splitAnalysisBatches(units,maxImages=1){
+ const batches=[];let batch=[],imageCount=0;
+ for(const unit of units){
+  const images=(unit||[]).filter(part=>part&&part.inlineData).length;
+  if(batch.length&&imageCount+images>maxImages){batches.push(batch);batch=[];imageCount=0;}
+  batch.push(unit);imageCount+=images;
+ }
+ if(batch.length)batches.push(batch);
+ return batches;
+}
 async function analyzeMaterialsDistributed(prepared,scopeNote){
  const units=prepared.units?.length?prepared.units:[prepared.parts||[]];const split=splitUnitsByProvider(units);ensureProviderKeys(PROVIDERS.filter(p=>split.groups[p].length));
- const results=[];let pageTotal=units.length;
- for(const provider of PROVIDERS){const assigned=split.groups[provider];if(!assigned.length)continue;const inputParts=assigned.flat();const allocated=split.counts[provider];state.currentOperation=`教材解析・${provider}（${allocated}/${pageTotal}ページ）`;
-  const prompt=`あなたは高校教材を読む専門家です。これは全教材のうち、あなたに割り当てられたページだけです。他社が担当するページは未読として扱い、内容を推測・補完しないでください。読めない箇所はwarningsへ記録してください。\n補足=${scopeNote||'なし'}\nあなたが担当するページ数=${allocated}。ページラベルを保持してください。subject,grade,chapters最大6,keyPoints最大8,problemPatterns最大6,extractedText最大2200文字,warningsを指定JSON形式で返してください。問題パターンは見える範囲から抽出し、解法・難易度・例の要約・出典ページを記録してください。文章の長い転載を避け、教材外知識を追加しないでください。JSON以外は出力しないでください。`;
-  showStatus(`${provider}が担当ページを解析中...`,Math.min(74,24+Math.round(results.length/3*42)));
-  const result=await callProvider(provider,prompt,Math.max(1400,Math.round(3900*allocated/pageTotal)),ANALYSIS_RESPONSE_SCHEMA,inputParts);
-  results.push({provider,result,pages:allocated,units:assigned});
+ const results=[],providerPages={};const pageTotal=units.length;
+ for(const provider of PROVIDERS){
+  const assigned=split.groups[provider];if(!assigned.length)continue;providerPages[provider]=assigned.length;
+  const batches=splitAnalysisBatches(assigned,1);
+  for(let bi=0;bi<batches.length;bi++){
+   const batch=batches[bi],inputParts=batch.flat(),allocated=batch.length;
+   state.currentOperation=`教材解析・${provider}（${allocated}ページ / ${bi+1}/${batches.length}回）`;
+   const prompt=`あなたは高校教材を読む専門家です。これは全教材のうち、あなたに割り当てられたページの一部です。他社や他の回が担当するページは未読として扱い、内容を推測・補完しないでください。読めない箇所はwarningsへ記録してください。
+補足=${scopeNote||'なし'}
+今回の担当ページ数=${allocated}。ページラベルを保持してください。subject,grade,chapters最大6,keyPoints最大8,problemPatterns最大6,extractedText最大2200文字,warningsを指定JSON形式で返してください。問題パターンは見える範囲から抽出し、解法・難易度・例の要約・出典ページを記録してください。文章の長い転載を避け、教材外知識を追加しないでください。JSON以外は出力しないでください。`;
+   showStatus(`${provider}が担当ページを解析中...`,Math.min(74,24+Math.round((results.length+1)/Math.max(1,PROVIDERS.length)*42)));
+   const result=await callProvider(provider,prompt,Math.max(1400,Math.round(3900*allocated/pageTotal)),ANALYSIS_RESPONSE_SCHEMA,inputParts);
+   results.push({provider,result,pages:allocated,units:batch});
+  }
  }
- const merged=mergeAnalysisResults(results,prepared.note);state.providerAssignments.analysis=Object.fromEntries(results.map(x=>[x.provider,x.pages]));
- recordActivity('distribution','教材解析を3社に分散',results.map(x=>`${x.provider} ${x.pages}ページ`).join(' / '),{distribution:state.providerAssignments.analysis});
+ const merged=mergeAnalysisResults(results,prepared.note);state.providerAssignments.analysis=providerPages;
+ recordActivity('distribution','教材解析を3社に分散',Object.entries(providerPages).map(([p,n])=>`${p} ${n}ページ`).join(' / '),{distribution:state.providerAssignments.analysis});
  return merged;
 }
 function normalizeExamPoints(questions){
@@ -713,31 +731,42 @@ function providerError(provider,operation,model,status,message){
  recordActivity('api_error',`${provider} APIエラー`,`${operation} / ${model} / HTTP ${status} / ${String(message).slice(0,130)}`);
  return new Error(`${provider} APIエラー (${status})［${model}］：${message}。自動再試行・他社への自動切替は行わず、この工程で停止しました。設定・利用上限・モデル利用権限を確認してから手動で再実行してください。`);
 }
-async function callOpenAI(prompt,outputTokens=5000,responseSchema=null,materialParts=[]){
- const key=$('openaiApiKey').value.trim();if(!key)throw new Error('OpenAI APIキーを入力してください。');
- saveApiKeyIfRequested();const model=$('openaiModel').value||'gpt-6.2-astra',operation=state.currentOperation||'正答検証';
- const content=[{type:'input_text',text:prompt},...materialParts.flatMap(part=>part.text?[{type:'input_text',text:part.text}]:part.inlineData?[{type:'input_image',image_url:`data:${part.inlineData.mimeType};base64,${part.inlineData.data}`,detail:'auto'}]:[])];
- const body={model,input:[{role:'user',content}],max_output_tokens:outputTokens,store:false};
- if(responseSchema)body.text={format:{type:'json_schema',name:'exam_forge_structured_output',strict:true,schema:toStandardJsonSchema(responseSchema)}};
- let response;try{response=await fetch('https://api.openai.com/v1/responses',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${key}`},body:JSON.stringify(body)});}catch(e){recordActivity('api_error','OpenAI API通信エラー',`${operation} / ${model} / ${String(e.message||e).slice(0,120)}`);throw new Error(`OpenAIとの通信に失敗しました（${model}）：${e.message||'ネットワークまたはCORS制限'}。自動再試行はしません。`);}
- if(!response.ok){const raw=await response.text();let msg=raw;try{msg=JSON.parse(raw).error?.message||raw;}catch{}throw providerError('OpenAI',operation,model,response.status,msg);}
- const data=await response.json();recordProviderUsage('OpenAI',model,operation,data.usage||{});
- let textOut=String(data.output_text||'');if(!textOut&&Array.isArray(data.output))textOut=data.output.flatMap(x=>x.content||[]).filter(x=>x.type==='output_text').map(x=>x.text||'').join('\n');
- if(!textOut)throw new Error(`OpenAIから解析可能な本文が返りませんでした（${model}）。自動再試行はしません。`);
- return parseJson(textOut);
-}
-async function callDeepSeek(prompt,outputTokens=3500,responseSchema=null,materialParts=[]){
- const key=$('deepseekApiKey').value.trim();if(!key)throw new Error('DeepSeek APIキーを入力してください。');
- saveApiKeyIfRequested();const selection=$('deepseekModel').value||'deepseek-v4-pro|high',parts=selection.split('|'),requestedModel=parts[0],effort=parts[1]||'high',hasImages=materialParts.some(part=>part.inlineData),model=hasImages&&requestedModel==='deepseek-v4-pro'?'deepseek-flash':requestedModel,modelLabel=model==='deepseek-v4-pro'?'DeepSeek V4 Pro':selection==='deepseek-flash|none'?'DeepSeek V4.1 Flash（高速）':hasImages?'DeepSeek V4.1 Flash（画像解析）':'DeepSeek V4.1 Flash（推論）',operation=state.currentOperation||'AI処理';
- const content=[{type:'input_text',text:prompt},...materialParts.flatMap(part=>part.text?[{type:'input_text',text:part.text}]:part.inlineData?[{type:'input_image',image_url:`data:${part.inlineData.mimeType};base64,${part.inlineData.data}`,detail:'auto'}]:[])];
- const body={model,input:[{role:'user',content}],reasoning:{effort},max_output_tokens:outputTokens};
- if(responseSchema)body.text={format:{type:'json_schema',name:'exam_forge_structured_output',schema:toStandardJsonSchema(responseSchema)}};
- let response;try{response=await fetch('https://api.deepseek.com/responses',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${key}`},body:JSON.stringify(body)});}catch(e){recordActivity('api_error','DeepSeek API通信エラー',`${operation} / ${modelLabel} / ${String(e.message||e).slice(0,120)}`);throw new Error(`DeepSeekとの通信に失敗しました（${modelLabel}）：${e.message||'ネットワークまたはCORS制限'}。自動再試行はしません。`);}
- if(!response.ok){const raw=await response.text();let msg=raw;try{msg=JSON.parse(raw).error?.message||raw;}catch{}throw providerError('DeepSeek',operation,modelLabel,response.status,msg);}
- const data=await response.json();recordProviderUsage('DeepSeek',modelLabel,operation,data.usage||{});
- let textOut=String(data.output_text||'');if(!textOut&&Array.isArray(data.output))textOut=data.output.flatMap(x=>x.content||[]).filter(x=>x.type==='output_text').map(x=>x.text||'').join('\n');
- if(!textOut)throw new Error(`DeepSeekから解析可能な本文が返りませんでした（${modelLabel}）。自動再試行はしません。`);
- return parseJson(textOut);
+async function callGroqCompatible(provider,prompt,outputTokens=4000,responseSchema=null,materialParts=[]){
+ const isGroq=provider==='Groq';
+ const key=$(isGroq?'groqApiKey':'sambanovaApiKey').value.trim();
+ if(!key)throw new Error(`${provider} APIキーを入力してください。`);
+ saveApiKeyIfRequested();
+ const model=$(isGroq?'groqModel':'sambanovaModel').value||(isGroq?'qwen/qwen3.8-27b':'gemma-4-31B-it');
+ const operation=state.currentOperation||'AI処理';
+ const imageCount=materialParts.filter(part=>part&&part.inlineData).length;
+ const groqVision='qwen/qwen3.8-27b',sambaVision='gemma-4-31B-it';
+ if(imageCount>3)throw new Error(`${provider}への画像送信は1回につき最大3枚です。ページ数を減らして再実行してください。`);
+ if(isGroq&&imageCount&&model!==groqVision)throw new Error(`Groqで画像ページを処理するには「Qwen 3.8 27B · 画像対応」を選択してください。現在のモデル ${model} はテキスト専用です。自動切替は行っていません。`);
+ if(!isGroq&&imageCount&&model!==sambaVision)throw new Error(`SambaNovaで画像ページを処理するには「Gemma 4 31B · 画像対応」を選択してください。現在のモデル ${model} はテキスト専用です。自動切替は行っていません。`);
+ const schemaNote=responseSchema?`\n\n出力JSONスキーマ（全項目に従うこと）：\n${JSON.stringify(toStandardJsonSchema(responseSchema))}`:'';
+ const promptWithSchema=`${prompt}${schemaNote}\n必ずJSONオブジェクトだけを返してください。Markdownのコードブロックや前後の説明文は付けないでください。`;
+ const content=[{type:'text',text:promptWithSchema},...materialParts.flatMap(part=>part&&part.text?[{type:'text',text:part.text}]:part&&part.inlineData?[{type:'image_url',image_url:{url:`data:${part.inlineData.mimeType};base64,${part.inlineData.data}`}}]:[])];
+ const url=isGroq?'https://api.groq.com/openai/v1/chat/completions':'https://api.sambanova.ai/v1/chat/completions';
+ const body={model,messages:[{role:'user',content:content.length===1?promptWithSchema:content}],temperature:0.2,stream:false};
+ if(isGroq){
+  body.max_completion_tokens=outputTokens;
+  body.response_format={type:'json_object'};
+  body.reasoning_effort=operation.includes('正答検証')?'high':'medium';
+  body.reasoning_format='hidden';
+ }else{
+  body.max_tokens=outputTokens;
+  // SambaNova models vary in structured-output support; schema is included in the prompt for broad compatibility.
+ }
+ let response;
+ try{response=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${key}`},body:JSON.stringify(body)});}
+ catch(e){recordActivity('api_error',`${provider} API通信エラー`,`${operation} / ${model} / ${String(e.message||e).slice(0,120)}`);throw new Error(`${provider}との通信に失敗しました（${model}）：${e.message||'ネットワークまたはCORS制限'}。自動再試行はしません。`);}
+ if(!response.ok){const raw=await response.text();let msg=raw;try{msg=JSON.parse(raw).error?.message||JSON.parse(raw).message||raw;}catch{}throw providerError(provider,operation,model,response.status,msg);}
+ const data=await response.json();recordProviderUsage(provider,model,operation,data.usage||{});
+ const message=data.choices?.[0]?.message||{};
+ let textOut=typeof message.content==='string'?message.content:Array.isArray(message.content)?message.content.map(x=>x.text||'').join('\n'):'';
+ if(!textOut&&message.refusal)textOut=String(message.refusal);
+ if(!textOut){const reason=data.choices?.[0]?.finish_reason||'不明';throw new Error(`${provider}から解析可能な本文が返りませんでした（${model}）。終了理由：${reason}。自動再試行はしません。`);}
+ try{return parseJson(textOut);}catch(e){recordActivity('api_error',`${provider}応答のJSON解析エラー`,`${operation} / ${model} / ${String(e.message||e).slice(0,130)}`);throw new Error(`${provider}の返答を指定JSONとして読み取れませんでした（${model}）。自動再試行・他社への切替は行いません。問題数を減らすか、モデルを手動で変更して再実行してください。`);}
 }
 function stripJsonEnvelope(source){
  let v=String(source??'').replace(/^\uFEFF/,'').trim();
@@ -844,13 +873,13 @@ function numericFromAnswer(value){const direct=numericAnswer(value);if(direct!==
 function isHighRiskQuestion(q){return q.type==='essay'||/証明|場合分け|微分|積分|確率|ベクトル|三角関数|図形|化学反応|実験考察|資料読解|複数条件|グラフの読み取り/.test(String(q.prompt||''));}
 function allocateVerifiers(questions){
  const creators=Object.fromEntries(PROVIDERS.map(p=>[p,questions.filter(q=>q._generatedBy===p).length]));
- const target=weightedCounts(questions.length);const g=creators.Gemini,o=creators.OpenAI,d=creators.DeepSeek;
+ const target=weightedCounts(questions.length);const g=creators.Gemini,o=creators.Groq,d=creators.SambaNova;
  // A 3x3 no-self-audit flow matrix. Rows are generators; columns are verifiers.
- // The resulting verifier totals match the same 25/40/35 quota exactly.
+ // The resulting verifier totals match the 25/40/35 quota exactly.
  const minA=Math.max(0,o-d,g-d),maxA=Math.min(g,o,g+o-d);
  if(minA>maxA)throw new Error('生成担当と独立検証担当の25/40/35配分を両立できませんでした。');
  const a=Math.round((minA+maxA)/2);
- const flow={Gemini:{Gemini:0,OpenAI:a,DeepSeek:g-a},OpenAI:{Gemini:g-d+o-a,OpenAI:0,DeepSeek:d-g+a},DeepSeek:{Gemini:d-o+a,OpenAI:o-a,DeepSeek:0}};
+ const flow={Gemini:{Gemini:0,Groq:a,SambaNova:g-a},Groq:{Gemini:g-d+o-a,Groq:0,SambaNova:d-g+a},SambaNova:{Gemini:d-o+a,Groq:o-a,SambaNova:0}};
  const groups=Object.fromEntries(PROVIDERS.map(p=>[p,[]]));
  for(const maker of PROVIDERS){const source=questions.filter(q=>q._generatedBy===maker);let cursor=0;for(const verifier of PROVIDERS){const count=flow[maker][verifier];if(!count)continue;for(const q of source.slice(cursor,cursor+count))groups[verifier].push(q);cursor+=count;}if(cursor!==source.length)throw new Error(`${maker}の生成問題を独立検証へ割り当てられませんでした。`);}
  const actual=Object.fromEntries(PROVIDERS.map(p=>[p,groups[p].length]));if(PROVIDERS.some(p=>actual[p]!==target[p]))throw new Error('独立検証の実配分が目標配分と一致しません。');
