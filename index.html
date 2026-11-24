@@ -356,11 +356,25 @@ async function extractPdf(file){const pdfjs=await loadPdfJs();const bytes=new Ui
 }
 async function extractLocal(){let text='';for(let i=0;i<state.files.length;i++){const f=state.files[i];showStatus(`${i+1}/${state.files.length}：${f.name} を解析中...`,Math.round(i/state.files.length*80));if(f.type==='application/pdf')text+=await extractPdf(f);else text+=`\n【${f.name} OCR】\n${await ocrImage(f)}\n`;}return text.trim();}
 function b64(buffer){const bytes=new Uint8Array(buffer);let binary='';const chunk=0x8000;for(let i=0;i<bytes.length;i+=chunk)binary+=String.fromCharCode(...bytes.subarray(i,i+chunk));return btoa(binary);}
-async function callGemini(parts, prompt, outputTokens=7000){
+const ANALYSIS_RESPONSE_SCHEMA={type:'OBJECT',properties:{
+ subject:{type:'STRING'},grade:{type:'STRING'},chapters:{type:'ARRAY',items:{type:'STRING'}},keyPoints:{type:'ARRAY',items:{type:'STRING'}},
+ problemPatterns:{type:'ARRAY',items:{type:'OBJECT',properties:{type:{type:'STRING'},pattern:{type:'STRING'},difficulty:{type:'STRING'},method:{type:'STRING'},exampleSummary:{type:'STRING'},sourcePage:{type:'STRING'}},required:['type','pattern','difficulty','method','exampleSummary','sourcePage']}},
+ extractedText:{type:'STRING'},warnings:{type:'ARRAY',items:{type:'STRING'}}
+},required:['subject','grade','chapters','keyPoints','problemPatterns','extractedText','warnings']};
+const EXAM_RESPONSE_SCHEMA={type:'OBJECT',properties:{
+ title:{type:'STRING'},subject:{type:'STRING'},grade:{type:'STRING'},scope:{type:'STRING'},
+ questions:{type:'ARRAY',items:{type:'OBJECT',properties:{
+  type:{type:'STRING'},prompt:{type:'STRING'},choices:{type:'ARRAY',items:{type:'STRING'}},answer:{type:'STRING'},acceptableAnswers:{type:'ARRAY',items:{type:'STRING'}},
+  markingGuide:{type:'STRING'},explanation:{type:'STRING'},difficulty:{type:'STRING'},sourcePage:{type:'STRING'},answerSpaceRows:{type:'INTEGER'},points:{type:'NUMBER'}
+ },required:['type','prompt','answer','markingGuide','explanation','points']}}
+},required:['title','subject','grade','scope','questions']};
+async function callGemini(parts, prompt, outputTokens=7000, responseSchema=null){
  const key=$('apiKey').value.trim();
  if(!key)throw new Error('Gemini APIキーを入力してください。取得先はGoogle AI Studioです。');
  const model=$('model').value||'gemini-3.8-flash';
- const body={contents:[{role:'user',parts:[{text:prompt},...parts]}],generationConfig:{temperature:0.25,responseMimeType:'application/json',maxOutputTokens:outputTokens}};
+ const generationConfig={temperature:0.2,responseMimeType:'application/json',maxOutputTokens:outputTokens};
+ if(responseSchema)generationConfig.responseSchema=responseSchema;
+ const body={contents:[{role:'user',parts:[{text:prompt},...parts]}],generationConfig};
  let response;
  try{
   response=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`,{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':key},body:JSON.stringify(body)});
@@ -382,18 +396,71 @@ async function callGemini(parts, prompt, outputTokens=7000){
  state.tokenUsage.total+=Number(usage.totalTokenCount)||0;
  const note=$('tokenUsageNote');
  if(note)note.textContent=`今回の使用モデル：${model} ／ このページのAI利用量：入力 ${state.tokenUsage.input.toLocaleString()} / 出力 ${state.tokenUsage.output.toLocaleString()} / 合計 ${state.tokenUsage.total.toLocaleString()} トークン（採点時の追加消費 0）`;
- const text=data.candidates?.[0]?.content?.parts?.map(p=>p.text||'').join('\n')||'';
- if(!text)throw new Error(`AIから本文が返りませんでした［${model}］。安全フィルターや出力上限の可能性があります。`);
- return parseJson(text);
+ const candidate=data.candidates?.[0];
+ const text=candidate?.content?.parts?.map(p=>p.text||'').join('\n')||'';
+ if(!text)throw new Error(`AIから本文が返りませんでした［${model}］。終了理由：${candidate?.finishReason||'不明'}。安全フィルターや出力上限の可能性があります。`);
+ const parsed=parseJson(text);
+ parsed._geminiFinishReason=candidate?.finishReason||'';
+ return parsed;
 }
-function parseJson(s){let v=s.trim().replace(/^```(?:json)?\s*/i,'').replace(/```$/,'').trim();try{return JSON.parse(v)}catch{const a=v.indexOf('{'),b=v.lastIndexOf('}');if(a>=0&&b>a)return JSON.parse(v.slice(a,b+1));throw new Error('AIの返答をJSONとして読み取れませんでした。問題数を減らして再試行してください。');}}
-$('analyzeBtn').addEventListener('click',async()=>{if(!state.files.length)return;setBusy(true);try{const mode=document.querySelector('input[name="mode"]:checked').value;let result;if(mode==='ai'){const total=state.files.reduce((a,f)=>a+f.size,0);if(total>18*1024*1024)throw new Error('AIに一度に送るファイルは合計18MB以下にしてください。ファイルを分けて解析してください。');showStatus('教材をGeminiに送信して解析中...',12);const parts=[];for(const f of state.files){parts.push({inlineData:{mimeType:f.type,data:b64(await f.arrayBuffer())}});}const prompt=`あなたは教材分析の専門家です。添付された日本語の問題集・授業プリントを読み、内容に忠実に分析してください。\nユーザー補足：${$('scopeNote').value||'なし'}\n問題そのものを長々と転載せず、類題生成に必要な構造を抽出します。読み取れない部分は推測せず明記。次のJSONのみ返してください：\n{"subject":"教科","grade":"学年レベル","chapters":["単元"],"keyPoints":["重要事項・公式"],"problemPatterns":[{"type":"問題形式","pattern":"問題の構造・何を問うか","difficulty":"基礎/標準/応用","method":"解法の手順","exampleSummary":"元問題の短い要約","sourcePage":"ファイル名・ページ。不明なら空文字"}],"extractedText":"読み取れた本文・数式・重要な条件を可能な範囲で整理。最大3500文字","warnings":["読み取り上の注意"]}.\n少なくとも見つけられる範囲で複数の問題パターンを抽出し、教材に存在しない内容を追加しないでください。`;result=await callGemini(parts,prompt,5200);if(!result||typeof result!=='object')throw new Error('教材分析結果が空でした。');
+function stripJsonEnvelope(source){
+ let v=String(source??'').replace(/^\uFEFF/,'').trim();
+ v=v.replace(/^```(?:json)?\s*/i,'').replace(/\s*```$/,'').trim();
+ const first=v.indexOf('{');
+ if(first>0)v=v.slice(first).trim();
+ return v;
+}
+function readJsonStringField(source,key,fallback=''){
+ const re=new RegExp('"'+key+'"\\s*:\\s*("(?:\\\\.|[^"\\\\])*")');
+ const m=source.match(re);if(!m)return fallback;
+ try{return JSON.parse(m[1]);}catch{return fallback;}
+}
+function collectCompleteObjectsFromArray(source,arrayKey){
+ const keyPattern=new RegExp('"'+arrayKey+'"\\s*:\\s*\\[');
+ const match=keyPattern.exec(source);if(!match)return[];
+ let i=match.index+match[0].length,depth=0,start=-1,inString=false,escaped=false;
+ const objects=[];
+ for(;i<source.length;i++){
+  const c=source[i];
+  if(inString){if(escaped)escaped=false;else if(c==='\\')escaped=true;else if(c==='"')inString=false;continue;}
+  if(c==='"'){inString=true;continue;}
+  if(c==='{'){if(depth===0)start=i;depth++;continue;}
+  if(c==='}'&&depth>0){depth--;if(depth===0&&start>=0){const piece=source.slice(start,i+1);try{objects.push(JSON.parse(piece));}catch{}start=-1;}continue;}
+  if(c===']'&&depth===0)break;
+ }
+ return objects;
+}
+function parseJson(source){
+ const v=stripJsonEnvelope(source);
+ try{return JSON.parse(v);}catch(fullError){
+  // First try to isolate one complete top-level JSON object from surrounding text.
+  let start=v.indexOf('{'),depth=0,inString=false,escaped=false,end=-1;
+  for(let i=Math.max(0,start);start>=0&&i<v.length;i++){
+   const c=v[i];
+   if(inString){if(escaped)escaped=false;else if(c==='\\')escaped=true;else if(c==='"')inString=false;continue;}
+   if(c==='"'){inString=true;continue;}
+   if(c==='{')depth++;else if(c==='}'&&--depth===0){end=i+1;break;}
+  }
+  if(start>=0&&end>start){try{return JSON.parse(v.slice(start,end));}catch{}}
+  // If the model output was cut off at the end of the questions array, keep only fully completed question objects.
+  const questions=collectCompleteObjectsFromArray(v,'questions');
+  if(questions.length){
+   return{title:readJsonStringField(v,'title','生成された模試'),subject:readJsonStringField(v,'subject',''),grade:readJsonStringField(v,'grade',''),scope:readJsonStringField(v,'scope',''),questions,_jsonRecovered:true};
+  }
+  const detail=String(fullError?.message||'JSON形式が不正です').slice(0,140);
+  throw new Error(`Geminiの返答をJSONとして読み取れませんでした（${detail}）。返答が途中で切れた可能性があります。自動再試行は行いません。問題数を5問に減らすか、選択したモデルを手動で変更して再実行してください。`);
+ }
+}
+$('analyzeBtn').addEventListener('click',async()=>{if(!state.files.length)return;setBusy(true);try{const mode=document.querySelector('input[name="mode"]:checked').value;let result;if(mode==='ai'){const total=state.files.reduce((a,f)=>a+f.size,0);if(total>18*1024*1024)throw new Error('AIに一度に送るファイルは合計18MB以下にしてください。ファイルを分けて解析してください。');showStatus('教材をGeminiに送信して解析中...',12);const parts=[];for(const f of state.files){parts.push({inlineData:{mimeType:f.type,data:b64(await f.arrayBuffer())}});}const prompt=`あなたは教材分析の専門家です。添付された日本語の問題集・授業プリントを読み、内容に忠実に分析してください。\nユーザー補足：${$('scopeNote').value||'なし'}\n問題そのものを長々と転載せず、類題生成に必要な構造を抽出します。読み取れない部分は推測せず明記。次のJSONのみ返してください：\n{"subject":"教科","grade":"学年レベル","chapters":["単元"],"keyPoints":["重要事項・公式"],"problemPatterns":[{"type":"問題形式","pattern":"問題の構造・何を問うか","difficulty":"基礎/標準/応用","method":"解法の手順","exampleSummary":"元問題の短い要約","sourcePage":"ファイル名・ページ。不明なら空文字"}],"extractedText":"読み取れた本文・数式・重要な条件を可能な範囲で整理。最大3500文字","warnings":["読み取り上の注意"]}.\n少なくとも見つけられる範囲で複数の問題パターンを抽出し、教材に存在しない内容を追加しないでください。`;result=await callGemini(parts,prompt,5200,ANALYSIS_RESPONSE_SCHEMA);if(!result||typeof result!=='object')throw new Error('教材分析結果が空でした。');
  }else{const text=await extractLocal();if(!text||text.replace(/\s/g,'').length<20)throw new Error('文字をほとんど読み取れませんでした。写真を鮮明にするか、テキストを含むPDFをお試しください。');result={subject:'自動判定（ローカル）',grade:'教材から推定できません',chapters:[],keyPoints:[],problemPatterns:[],extractedText:text,warnings:['AIなしモードでは、意味・解法の理解は行いません。OCR誤認識がないか本文を確認してください。']};}
  state.analysis=result;$('sourceText').value=result.extractedText||'';renderSummary(result);$('summary').classList.add('show');$('generateBtn').disabled=false;showStatus('解析が完了しました。内容を確認して模試を作成できます。',100);setTimeout(hideStatus,2400);
  }catch(e){console.error(e);showStatus('エラー：'+e.message,0);$('status').classList.add('show');}finally{setBusy(false);$('generateBtn').disabled=!state.analysis;}});
 function renderSummary(a){const tags=[...(a.chapters||[]),...(a.keyPoints||[])].slice(0,12);$('summaryBody').innerHTML=`<div><b>教科：</b>${escapeHtml(a.subject||'未判定')}　<b>レベル：</b>${escapeHtml(a.grade||'未判定')}</div><div class="tags">${tags.map(t=>`<span class="tag">${escapeHtml(t)}</span>`).join('')||'<span class="muted">単元・重要事項のタグなし</span>'}</div><div><b>問題パターン：</b>${(a.problemPatterns||[]).length}種類</div>${(a.warnings||[]).length?`<div class="notice warn">${(a.warnings||[]).map(escapeHtml).join('<br>')}</div>`:''}`;}
 function getSettings(){return{subject:$('subject').value,grade:$('grade').value,count:Number($('count').value),difficulty:$('difficulty').value,minutes:$('minutes').value,mix:$('mixTypes').checked,strict:$('strictScope').checked,scopeNote:$('scopeNote').value};}
-$('generateBtn').addEventListener('click',async()=>{if(!state.analysis)return;setBusy(true);try{const mode=document.querySelector('input[name="mode"]:checked').value;const s=getSettings();let exam;if(mode==='ai'){showStatus('類題・選択肢・解答・解説を生成中...',15);const a={subject:state.analysis.subject||s.subject,grade:state.analysis.grade||s.grade,chapters:(state.analysis.chapters||[]).slice(0,8),keyPoints:(state.analysis.keyPoints||[]).slice(0,10),problemPatterns:(state.analysis.problemPatterns||[]).slice(0,7).map(p=>({type:String(p.type||'').slice(0,50),pattern:String(p.pattern||'').slice(0,180),difficulty:String(p.difficulty||'').slice(0,30),method:String(p.method||'').slice(0,180),exampleSummary:String(p.exampleSummary||'').slice(0,120),sourcePage:String(p.sourcePage||'').slice(0,50)})),extractedText:$('sourceText').value.trim().slice(0,5000),warnings:(state.analysis.warnings||[]).slice(0,3)};const prompt=`あなたは日本の高校の定期考査・模試を作る専門の作問者です。教材分析だけを根拠に、元問題と同じ学習事項・解法・形式を使った新しい類題を作成してください。元問題をそのまま転載せず、数値・条件・表現を変えてください。設定：教科=${s.subject}、学年=${s.grade}、問題数=${s.count}、難易度=${s.difficulty}、制限時間=${s.minutes}分、形式混合=${s.mix}、教材外知識を避ける=${s.strict}、補足=${s.scopeNote||'なし'}。\n教材分析JSON：${JSON.stringify(a).slice(0,15000)}\n作問ルール：1) 問題は高校の試験用紙に載せられる明確な日本語にする。2) 全問に模範解答・具体的解説・採点基準(markingGuide)を付ける。3) 記述問題は正答の要点と部分点条件を採点基準に書く。4) 数学・理科は計算を再検算し、途中式も解説する。5) 選択問題はchoicesを4つ、answerは選択肢の文字列と完全一致。6) sourcePageは特定できる時だけ記載。7) 教材にない知識を問わない。8) 一意に採点できない問題を作らず、曖昧なら出題しない。9) 合計配点は100点にする。10) 記述の長さに合わせてanswerSpaceRowsを1〜7で設定する。11) 教科ごとの試験形式に従う。数学は式・途中式・証明の記述を中心にし、問題文中の数式は独立した行にする。数式はMathJax依存のLaTeXコードではなく、x²・√・≦・分数は（a＋b）/cのような通常文字で読みやすく表記する。英語は英文・語彙文法・読解・英作文の形式を区別する。国語は本文読解・漢字語句・記述を区別する。理科は単位・実験条件・考察を明確にし、社会は年代・地名・資料の数値を明確にする。12) 各問のpromptは改行を適切に使い、印刷したとき読みやすい文章にする。\n次のJSONのみ：{"title":"模試タイトル","subject":"教科","grade":"学年","scope":"出題範囲","questions":[{"type":"choice / short / calculation / essay","prompt":"問題文","choices":["選択肢1","選択肢2","選択肢3","選択肢4"],"answer":"模範解答","acceptableAnswers":["許容解"],"markingGuide":"採点基準・部分点条件","explanation":"解説と解き方","difficulty":"基礎/標準/応用","sourcePage":"出典ページまたは空文字","answerSpaceRows":3,"points":10}]}. questionsは必ず指定数${s.count}問。配点合計は100点。`;exam=await callGemini([],prompt,Math.min(9000,Math.max(2600,s.count*420)));
+$('generateBtn').addEventListener('click',async()=>{if(!state.analysis)return;setBusy(true);try{const mode=document.querySelector('input[name="mode"]:checked').value;const s=getSettings();let exam;if(mode==='ai'){showStatus('類題・選択肢・解答・解説を生成中...',15);const a={subject:state.analysis.subject||s.subject,grade:state.analysis.grade||s.grade,chapters:(state.analysis.chapters||[]).slice(0,8),keyPoints:(state.analysis.keyPoints||[]).slice(0,10),problemPatterns:(state.analysis.problemPatterns||[]).slice(0,7).map(p=>({type:String(p.type||'').slice(0,50),pattern:String(p.pattern||'').slice(0,180),difficulty:String(p.difficulty||'').slice(0,30),method:String(p.method||'').slice(0,180),exampleSummary:String(p.exampleSummary||'').slice(0,120),sourcePage:String(p.sourcePage||'').slice(0,50)})),extractedText:$('sourceText').value.trim().slice(0,5000),warnings:(state.analysis.warnings||[]).slice(0,3)};const prompt=`日本の高校の定期考査・模試を作る専門家として、以下の教材分析だけを根拠に、元教材と同じ知識・解法・形式を使った新しい類題を${s.count}問作成してください。元問題の文章をそのまま転載せず、数値・条件・表現を変えてください。
+設定：教科=${s.subject}、学年=${s.grade}、難易度=${s.difficulty}、試験時間=${s.minutes}分、形式混合=${s.mix}、教材外知識を避ける=${s.strict}、補足=${s.scopeNote||'なし'}。
+教材分析：${JSON.stringify(a).slice(0,12000)}
+出力条件：指定されたJSONスキーマに厳密に従う。問題数は${s.count}問、合計100点。選択問題は選択肢4つ、answerは選択肢と完全一致。全問に正答・採点基準・短い解説を付ける。解説は原則80文字以内、採点基準は60文字以内にまとめる。数値・数式は検算する。曖昧な問題や教材外の知識を問う問題は作らない。sourcePageは確実に分かる場合だけ記載。answerSpaceRowsは1〜7。数学は途中式・証明を求め、数式は通常文字（x²、√、≦、(a+b)/c）で表記。英語は語彙・文法・読解・英作文、国語は漢字・読解・記述、理科は単位・実験・考察、社会は年代・地名・資料を適切に扱う。JSON以外の文章やMarkdown記号は出力しない。`;exam=await callGemini([],prompt,Math.min(9000,Math.max(3200,s.count*420)),EXAM_RESPONSE_SCHEMA);
  }else{const text=$('sourceText').value.trim();if(!text)throw new Error('読み取った教材本文がありません。');exam=makeLocalExam(text,s,state.analysis);}
  if(!Array.isArray(exam.questions)||!exam.questions.length)throw new Error('問題が生成されませんでした。設定を変えて再試行してください。');state.questions=exam.questions.slice(0,s.count).map((q,i)=>{const type=['choice','short','calculation','essay'].includes(q.type)?q.type:(Array.isArray(q.choices)&&q.choices.length?'choice':'short');return({...q,id:i+1,type,points:Number(q.points)||10,choices:Array.isArray(q.choices)?q.choices:[],acceptableAnswers:Array.isArray(q.acceptableAnswers)?q.acceptableAnswers:[],answerSpaceRows:Math.max(1,Math.min(7,Number(q.answerSpaceRows)||(['essay'].includes(type)?6:['calculation'].includes(type)?4:type==='short'?2:1)))});});state.answers={};state.graded=false;state.examMode=mode;state.examMeta={...exam,settings:s};state.grading=null;renderExam(exam,mode,s);$('examSection').classList.add('show');$('testNavTitle').textContent=exam.title||'模試';openTestPage();hideStatus();
  }catch(e){console.error(e);showStatus('エラー：'+e.message,0);}finally{setBusy(false);$('generateBtn').disabled=!state.analysis;}});
@@ -438,7 +505,7 @@ function printHeadMarkup(kind='question'){
 function writingLines(rows){return `<div class="print-writing-space">${Array.from({length:rows},()=>'<div class="print-line"></div>').join('')}</div>`;}
 function renderExam(exam,mode,s){
  const total=state.questions.reduce((n,q)=>n+q.points,0),template=subjectTemplate(exam.subject||s.subject);$('examSection').dataset.subject=template.key;$('testPaper').dataset.subject=template.key;
- $('examTitle').textContent=exam.title||'オリジナル模試';$('examMeta').textContent=`${template.label} · ${exam.subject||s.subject} · ${exam.grade||s.grade} · ${exam.scope||'教材範囲'}`;$('examMode').textContent=mode==='ai'?'Gemini AI生成':'端末内・簡易生成';$('qCount').textContent=state.questions.length;$('totalPoints').textContent=total;$('timeLimit').textContent=s.minutes==='時間制限なし'?'なし':s.minutes+'分';$('examNotice').textContent='採点は端末内で実行（Geminiへの採点送信なし）。記述・計算過程の部分点は手動確認になります。';
+ $('examTitle').textContent=exam.title||'オリジナル模試';$('examMeta').textContent=`${template.label} · ${exam.subject||s.subject} · ${exam.grade||s.grade} · ${exam.scope||'教材範囲'}`;$('examMode').textContent=mode==='ai'?'Gemini AI生成':'端末内・簡易生成';$('qCount').textContent=state.questions.length;$('totalPoints').textContent=total;$('timeLimit').textContent=s.minutes==='時間制限なし'?'なし':s.minutes+'分';$('examNotice').textContent='採点は端末内で実行（Geminiへの採点送信なし）。記述・計算過程の部分点は手動確認になります。'+(exam._jsonRecovered?` 注意：AIの返答が途中で切れたため、完全に読み取れた${state.questions.length}問だけを採用しました。問題数を減らすと安定します。`:exam._geminiFinishReason==='MAX_TOKENS'?' 注意：AIの出力上限に達しました。問題数を減らして再作成してください。':Array.isArray(exam.questions)&&exam.questions.length<(s.count||0)?` 注意：指定${s.count}問に対して${exam.questions.length}問だけ生成されました。必要なら問題数を減らして再作成してください。`:'');
  $('questionPrintHead').innerHTML=printHeadMarkup('question');
  const timeLabel=s.minutes==='時間制限なし'?'時間制限なし':`試験時間 ${escapeHtml(s.minutes)} 分`;const topNote=`<div class="subject-paper-note"><div>${escapeHtml(template.note)}</div><div class="paper-meta-strip"><span>${escapeHtml(timeLabel)}</span><span>満点 ${total} 点</span><span>${state.questions.length} 問</span></div></div>`;
  $('questionList').innerHTML=topNote+state.questions.map((q,i)=>{const kind=q.type==='choice'?'選択':q.type==='essay'?'論述':q.type==='calculation'?'計算・過程':'短答';const section=subjectSectionLabel(exam.subject||s.subject,q,i);
