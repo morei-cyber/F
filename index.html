@@ -184,7 +184,7 @@ body.test-mode{background:#edf0f4!important;color:#171717!important;color-scheme
         <div><label class="label" for="pageLimit">複数ページの解析上限</label><select class="input" id="pageLimit"><option value="5">5ページ</option><option value="10" selected>10ページ（節約）</option><option value="15">15ページ</option><option value="20">20ページ</option><option value="30">30ページ</option></select></div>
         <div class="small muted" style="padding-bottom:8px">文字PDFはテキスト抽出を優先し、スキャンページ・写真だけを圧縮画像で送信します。</div>
       </div>
-      <div class="notice">📌 AIありモードでは教材の一部がGeminiに送信されます。複数ページは上限内で処理し、重複ページを除外します。個人情報や公開できない教材は送信しないでください。</div>
+      <div class="notice">📌 AIありモードでは教材の一部をGeminiへ、生成問題と解答候補をOpenAIへ、必要な高リスク問題だけClaudeへ送信します。個人情報や公開できない教材は送信しないでください。</div>
       <div class="label">出題対象の補足（任意）</div>
       <textarea id="scopeNote" rows="2" placeholder="例：このプリントの問1〜問8。二次関数の最大・最小を中心に。"></textarea>
       <div class="actions"><button class="btn full" id="analyzeBtn" type="button" disabled>教材を解析する</button></div>
@@ -209,10 +209,10 @@ body.test-mode{background:#edf0f4!important;color:#171717!important;color-scheme
         <div class="label">Gemini APIキー</div>
         <input class="input" id="apiKey" type="password" autocomplete="off" placeholder="AIza...">
         <div class="row mobile-stack" style="margin-top:7px;align-items:center">
-          <label class="switchline" style="margin:0"><input type="checkbox" id="rememberApiKey"> この端末に保存して次回から入力を省略</label>
+          <label class="switchline" style="margin:0"><input type="checkbox" id="rememberApiKey"> 入力済みの3社APIキーをこの端末に保存して次回から入力を省略</label>
           <button class="btn ghost" id="clearSavedApiKey" type="button" style="flex:0 0 auto;padding:8px 10px">保存キーを削除</button>
         </div>
-        <div id="apiKeyStatus" class="small muted" style="margin-top:5px">保存は任意です。APIキーはこの端末のブラウザ保存領域に暗号化せず保存されます。共有端末では保存しないでください。</div>
+        <div id="apiKeyStatus" class="small muted" style="margin-top:5px">保存は任意です。Gemini・OpenAI・ClaudeのAPIキーはこの端末のブラウザ保存領域に暗号化せず保存されます。共有端末では保存しないでください。</div>
         <div class="row" style="margin-top:8px;align-items:end">
           <div style="flex:1;min-width:0"><label class="label" for="model">使用モデル（5種類から選択）</label>
             <select class="input" id="model">
@@ -226,8 +226,25 @@ body.test-mode{background:#edf0f4!important;color:#171717!important;color-scheme
           <div style="flex:0 0 auto;align-self:end"><a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener">APIキー取得 ↗</a></div>
         </div>
         <div class="small muted" style="margin-top:7px">モデルはここで手動選択します。選択したモデルに1回だけ送信し、混雑・エラー時に別モデルへ自動切替や自動再試行はしません。モデルの利用可否・無料枠はGoogle側のアカウント条件に従います。</div>
-        <div id="tokenUsageNote">AI利用は教材解析・問題生成・多段階正答検証。通常採点は端末内で行い、採点時にGemini APIは呼び出しません。自動再試行・別モデルへの切替なし。</div>
+        <div id="tokenUsageNote">Geminiで教材解析・問題生成、OpenAIで全問一次検証、Claudeで高リスク問題のみ二次検証。通常採点は端末内で行い、採点時にAPI通信しません。自動再試行・他社への代替なし。</div>
       </div>
+      <section class="panel" style="margin:12px 0 0;padding:13px;background:#101b2b;border-color:#3b5271">
+        <div class="section-head"><h3 style="margin:0;font-size:14px">マルチAI設定</h3><span class="tag">役割別分配</span></div>
+        <p class="small muted" style="margin:6px 0 10px">Gemini＝教材解析・問題生成 ／ OpenAI＝全問の独立解答・一次検証 ／ Claude＝記述・複雑問題・判定が割れた問題だけ二次検証</p>
+        <label class="label" for="openaiApiKey">OpenAI APIキー</label>
+        <div class="small"><a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener">OpenAI APIキーを取得 ↗</a></div>
+        <input class="input" id="openaiApiKey" type="password" autocomplete="off" placeholder="sk-...">
+        <label class="label" for="openaiModel">OpenAIモデル</label>
+        <select class="input" id="openaiModel"><option value="gpt-6.2-astra" selected>GPT-6.2 Astra（高精度検証）</option></select>
+        <div style="height:10px"></div>
+        <label class="label" for="claudeApiKey">Claude APIキー</label>
+        <div class="small"><a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener">Claude APIキーを取得 ↗</a></div>
+        <input class="input" id="claudeApiKey" type="password" autocomplete="off" placeholder="sk-ant-...">
+        <label class="label" for="claudeModel">Claudeモデル</label>
+        <select class="input" id="claudeModel"><option value="claude-sonnet-5-5" selected>Claude Sonnet 5.5（高精度・二次検証）</option><option value="claude-opus-5-5">Claude Opus 5.5（難問向け・高コスト）</option></select>
+        <div class="notice warn" style="margin-top:10px">重要：GitHub Pagesのブラウザから直接APIを呼ぶ方式です。APIキーはこの端末のブラウザに保存できますが、ブラウザ内では完全に秘匿できません。共有端末では保存せず、利用額上限を設定した専用APIキーを使ってください。公開サービスとして安全に配布する場合は、Vercel等のサーバー側中継が必要です。</div>
+        <div class="small muted" id="multiApiStatus" style="margin-top:7px">正答検証ON時はOpenAIが必須。記述・複雑問題・低信頼判定がある場合はClaudeも必須です。Claude組織設定によってブラウザ直呼び出しが拒否される場合があります。その際はサーバー中継が必要です。API料金は各社で別請求です。ChatGPTやClaudeの月額契約はAPI利用料に含まれません。APIエラー時は自動再試行・他社への代替をせず停止します。</div>
+      </section>
       <div id="localInfo" class="notice warn hidden">AIなしモードは端末内処理です。写真OCRは初回に日本語辞書（数MB〜）をダウンロードするため、通信環境によっては数分かかる場合があります。120秒で進まない場合はエラー表示します。自由な類題生成はできません。</div>
       <div class="label">教科</div>
       <select id="subject"><option>自動判定</option><option>国語</option><option>数学</option><option>英語</option><option>理科</option><option>社会</option><option>その他</option></select>
@@ -241,8 +258,8 @@ body.test-mode{background:#edf0f4!important;color:#171717!important;color-scheme
       </div>
       <label class="switchline"><input type="checkbox" id="mixTypes" checked> 教材に合わせて問題形式を混ぜる</label>
       <label class="switchline"><input type="checkbox" id="strictScope" checked> 教材にない知識をなるべく出題しない</label>
-      <label class="switchline"><input type="checkbox" id="verifyAnswers" checked> 生成後に正答を多段階検証する（追加API通信1回）</label>
-      <div class="notice warn" style="margin-top:6px">問題文・選択肢の構造検査、独立解答、再検算、解説との整合、教材根拠を確認します。基準を満たさない問題は「要確認」として採点を保留します。</div>
+      <label class="switchline"><input type="checkbox" id="verifyAnswers" checked> 生成後にマルチAIで正答を検証する（OpenAI全問＋Claude必要時）</label>
+      <div class="notice warn" style="margin-top:6px">OpenAIが全問を独立解答。記述・複雑問題・判定が不確かな問題だけClaudeでも再検証します。APIエラー時は自動切替せず停止し、未確認問題は採点保留にします。</div>
       <button class="btn green full" id="generateBtn" type="button" disabled>解析した教材から模試を作成</button>
       <div class="small muted" style="margin-top:8px">先に左側で教材を解析してください。</div>
     </section>
@@ -291,7 +308,11 @@ const $ = id => document.getElementById(id);
 const state = { files: [], analysis: null, questions: [], answers: {}, graded: false, examMode: 'ai', examMeta: {}, grading: null, pdfjs: null, tesseract: null, tesseractLoading: null, tokenUsage: { input: 0, output: 0, total: 0 }, currentOperation: 'AI処理', materialMeta: null };
 const HISTORY_STORAGE_KEY='examForge.activity.v1';
 const API_KEY_STORAGE_KEY='examForge.geminiKey.v1';
+const OPENAI_KEY_STORAGE_KEY='examForge.openaiKey.v1';
+const CLAUDE_KEY_STORAGE_KEY='examForge.claudeKey.v1';
 const MODEL_STORAGE_KEY='examForge.model.v1';
+const OPENAI_MODEL_STORAGE_KEY='examForge.openaiModel.v1';
+const CLAUDE_MODEL_STORAGE_KEY='examForge.claudeModel.v1';
 function readHistory(){try{const v=JSON.parse(localStorage.getItem(HISTORY_STORAGE_KEY)||'[]');return Array.isArray(v)?v:[];}catch{return[];}}
 function recordActivity(kind,title,detail='',meta={}){
  try{const list=readHistory();list.unshift({id:Date.now()+'-'+Math.random().toString(36).slice(2,7),at:new Date().toISOString(),kind,title:String(title||'記録').slice(0,80),detail:String(detail||'').slice(0,260),...meta});localStorage.setItem(HISTORY_STORAGE_KEY,JSON.stringify(list.slice(0,100)));}catch(e){console.warn('履歴を保存できませんでした',e);}
@@ -307,18 +328,30 @@ function renderActivityHistory(){
  if($('historyList'))$('historyList').innerHTML=list.slice(0,12).map(x=>`<div class="history-item"><time>${escapeHtml(new Date(x.at).toLocaleString('ja-JP'))}</time><div><strong>${escapeHtml(x.title)}</strong><span>${escapeHtml(x.detail||'')}</span></div></div>`).join('')||'<div class="small muted">まだ履歴はありません。</div>';
 }
 function saveApiKeyIfRequested(){
- const checked=$('rememberApiKey')?.checked,key=$('apiKey')?.value.trim()||'';
- try{if(checked&&key){localStorage.setItem(API_KEY_STORAGE_KEY,key);$('apiKeyStatus').textContent='APIキーをこの端末のSafariに保存しました。次回から自動入力されます。';}else if(!checked){localStorage.removeItem(API_KEY_STORAGE_KEY);$('apiKeyStatus').textContent='APIキーは保存していません。';}else{$('apiKeyStatus').textContent='APIキーを入力すると、この端末に保存されます。';}}catch(e){$('apiKeyStatus').textContent='ブラウザの保存領域を使えません。毎回入力してください。';}
+ const checked=$('rememberApiKey')?.checked;
+ try{
+  const fields=[['apiKey',API_KEY_STORAGE_KEY],['openaiApiKey',OPENAI_KEY_STORAGE_KEY],['claudeApiKey',CLAUDE_KEY_STORAGE_KEY]];
+  if(checked){for(const [id,key] of fields){const value=$(id)?.value.trim()||'';if(value)localStorage.setItem(key,value);else localStorage.removeItem(key);}$('apiKeyStatus').textContent='入力済みのAPIキーをこの端末のSafariに保存しました。次回から入力を省略できます。';}
+  else{for(const [,key] of fields)localStorage.removeItem(key);$('apiKeyStatus').textContent='APIキーは保存していません。';}
+ }catch(e){$('apiKeyStatus').textContent='ブラウザの保存領域を使えません。毎回入力してください。';}
 }
 function setupLocalPersistence(){
- try{const saved=localStorage.getItem(API_KEY_STORAGE_KEY);if(saved){$('apiKey').value=saved;$('rememberApiKey').checked=true;$('apiKeyStatus').textContent='保存済みAPIキーを読み込みました。この端末で次回から入力を省略できます。';}const model=localStorage.getItem(MODEL_STORAGE_KEY);if(model&&[...$('model').options].some(o=>o.value===model))$('model').value=model;}catch(e){$('apiKeyStatus').textContent='ブラウザの保存領域を利用できません。';}
- $('apiKey').addEventListener('input',()=>{if($('rememberApiKey').checked)saveApiKeyIfRequested();});
+ try{
+  const pairs=[['apiKey',API_KEY_STORAGE_KEY],['openaiApiKey',OPENAI_KEY_STORAGE_KEY],['claudeApiKey',CLAUDE_KEY_STORAGE_KEY]];let restored=0;
+  for(const [id,key] of pairs){const saved=localStorage.getItem(key);if(saved){$(id).value=saved;restored++;}}
+  if(restored){$('rememberApiKey').checked=true;$('apiKeyStatus').textContent=`保存済みAPIキー ${restored}/3 件を読み込みました。`;}
+  const model=localStorage.getItem(MODEL_STORAGE_KEY);if(model&&[...$('model').options].some(o=>o.value===model))$('model').value=model;
+  const openaiModel=localStorage.getItem(OPENAI_MODEL_STORAGE_KEY);if(openaiModel&&[...$('openaiModel').options].some(o=>o.value===openaiModel))$('openaiModel').value=openaiModel;
+  const claudeModel=localStorage.getItem(CLAUDE_MODEL_STORAGE_KEY);if(claudeModel&&[...$('claudeModel').options].some(o=>o.value===claudeModel))$('claudeModel').value=claudeModel;
+ }catch(e){$('apiKeyStatus').textContent='ブラウザの保存領域を利用できません。';}
+ ['apiKey','openaiApiKey','claudeApiKey'].forEach(id=>$(id).addEventListener('input',()=>{if($('rememberApiKey').checked)saveApiKeyIfRequested();}));
  $('rememberApiKey').addEventListener('change',saveApiKeyIfRequested);
- $('clearSavedApiKey').addEventListener('click',()=>{try{localStorage.removeItem(API_KEY_STORAGE_KEY);}catch{}$('apiKey').value='';$('rememberApiKey').checked=false;$('apiKeyStatus').textContent='保存済みAPIキーを削除しました。';});
+ $('clearSavedApiKey').addEventListener('click',()=>{try{[API_KEY_STORAGE_KEY,OPENAI_KEY_STORAGE_KEY,CLAUDE_KEY_STORAGE_KEY].forEach(k=>localStorage.removeItem(k));}catch{}['apiKey','openaiApiKey','claudeApiKey'].forEach(id=>$(id).value='');$('rememberApiKey').checked=false;$('apiKeyStatus').textContent='保存済みAPIキーをすべて削除しました。';});
  $('model').addEventListener('change',()=>{try{localStorage.setItem(MODEL_STORAGE_KEY,$('model').value);}catch{}});
+ $('openaiModel').addEventListener('change',()=>{try{localStorage.setItem(OPENAI_MODEL_STORAGE_KEY,$('openaiModel').value);}catch{}});
+ $('claudeModel').addEventListener('change',()=>{try{localStorage.setItem(CLAUDE_MODEL_STORAGE_KEY,$('claudeModel').value);}catch{}});
  $('clearHistoryBtn').addEventListener('click',()=>{if(!confirm('この端末に保存した利用・訪問履歴をすべて削除しますか？'))return;try{localStorage.removeItem(HISTORY_STORAGE_KEY);}catch{}renderActivityHistory();});
- renderActivityHistory();
- recordActivity('visit','アプリを開いた','この端末のSafari内に記録。サイト全体の訪問者数ではありません。');
+ renderActivityHistory();recordActivity('visit','アプリを開いた','この端末のSafari内に記録。サイト全体の訪問者数ではありません。');
 }
 // The generated exam lives in its own white examination page, not inside the dark builder.
 $('testPaper').appendChild($('examSection'));
@@ -508,6 +541,53 @@ async function callGemini(parts, prompt, outputTokens=7000, responseSchema=null)
  parsed._geminiFinishReason=candidate?.finishReason||'';
  return parsed;
 }
+function toStandardJsonSchema(schema){
+ if(!schema||typeof schema!=='object')return {type:'string'};
+ const type=String(schema.type||'STRING').toLowerCase();
+ if(type==='object'){
+  const properties={};for(const [key,value] of Object.entries(schema.properties||{}))properties[key]=toStandardJsonSchema(value);
+  return {type:'object',properties,required:Array.isArray(schema.required)?schema.required:Object.keys(properties),additionalProperties:false};
+ }
+ if(type==='array')return {type:'array',items:toStandardJsonSchema(schema.items||{type:'STRING'})};
+ if(type==='integer'||type==='number'||type==='boolean'||type==='string')return {type};
+ return {type:'string'};
+}
+function recordProviderUsage(provider,model,operation,usage={}){
+ const input=Number(usage.input_tokens??usage.prompt_tokens)||0;
+ const output=Number(usage.output_tokens??usage.completion_tokens)||0;
+ const total=Number(usage.total_tokens)||(input+output);
+ state.tokenUsage.input+=input;state.tokenUsage.output+=output;state.tokenUsage.total+=total;
+ recordActivity('api',`${provider} APIを利用`,`${operation} / ${model} / 入力 ${input.toLocaleString()}・出力 ${output.toLocaleString()}・合計 ${total.toLocaleString()} トークン`,{provider,model,inputTokens:input,outputTokens:output,totalTokens:total});
+ const note=$('tokenUsageNote');if(note)note.textContent=`今回の役割別AI利用：Gemini・OpenAI・Claude ／ このページ累計：入力 ${state.tokenUsage.input.toLocaleString()} / 出力 ${state.tokenUsage.output.toLocaleString()} / 合計 ${state.tokenUsage.total.toLocaleString()} トークン。通常採点は端末内で追加API通信なし。`;
+ return {input,output,total};
+}
+function providerError(provider,operation,model,status,message){
+ recordActivity('api_error',`${provider} APIエラー`,`${operation} / ${model} / HTTP ${status} / ${String(message).slice(0,130)}`);
+ return new Error(`${provider} APIエラー (${status})［${model}］：${message}。自動再試行・他社への自動切替は行わず、この工程で停止しました。設定・利用上限・モデル利用権限を確認してから手動で再実行してください。`);
+}
+async function callOpenAI(prompt,outputTokens=5000,responseSchema=null){
+ const key=$('openaiApiKey').value.trim();if(!key)throw new Error('正答検証に必要なOpenAI APIキーを入力してください。');
+ saveApiKeyIfRequested();const model=$('openaiModel').value||'gpt-6.2-astra',operation=state.currentOperation||'正答検証';
+ const body={model,input:[{role:'user',content:[{type:'input_text',text:prompt}]}],max_output_tokens:outputTokens,store:false};
+ if(responseSchema)body.text={format:{type:'json_schema',name:'exam_answer_audit',strict:true,schema:toStandardJsonSchema(responseSchema)}};
+ let response;try{response=await fetch('https://api.openai.com/v1/responses',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${key}`},body:JSON.stringify(body)});}catch(e){recordActivity('api_error','OpenAI API通信エラー',`${operation} / ${model} / ${String(e.message||e).slice(0,120)}`);throw new Error(`OpenAIとの通信に失敗しました（${model}）：${e.message||'ネットワークまたはCORS制限'}。自動再試行はしません。`);}
+ if(!response.ok){const raw=await response.text();let msg=raw;try{msg=JSON.parse(raw).error?.message||raw;}catch{}throw providerError('OpenAI',operation,model,response.status,msg);}
+ const data=await response.json();recordProviderUsage('OpenAI',model,operation,data.usage||{});
+ let textOut=String(data.output_text||'');if(!textOut&&Array.isArray(data.output))textOut=data.output.flatMap(x=>x.content||[]).filter(x=>x.type==='output_text').map(x=>x.text||'').join('\n');
+ if(!textOut)throw new Error(`OpenAIから解析可能な本文が返りませんでした（${model}）。自動再試行はしません。`);
+ return parseJson(textOut);
+}
+async function callClaude(prompt,outputTokens=3500,responseSchema=null){
+ const key=$('claudeApiKey').value.trim();if(!key)throw new Error('高リスク問題の二次検証に必要なClaude APIキーを入力してください。');
+ saveApiKeyIfRequested();const model=$('claudeModel').value||'claude-sonnet-5-5',operation=state.currentOperation||'二次検証';
+ const body={model,max_tokens:outputTokens,messages:[{role:'user',content:prompt}]};
+ if(responseSchema)body.output_config={format:{type:'json_schema',schema:toStandardJsonSchema(responseSchema)}};
+ let response;try{response=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2026-10-21','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify(body)});}catch(e){recordActivity('api_error','Claude API通信エラー',`${operation} / ${model} / ${String(e.message||e).slice(0,120)}`);throw new Error(`Claudeとの通信に失敗しました（${model}）：${e.message||'ネットワークまたはCORS制限'}。自動再試行はしません。`);}
+ if(!response.ok){const raw=await response.text();let msg=raw;try{msg=JSON.parse(raw).error?.message||raw;}catch{}throw providerError('Claude',operation,model,response.status,msg);}
+ const data=await response.json();recordProviderUsage('Claude',model,operation,{input_tokens:data.usage?.input_tokens,output_tokens:data.usage?.output_tokens,total_tokens:(Number(data.usage?.input_tokens)||0)+(Number(data.usage?.output_tokens)||0)});
+ const textOut=(data.content||[]).filter(x=>x.type==='text').map(x=>x.text||'').join('\n');if(!textOut)throw new Error(`Claudeから解析可能な本文が返りませんでした（${model}）。自動再試行はしません。`);
+ return parseJson(textOut);
+}
 function stripJsonEnvelope(source){
  let v=String(source??'').replace(/^\uFEFF/,'').trim();
  v=v.replace(/^```(?:json)?\s*/i,'').replace(/\s*```$/,'').trim();
@@ -589,8 +669,9 @@ $('generateBtn').addEventListener('click',async()=>{if(!state.analysis)return;se
  if(!Array.isArray(exam.questions)||!exam.questions.length)throw new Error('問題が生成されませんでした。設定を変えて再実行してください。');state.questions=exam.questions.slice(0,s.count).map((q,i)=>{const type=['choice','short','calculation','essay'].includes(q.type)?q.type:(Array.isArray(q.choices)&&q.choices.length?'choice':'short');return({...q,id:i+1,type,points:Number(q.points)||10,choices:Array.isArray(q.choices)?q.choices:[],acceptableAnswers:Array.isArray(q.acceptableAnswers)?q.acceptableAnswers:[],_answerStatus:mode==='local'?'verified':'unverified',answerSpaceRows:Math.max(1,Math.min(7,Number(q.answerSpaceRows)||(['essay'].includes(type)?6:['calculation'].includes(type)?4:type==='short'?2:1)))});});
  state.questions.forEach(q=>{if(q.type==='choice'){const idx=choiceIndex(q.answer,q);if(idx>=0)q.answer=q.choices[idx];}});
  if(mode==='ai'&&$('verifyAnswers').checked){
-  try{showStatus('正答を多段階チェック中...（独立解答・選択肢整合・解説照合・根拠確認）',82);state.currentOperation='正答検証';exam._answerAudit=await verifyGeneratedAnswers(state.questions,s,state.analysis);state.currentOperation='問題生成';}
-  catch(auditError){state.questions.forEach(q=>{q._answerStatus='review';q._answerAuditReason='独立検証に失敗：'+String(auditError.message||auditError).slice(0,130);});exam._answerAudit={confirmed:0,corrected:0,review:state.questions.length};exam._answerAuditWarning=String(auditError.message||auditError);}
+  showStatus('OpenAIで全問を独立検証中...',82);state.currentOperation='正答検証';
+  try{exam._answerAudit=await verifyGeneratedAnswers(state.questions,s,state.analysis);}
+  catch(auditError){recordActivity('error','マルチAI検証で停止',String(auditError.message||auditError).slice(0,220));throw new Error('正答検証を完了できないため、模試ページへの移行を停止しました。'+String(auditError.message||auditError));}
  }else if(mode==='ai'){
   state.questions.forEach(q=>{q._answerStatus='unverified';q._answerAuditReason='独立検証をOFFにしたため、正答は未確認です。';});exam._answerAudit={confirmed:0,corrected:0,review:state.questions.length};exam._answerAuditWarning='正答の独立検証がOFFです。AI生成の正答は自動採点しません。';
  }
@@ -612,63 +693,50 @@ function simpleArithmeticInQuestion(prompt){
 }
 function numericFromAnswer(value){const direct=numericAnswer(value);if(direct!==null)return direct;const m=String(value||'').normalize('NFKC').match(/[+-]?(?:\d+(?:\.\d*)?|\.\d+)/);return m?Number(m[0]):null;}
 async function verifyGeneratedAnswers(questions, settings, analysis){
- // 5 gates: client structure, safe arithmetic, independent solve, consistency flags, confidence threshold.
- const precheck=new Map(),mathExpected=new Map();const seenPrompt=new Set();
+ // Local structural checks first; OpenAI independently solves every item. Claude receives only high-risk or disputed items.
+ const precheck=new Map(),mathExpected=new Map(),seenPrompt=new Set();
  for(const q of questions){
-  const issues=[];const p=norm(q.prompt||'');
-  if(p.length<8)issues.push('問題文が短すぎます');
-  if(seenPrompt.has(p))issues.push('問題文が重複しています');seenPrompt.add(p);
-  if(!String(q.answer||'').trim())issues.push('生成時の正答が空欄です');
-  if(!Number.isFinite(Number(q.points))||Number(q.points)<=0)issues.push('配点が不正です');
-  const looksLikeCalculation=q.type==='calculation'||/計算|式の値|演算|計算しなさい/.test(String(q.prompt||''));
-  const simpleResult=looksLikeCalculation?simpleArithmeticInQuestion(q.prompt):null;
-  if(simpleResult!==null)mathExpected.set(q.id,simpleResult);
-  if(q.type==='choice'){
-   const choices=(q.choices||[]).map(norm);
-   if(choices.length!==4)issues.push('選択肢が4個ではありません');
-   if(new Set(choices).size!==choices.length)issues.push('選択肢が重複しています');
-  }
+  const issues=[],p=norm(q.prompt||'');if(p.length<8)issues.push('問題文が短すぎます');if(seenPrompt.has(p))issues.push('問題文が重複しています');seenPrompt.add(p);
+  if(!String(q.answer||'').trim())issues.push('生成時の正答が空欄です');if(!Number.isFinite(Number(q.points))||Number(q.points)<=0)issues.push('配点が不正です');
+  const looksLikeCalculation=q.type==='calculation'||/計算|式の値|演算|計算しなさい/.test(String(q.prompt||''));const simpleResult=looksLikeCalculation?simpleArithmeticInQuestion(q.prompt):null;if(simpleResult!==null)mathExpected.set(q.id,simpleResult);
+  if(q.type==='choice'){const choices=(q.choices||[]).map(norm);if(choices.length!==4)issues.push('選択肢が4個ではありません');if(new Set(choices).size!==choices.length)issues.push('選択肢が重複しています');}
   precheck.set(q.id,issues);
  }
- const compact=questions.map(q=>({id:q.id,type:q.type,question:String(q.prompt||'').slice(0,900),choices:(q.choices||[]).slice(0,4).map(x=>String(x).slice(0,90)),proposedAnswer:String(q.answer||'').slice(0,150),explanation:String(q.explanation||'').slice(0,100)}));
- const reference={subject:analysis?.subject||settings.subject,topics:(analysis?.chapters||[]).slice(0,5),keyPoints:(analysis?.keyPoints||[]).slice(0,6),source:String(analysis?.extractedText||'').slice(0,1000)};
- const prompt=`あなたは問題作成AIとは独立した試験校閲者です。全問について、候補解答をいったん無視して独立に解いてください。短くても次の5検査を必ず実施します。
-A:独立解答を導出。
-B:可能なら別解・代入・逆算・単位確認で再検算。
-C:選択式は全選択肢を照合し、正解がちょうど1つか確認。非選択式ではchoiceUnique=true。
-D:解説が独立解答と矛盾しないか照合。
-E:教材の範囲・条件・定義に合うか根拠確認。
-教科=${reference.subject}。範囲=${JSON.stringify(reference.topics)}。要点=${JSON.stringify(reference.keyPoints)}。教材根拠=${reference.source}
-問題=${JSON.stringify(compact)}
-各検査で少しでも不確実ならREVIEWにしてください。CONFIRMEDは提案解答と独立解答が一致し、solutionCheck/explanationConsistent/sourceSupported=true、confidence>=0.92の場合のみ。CORRECTEDは提案解答が明確に誤りで、修正答を一意に決められ、同じ3フラグがtrue、confidence>=0.92の場合のみ。複数正解・選択肢不足・曖昧・根拠不足はREVIEW。独立解答 independentAnswer と verifiedAnswer は同じ確定答を入れる。選択問題はverifiedAnswerを選択肢本文と完全一致させる。reviewではverifiedAnswerとindependentAnswerは空文字、confidenceは0〜1。reasonは具体的な短い理由、verifiedExplanationは再検算根拠を70文字以内。全IDを一度ずつ返す。JSON以外は出力しない。`;
- state.currentOperation='正答の多段階検証';
- const result=await callGemini([],prompt,Math.min(6200,Math.max(1000,questions.length*170)),ANSWER_AUDIT_SCHEMA);
- const checks=Array.isArray(result.checks)?result.checks:[];const byId=new Map();for(const c of checks){const id=Number(c.id);if(byId.has(id)){byId.set(id,null);}else byId.set(id,c);}
+ const compact=items=>items.map(q=>({id:q.id,type:q.type,question:String(q.prompt||'').slice(0,850),choices:(q.choices||[]).slice(0,4).map(x=>String(x).slice(0,80)),proposedAnswer:String(q.answer||'').slice(0,120),explanation:String(q.explanation||'').slice(0,80)}));
+ const reference={subject:analysis?.subject||settings.subject,topics:(analysis?.chapters||[]).slice(0,4),keyPoints:(analysis?.keyPoints||[]).slice(0,5),source:String(analysis?.extractedText||'').slice(0,650)};
+ const makePrompt=(items,provider)=>`あなたは問題作成AIとは独立した${provider}の試験校閲者です。候補解答を信用せず、各問を最初から独立に解いてください。A:独立解答。B:代入・逆算・別解・単位等で再検算。C:選択式は全選択肢を照合し正解がちょうど1つか確認。D:解説と独立解答を照合。E:教材の範囲・条件・定義を確認。教科=${reference.subject}。単元=${JSON.stringify(reference.topics)}。要点=${JSON.stringify(reference.keyPoints)}。教材根拠=${reference.source}。問題=${JSON.stringify(compact(items))}。各検査で不確実ならREVIEW。CONFIRMEDは提案解答と独立解答が一致し、solutionCheck/explanationConsistent/sourceSupported=true、confidence>=0.92の場合のみ。CORRECTEDは提案解答が明確に誤りで修正答が一意、同じ3フラグtrue、confidence>=0.92の場合のみ。選択問題はverifiedAnswerを選択肢本文と完全一致。reviewではverifiedAnswer/independentAnswerを空文字。非選択問題はchoiceUnique=true。reason短文、verifiedExplanationは70文字以内。全IDを一度ずつ返す。JSONのみ。`;
+ state.currentOperation='OpenAI一次正答検証';
+ const obviousRisk=questions.some(q=>q.type==='essay'||/証明|場合分け|微分|積分|確率|ベクトル|三角関数|図形|化学反応|実験考察|資料読解|複数条件/.test(String(q.prompt||'')));
+ if(obviousRisk&&!$('claudeApiKey').value.trim())throw new Error('この模試にはClaude二次検証が必要な記述・複雑問題が含まれます。Claude APIキーを先に設定してください。');
+ const primary=await callOpenAI(makePrompt(questions,'OpenAI'),Math.min(7000,Math.max(1300,questions.length*190)),ANSWER_AUDIT_SCHEMA);
+ const primaryChecks=Array.isArray(primary.checks)?primary.checks:[],primaryById=new Map();for(const c of primaryChecks){const id=Number(c.id);if(primaryById.has(id))primaryById.set(id,null);else primaryById.set(id,c);}
+ const risky=questions.filter(q=>{const c=primaryById.get(Number(q.id)),v=String(c?.verdict||'REVIEW').toUpperCase(),conf=Number(c?.confidence);return q.type==='essay'||v==='REVIEW'||!Number.isFinite(conf)||conf<.94||/証明|場合分け|微分|積分|確率|ベクトル|三角関数|図形|化学反応|実験考察|資料読解|複数条件/.test(String(q.prompt||''));});
+ let claudeById=new Map();
+ if(risky.length){
+  if(!$('claudeApiKey').value.trim())throw new Error(`Claudeによる二次検証が必要な問題が${risky.length}問あります。Claude APIキーを設定してください。キー未設定時に検証を飛ばすことはしません。`);
+  state.currentOperation=`Claude二次検証（${risky.length}問）`;
+  const second=await callClaude(makePrompt(risky,'Claude'),Math.min(5200,Math.max(900,risky.length*190)),ANSWER_AUDIT_SCHEMA);
+  for(const c of Array.isArray(second.checks)?second.checks:[]){const id=Number(c.id);if(claudeById.has(id))claudeById.set(id,null);else claudeById.set(id,c);}
+ }
  const summary={confirmed:0,corrected:0,review:0};
  for(const q of questions){
-  const c=byId.get(Number(q.id));const issues=precheck.get(q.id)||[];
-  const verdict=String(c?.verdict||'REVIEW').trim().toUpperCase();
-  const answer=String(c?.verifiedAnswer||'').trim();const independentlySolved=String(c?.independentAnswer||'').trim();
-  const confidence=Number(c?.confidence);
-  let valid=!!c&&!issues.length&&!!answer&&!!independentlySolved&&['CONFIRMED','CORRECTED'].includes(verdict)
-   &&c.solutionCheck===true&&c.explanationConsistent===true&&c.sourceSupported===true&&Number.isFinite(confidence)&&confidence>=.92
-   &&norm(answer)===norm(independentlySolved);
-  if(valid&&mathExpected.has(q.id)){const auditValue=q.type==='choice'?(q.choices||[]).find(x=>norm(x)===norm(answer)):answer;const n=numericFromAnswer(auditValue);valid=n!==null&&Math.abs(n-mathExpected.get(q.id))<1e-9;}
-  let acceptable=Array.isArray(c?.acceptableAnswers)?c.acceptableAnswers.map(x=>String(x).trim()).filter(Boolean).slice(0,4):[];
-  if(valid&&q.type==='choice'){
-   const opts=(q.choices||[]).map(norm);valid=opts.length===4&&new Set(opts).size===4&&c.choiceUnique===true&&opts.includes(norm(answer));
-   acceptable=acceptable.filter(x=>opts.includes(norm(x)));
-  }else if(valid&&c.choiceUnique!==true){valid=false;}
-  if(valid&&verdict==='CONFIRMED'&&norm(answer)!==norm(q.answer||''))valid=false;
-  if(valid&&verdict==='CORRECTED'&&norm(answer)===norm(q.answer||''))valid=false;
-  if(!valid){q._answerStatus='review';q._answerAuditReason=[...issues,String(c?.reason||'全検査条件を満たしませんでした。')].filter(Boolean).join(' / ').slice(0,220);summary.review++;continue;}
-  q._answerStatus='verified';q._answerAuditReason=`${verdict==='CORRECTED'?'正答を修正':'独立解答と一致'}。信頼度 ${Math.round(confidence*100)}%。${String(c.reason||'').slice(0,100)}`;
-  q.answer=answer;q.acceptableAnswers=acceptable;q._answerAuditVerdict=verdict;q._answerConfidence=confidence;
-  if(c.verifiedExplanation)q.explanation=String(c.verifiedExplanation).slice(0,240);
+  const a=primaryById.get(Number(q.id)),b=risky.some(x=>x.id===q.id)?claudeById.get(Number(q.id)):null,issues=precheck.get(q.id)||[];
+  const validCheck=c=>{const verdict=String(c?.verdict||'REVIEW').toUpperCase(),answer=String(c?.verifiedAnswer||'').trim(),ind=String(c?.independentAnswer||'').trim(),confidence=Number(c?.confidence);return !!c&&['CONFIRMED','CORRECTED'].includes(verdict)&&!!answer&&!!ind&&c.solutionCheck===true&&c.explanationConsistent===true&&c.sourceSupported===true&&c.choiceUnique===true&&Number.isFinite(confidence)&&confidence>=.92&&norm(answer)===norm(ind);};
+  let valid=!issues.length&&validCheck(a);let verdict=String(a?.verdict||'REVIEW').toUpperCase(),answer=String(a?.verifiedAnswer||'').trim();
+  if(valid&&b){valid=validCheck(b)&&norm(b.verifiedAnswer)===norm(a.verifiedAnswer)&&norm(b.independentAnswer)===norm(a.independentAnswer)&&String(b.verdict).toUpperCase()===verdict;if(!valid)q._answerAuditReason='OpenAIとClaudeの独立検証が一致しません。';}
+  if(valid&&mathExpected.has(q.id)){const n=numericFromAnswer(q.type==='choice'?(q.choices||[]).find(x=>norm(x)===norm(answer)):answer);valid=n!==null&&Math.abs(n-mathExpected.get(q.id))<1e-9;if(!valid)q._answerAuditReason='端末内の独立計算とAI検証結果が一致しません。';}
+  let acceptable=Array.isArray(a?.acceptableAnswers)?a.acceptableAnswers.map(x=>String(x).trim()).filter(Boolean).slice(0,4):[];
+  if(valid&&q.type==='choice'){const opts=(q.choices||[]).map(norm);valid=opts.length===4&&new Set(opts).size===4&&opts.includes(norm(answer))&&(!b||String(b.verifiedAnswer).trim()===answer);acceptable=acceptable.filter(x=>opts.includes(norm(x)));}
+  if(valid&&verdict==='CONFIRMED'&&norm(answer)!==norm(q.answer||''))valid=false;if(valid&&verdict==='CORRECTED'&&norm(answer)===norm(q.answer||''))valid=false;
+  if(!valid){q._answerStatus='review';q._answerAuditReason=(q._answerAuditReason||[...issues,String(a?.reason||'OpenAI検証で確定条件を満たしませんでした。'),b?String(b.reason||'Claude検証で確定条件を満たしませんでした。'):''].filter(Boolean).join(' / ')).slice(0,240);summary.review++;continue;}
+  q._answerStatus='verified';q._answerAuditReason=`${verdict==='CORRECTED'?'正答を修正':'独立解答と一致'}。OpenAI${b?'・Claudeの二社一致':''}で確認。信頼度 ${Math.round(Math.min(Number(a.confidence),b?Number(b.confidence):1)*100)}%。`;
+  q.answer=answer;q.acceptableAnswers=acceptable;q._answerAuditVerdict=verdict;q._answerConfidence=Math.min(Number(a.confidence),b?Number(b.confidence):1);if(a.verifiedExplanation)q.explanation=String(a.verifiedExplanation).slice(0,240);
   if(verdict==='CORRECTED')summary.corrected++;else summary.confirmed++;
  }
- if(checks.length!==questions.length||byId.size!==questions.length){for(const q of questions){if(!q._answerStatus||q._answerStatus!=='verified'&&!(q._answerAuditReason||'').includes('全検査条件')){q._answerStatus='review';q._answerAuditReason='検証結果のIDが欠落または重複しています。';}}}
+ if(primaryChecks.length!==questions.length||primaryById.size!==questions.length){for(const q of questions){q._answerStatus='review';q._answerAuditReason='OpenAI検証結果のID欠落・重複があるため保留。';}}
+ if(risky.length&&claudeById.size!==risky.length){for(const q of risky){q._answerStatus='review';q._answerAuditReason='Claude検証結果のID欠落・重複があるため保留。';}}
  summary.review=questions.filter(q=>q._answerStatus!=='verified').length;summary.confirmed=questions.filter(q=>q._answerStatus==='verified'&&q._answerAuditVerdict==='CONFIRMED').length;summary.corrected=questions.filter(q=>q._answerStatus==='verified'&&q._answerAuditVerdict==='CORRECTED').length;
+ recordActivity('audit','マルチAI正答検証完了',`OpenAI全${questions.length}問 / Claude追加${risky.length}問 / 確認${summary.confirmed}・修正${summary.corrected}・保留${summary.review}`);
  return summary;
 }
 
@@ -713,7 +781,7 @@ function printHeadMarkup(kind='question'){
 function writingLines(rows){return `<div class="print-writing-space">${Array.from({length:rows},()=>'<div class="print-line"></div>').join('')}</div>`;}
 function renderExam(exam,mode,s){
  const total=state.questions.reduce((n,q)=>n+q.points,0),template=subjectTemplate(exam.subject||s.subject);$('examSection').dataset.subject=template.key;$('testPaper').dataset.subject=template.key;
- $('examTitle').textContent=exam.title||'オリジナル模試';$('examMeta').textContent=`${template.label} · ${exam.subject||s.subject} · ${exam.grade||s.grade} · ${exam.scope||'教材範囲'}`;$('examMode').textContent=mode==='ai'?'Gemini AI生成':'端末内・簡易生成';$('qCount').textContent=state.questions.length;$('totalPoints').textContent=total;$('timeLimit').textContent=s.minutes==='時間制限なし'?'なし':s.minutes+'分';const audit=exam._answerAudit;const auditText=audit?` 正答検証（多段階）：確認 ${audit.confirmed}問・修正 ${audit.corrected}問・要確認 ${audit.review}問。構造・独立解答・再検算・選択肢一意性・解説整合・教材根拠を確認。要確認は採点保留。`:'';$('examNotice').textContent='採点は端末内で実行（Geminiへの採点送信なし）。記述・計算過程の部分点は手動確認になります。'+auditText+(exam._answerAuditWarning?` 検証上の注意：${exam._answerAuditWarning}`:'')+(exam._jsonRecovered?` 注意：AIの返答が途中で切れたため、完全に読み取れた${state.questions.length}問だけを採用しました。問題数を減らすと安定します。`:exam._geminiFinishReason==='MAX_TOKENS'?' 注意：AIの出力上限に達しました。問題数を減らして再作成してください。':Array.isArray(exam.questions)&&exam.questions.length<(s.count||0)?` 注意：指定${s.count}問に対して${exam.questions.length}問だけ生成されました。必要なら問題数を減らして再作成してください。`:'');
+ $('examTitle').textContent=exam.title||'オリジナル模試';$('examMeta').textContent=`${template.label} · ${exam.subject||s.subject} · ${exam.grade||s.grade} · ${exam.scope||'教材範囲'}`;$('examMode').textContent=mode==='ai'?'Gemini AI生成':'端末内・簡易生成';$('qCount').textContent=state.questions.length;$('totalPoints').textContent=total;$('timeLimit').textContent=s.minutes==='時間制限なし'?'なし':s.minutes+'分';const audit=exam._answerAudit;const auditText=audit?` マルチAI正答検証：確認 ${audit.confirmed}問・修正 ${audit.corrected}問・要確認 ${audit.review}問。OpenAIが全問を独立解答し、Claudeは記述・複雑・不一致問題だけ追加検証。要確認は採点保留。`:'';$('examNotice').textContent='採点は端末内で実行（Geminiへの採点送信なし）。記述・計算過程の部分点は手動確認になります。'+auditText+(exam._answerAuditWarning?` 検証上の注意：${exam._answerAuditWarning}`:'')+(exam._jsonRecovered?` 注意：AIの返答が途中で切れたため、完全に読み取れた${state.questions.length}問だけを採用しました。問題数を減らすと安定します。`:exam._geminiFinishReason==='MAX_TOKENS'?' 注意：AIの出力上限に達しました。問題数を減らして再作成してください。':Array.isArray(exam.questions)&&exam.questions.length<(s.count||0)?` 注意：指定${s.count}問に対して${exam.questions.length}問だけ生成されました。必要なら問題数を減らして再作成してください。`:'');
  $('questionPrintHead').innerHTML=printHeadMarkup('question');
  const timeLabel=s.minutes==='時間制限なし'?'時間制限なし':`試験時間 ${escapeHtml(s.minutes)} 分`;const topNote=`<div class="subject-paper-note"><div>${escapeHtml(template.note)}</div><div class="paper-meta-strip"><span>${escapeHtml(timeLabel)}</span><span>満点 ${total} 点</span><span>${state.questions.length} 問</span></div></div>`;
  $('questionList').innerHTML=topNote+state.questions.map((q,i)=>{const kind=q.type==='choice'?'選択':q.type==='essay'?'論述':q.type==='calculation'?'計算・過程':'短答';const section=subjectSectionLabel(exam.subject||s.subject,q,i);
