@@ -234,10 +234,9 @@ body.test-mode{background:#edf0f4!important;color:#171717!important;color-scheme
         </div>
         <div id="apiKeyStatus" class="small muted" style="margin-top:5px">保存は任意です。Safariの通常保存領域が使えない場合はIndexedDBへ切り替えます。APIキーは暗号化されないため、共有端末では保存しないでください。</div>
         <div class="row" style="margin-top:8px;align-items:end">
-          <div style="flex:1;min-width:0"><label class="label" for="model">使用モデル（5種類から選択）</label>
+          <div style="flex:1;min-width:0"><label class="label" for="model">使用モデル（4種類から選択）</label>
             <select class="input" id="model">
               <option value="gemini-3.8-flash" selected>Gemini 3.8 Flash（標準・高性能）</option>
-              <option value="gemini-3.7-flash">Gemini 3.7 Flash（バランス）</option>
               <option value="gemini-3.6-flash">Gemini 3.6 Flash（前世代）</option>
               <option value="gemini-3.5-flash">Gemini 3.5 Flash（標準）</option>
               <option value="gemini-3.5-flash-lite">Gemini 3.5 Flash-Lite（軽量・低負荷）</option>
@@ -284,12 +283,13 @@ body.test-mode{background:#edf0f4!important;color:#171717!important;color-scheme
               <option value="gemma-4-31B-it" selected>Gemma 4 31B · 画像対応</option>
               <option value="gpt-oss-120b">GPT-OSS 120B · 高精度推論（テキスト）</option>
             </select>
-            <div class="provider-description">Gemma 4は画像入力対応。GPT-OSS 120Bはテキスト専用。公式の無料枠モデル一覧に載るモデルだけを初期選択肢にしています。</div>
+            <div class="provider-description">Gemma 4は画像入力対応。GPT-OSS 120Bはテキスト専用。両モデルともFree Tier対象ですが、SambaNova公式ではPreviewモデル扱いです。</div>
           </section>
         </div>
-        <div class="notice warn" style="margin-top:10px">無料枠について：SambaNovaのRate Limits公式文書では、支払方法未登録のアカウントはFree Tierとなり、gemma-4-31B-it／gpt-oss-120bはモデルごとに20リクエスト/日・20リクエスト/分・200,000トークン/日です。ただし同社のPlansページには初回リクエストにクレジット購入が必要との案内もあるため、実際の利用可否はアカウントのUsage／Credits表示が優先です。Groqもモデル別の無料枠上限があり、アカウントのLimits表示が優先されます。どちらも上限・利用資格の問題が出たら停止し、有料モデルや別会社へ自動切替しません。</div>
+        <div class="notice warn" style="margin-top:10px">無料枠・上限の注意：Groqの上限は組織単位で、RPM・RPD・TPMに加え、アカウントによっては入力/出力トークン毎分（ITPM/OTPM）も適用されます。今回確認されたQwenのOTPM 1,000に合わせ、1回の出力要求を850以下に制限します。SambaNova Free Tierは支払方法未登録時に適用され、Gemma 4 31B／GPT-OSS 120Bは各モデル20リクエスト/分・20リクエスト/日・200,000トークン/日です。SambaNovaの掲載モデルはPreview扱いで、予告なく変更・終了する場合があります。Geminiの無料枠はプロジェクト・モデルごとに異なり、Google AI StudioのRate Limitsが優先です。どの会社も上限超過時は停止し、有料化・他社への自動切替・自動再試行はしません。</div>
         <div class="notice warn" style="margin-top:10px">重要：GitHub Pagesのブラウザから直接APIを呼ぶ方式です。APIキーはこの端末のブラウザに保存できますが、暗号化されず、ブラウザ内では完全に秘匿できません。共有端末では保存せず、キーを第三者に見せないでください。公開サービスとして安全に配布する場合は、サーバー側中継が必要です。</div>
         <div class="small muted" id="multiApiStatus" style="margin-top:7px">AIありモードではGemini・Groq・SambaNovaの3社すべてのAPIキーが必要です。目標配分25/40/35。APIエラー時は自動再試行・他社への代替をせず停止します。</div>
+        <div class="notice" id="apiQuotaStatus" role="status" aria-live="polite" style="margin-top:8px">API利用枠：最初の通信後、各社が返す残りリクエスト数・トークン枠を取得できた場合にここへ表示します。</div>
       </section>
       <div id="localInfo" class="notice warn hidden">AIなしモードは端末内処理です。写真OCRは初回に日本語辞書（数MB〜）をダウンロードするため、通信環境によっては数分かかる場合があります。120秒で進まない場合はエラー表示します。自由な類題生成はできません。</div>
       <div class="label">教科</div>
@@ -354,6 +354,70 @@ body.test-mode{background:#edf0f4!important;color:#171717!important;color-scheme
 const $ = id => document.getElementById(id);
 const PROVIDERS=['Gemini','Groq','SambaNova'];
 const PROVIDER_WEIGHTS={Gemini:25,Groq:40,SambaNova:35};
+// Conservative per-request ceilings. The Qwen ceiling leaves headroom below the observed 1,000 OTPM cap.
+const GEMINI_OUTPUT_CAP=6500;
+const GROQ_QWEN_OUTPUT_CAP=850;
+const GROQ_GPTOSS_OUTPUT_CAP=6000;
+const SAMBANOVA_OUTPUT_CAP=5000;
+const GROQ_QWEN_WINDOW_LIMIT=900;
+const GROQ_QWEN_WINDOW_KEY='examForge.groqQwenOutputWindow.v1';
+const SAMBANOVA_DAILY_LIMIT=18; // Keep two requests of headroom below the published 20/day Free Tier limit.
+const SAMBANOVA_DAILY_WINDOW=24*60*60*1000;
+const SAMBANOVA_DAILY_KEY='examForge.sambanovaDailyRequests.v1';
+const providerLastRequestAt=new Map();
+let groqQwenOutputFallback=[];
+let sambanovaDailyFallback={};
+function isGroqQwenModel(){return String($('groqModel')?.value||'qwen/qwen3.8-27b').startsWith('qwen/');}
+function splitIntoChunks(items,size){const out=[];for(let i=0;i<items.length;i+=size)out.push(items.slice(i,i+size));return out;}
+function delay(ms){return new Promise(resolve=>setTimeout(resolve,ms));}
+function readGroqQwenOutputWindow(){const cutoff=Date.now()-60000;let rows=groqQwenOutputFallback;try{const raw=localStorage.getItem(GROQ_QWEN_WINDOW_KEY);if(raw!==null){const parsed=JSON.parse(raw);if(Array.isArray(parsed))rows=parsed;}}catch{}groqQwenOutputFallback=(Array.isArray(rows)?rows:[]).filter(x=>Number(x?.at)>cutoff&&Number(x?.tokens)>0);return groqQwenOutputFallback;}
+function trackGroqQwenOutput(provider,model,tokens){if(provider!=='Groq'||model!=='qwen/qwen3.8-27b'||!(Number(tokens)>0))return;const rows=readGroqQwenOutputWindow();rows.push({at:Date.now(),tokens:Number(tokens)});groqQwenOutputFallback=rows.slice(-80);try{localStorage.setItem(GROQ_QWEN_WINDOW_KEY,JSON.stringify(groqQwenOutputFallback));}catch{}}
+async function waitForGroqQwenOutputWindow(provider,model,operation){if(provider!=='Groq'||model!=='qwen/qwen3.8-27b')return;const expected=operation.includes('教材解析')?450:operation.includes('正答検証')?450:400;while(true){const rows=readGroqQwenOutputWindow(),used=rows.reduce((n,x)=>n+Number(x.tokens||0),0);if(used+expected<=GROQ_QWEN_WINDOW_LIMIT)return;const oldest=Math.min(...rows.map(x=>Number(x.at)||Date.now()));const wait=Math.max(1000,oldest+60000-Date.now()+500);showStatus(`Groq Qwenの出力枠を保護中...（直近1分 ${Math.round(used)} / ${GROQ_QWEN_WINDOW_LIMIT} tokens。約${Math.ceil(wait/1000)}秒後に続行）`,0);await delay(wait);}}
+function readSambaNovaDailyRequests(){const cutoff=Date.now()-SAMBANOVA_DAILY_WINDOW;let all=sambanovaDailyFallback;try{const raw=localStorage.getItem(SAMBANOVA_DAILY_KEY);if(raw!==null){const parsed=JSON.parse(raw);if(parsed&&typeof parsed==='object'&&!Array.isArray(parsed))all=parsed;}}catch{}for(const model of Object.keys(all)){all[model]=(Array.isArray(all[model])?all[model]:[]).filter(at=>Number(at)>cutoff);}sambanovaDailyFallback=all;return all;}
+function saveSambaNovaDailyRequests(all){sambanovaDailyFallback=all;try{localStorage.setItem(SAMBANOVA_DAILY_KEY,JSON.stringify(all));}catch{}}
+function reserveSambaNovaDailyRequest(model){const now=Date.now(),all=readSambaNovaDailyRequests(),rows=all[model]||[];if(rows.length>=SAMBANOVA_DAILY_LIMIT){const resetIn=Math.max(1,Math.ceil((Math.min(...rows)+SAMBANOVA_DAILY_WINDOW-now)/60000));const err=new Error(`SambaNova ${model} のこの端末での直近24時間の利用目安に達しました（${rows.length}/${SAMBANOVA_DAILY_LIMIT}回）。Free Tierの日次上限20回を超えないため送信を停止しました。約${resetIn}分後に再開できます。別端末・他アプリの利用回数は含まれないため、管理画面の実際の残り枠も確認してください。`);err.name='LocalQuotaGuardError';throw err;}rows.push(now);all[model]=rows;saveSambaNovaDailyRequests(all);return now;}
+function releaseSambaNovaDailyRequest(model,stamp){if(stamp==null)return;const all=readSambaNovaDailyRequests(),rows=all[model]||[],index=rows.indexOf(stamp);if(index>=0){rows.splice(index,1);all[model]=rows;saveSambaNovaDailyRequests(all);}}
+function getHeader(response,name){try{return response?.headers?.get?.(name)||'';}catch{return '';}}
+function updateApiQuotaStatus(provider,response){
+ const root=$('apiQuotaStatus');if(!root)return;
+ const parts=[];
+ if(provider==='Groq'){
+  const r=getHeader(response,'x-ratelimit-remaining-requests'),t=getHeader(response,'x-ratelimit-remaining-tokens');
+  const rl=getHeader(response,'x-ratelimit-limit-requests'),tl=getHeader(response,'x-ratelimit-limit-tokens');
+  if(r&&rl)parts.push(`リクエスト残 ${r}/${rl}（日次）`);
+  if(t&&tl)parts.push(`トークン残 ${t}/${tl}（毎分・合算枠）`);
+  const otpm=getHeader(response,'x-ratelimit-remaining-output-tokens');if(otpm)parts.push(`出力トークン残 ${otpm}`);
+ }else if(provider==='SambaNova'){
+  const r=getHeader(response,'x-ratelimit-remaining-requests'),rl=getHeader(response,'x-ratelimit-limit-requests');
+  const d=getHeader(response,'x-ratelimit-remaining-requests-day'),dl=getHeader(response,'x-ratelimit-limit-requests-day');
+  if(r&&rl)parts.push(`リクエスト残 ${r}/${rl}（毎分）`);
+  if(d&&dl)parts.push(`リクエスト残 ${d}/${dl}（日次）`);
+ }
+ const line=parts.length?`${provider}：${parts.join(' ／ ')}`:`${provider}：通信は完了。残り枠ヘッダーはブラウザから取得できませんでした。`;
+ const prior=root.dataset[provider.toLowerCase()]||'';root.dataset[provider.toLowerCase()]=line;
+ root.textContent=[root.dataset.gemini,root.dataset.groq,root.dataset.sambanova].filter(Boolean).join(' ｜ ')||line;
+}
+function providerErrorHint(provider,status,message,response){
+ const msg=String(message||'');const low=msg.toLowerCase();const retry=getHeader(response,'retry-after');
+ if(status===400){if(/model|unsupported|invalid.*parameter|unknown.*field/.test(low))return 'モデル名または、そのモデルで使えないリクエスト項目の可能性があります。モデル選択とAPI仕様を確認してください。';return 'リクエスト形式・入力データ・JSON指定の不整合が考えられます。';}
+ if(status===402)return '無料利用枠の対象外、残高・契約状態、または請求設定に関する拒否の可能性があります。有料登録や課金をせず、各社のFree Tier利用状況を確認してください。';
+ if(status===403)return 'モデル利用権限、Free Tier対象外、またはプロジェクト/アカウント制限の可能性があります。請求・利用権限の画面を確認してください。有料化は自動で行いません。';
+ if(status===404)return '選択モデルが廃止・非公開・利用対象外になっている可能性があります。公式の現行モデル一覧を確認してください。';
+ if(status===413)return '入力サイズが大きすぎます。教材ページ数を減らすか、画像ファイルを小さくしてください。';
+ if(status===422)return '入力内容またはモデルの処理条件が意味的に受け付けられませんでした。教材の範囲や選択モデルを確認してください。';
+ if(status===429){
+  const requested=msg.match(/requested\s+(\d[\d,]*)/i),limit=msg.match(/limit\s+(\d[\d,]*)/i);
+  if(provider==='Groq'&&/output tokens per minute|otpm/.test(low))return `Groq組織全体の出力トークン毎分上限（OTPM）です。今回の要求 ${requested?.[1]||'不明'} / 上限 ${limit?.[1]||'不明'}。このアプリのQwen要求は850以下に制限していますが、他端末・他アプリの使用分も合算されます。直近1分の枠が戻るまで待ってください。`+(retry?` 再開の目安：${retry}秒後。`:'');
+  if(requested&&limit)return `1回の出力要求 ${requested[1]} トークンが上限 ${limit[1]} を超えています。該当モデルのリクエスト出力上限を下げる必要があります。`+(retry?` 再開の目安：${retry}秒後。`:'');
+  if(/per day|daily|requests per day|tokens per day|rpd|tpd|per.?day/.test(low))return '日次のリクエスト数またはトークン上限に達しています。日次リセットまで待つ必要があります。'+(retry?` 再開の目安：${retry}秒後。`:'');
+  if(/per minute|requests per minute|tokens per minute|rpm|tpm|itpm/.test(low))return '毎分のリクエスト数または入力/出力トークン上限に達しています。利用枠の回復まで待ってから手動で再実行してください。'+(retry?` 再開の目安：${retry}秒後。`:'');
+  return '毎分リクエスト数・入力/出力トークン数、または日次枠のいずれかを超えています。利用枠のリセットを待ってから手動で再実行してください。'+(retry?` 再開の目安：${retry}秒後。`:'');
+ }
+ if(status===498)return 'GroqのFlex処理枠が混雑している可能性があります。無料枠内で利用できる通常設定を確認し、時間をおいて手動で再実行してください。';
+ if(status===408||status===504)return '応答待ちがタイムアウトしました。通信状態とサービス稼働状況を確認してください。';
+ if(status>=500)return '提供会社側の一時的な障害・混雑の可能性があります。公式ステータスを確認してください。';
+ return '';
+}
 const state = { files: [], analysis: null, questions: [], answers: {}, graded: false, examMode: 'ai', examMeta: {}, grading: null, pdfjs: null, tesseract: null, tesseractLoading: null, tokenUsage: { input: 0, output: 0, total: 0 }, currentOperation: 'AI処理', materialMeta: null, providerAssignments:{analysis:{},generation:{},verification:{}} };
 const HISTORY_STORAGE_KEY='examForge.activity.v1';
 const API_KEY_STORAGE_KEY='examForge.geminiKey.v1';
@@ -643,15 +707,17 @@ async function analyzeMaterialsDistributed(prepared,scopeNote){
  const results=[],providerPages={};const pageTotal=units.length;
  for(const provider of PROVIDERS){
   const assigned=split.groups[provider];if(!assigned.length)continue;providerPages[provider]=assigned.length;
-  const batches=splitAnalysisBatches(assigned,1);
+  const compactQwen=provider==='Groq'&&isGroqQwenModel();
+  const batches=compactQwen?assigned.map(unit=>[unit]):splitAnalysisBatches(assigned,1);
   for(let bi=0;bi<batches.length;bi++){
    const batch=batches[bi],inputParts=batch.flat(),allocated=batch.length;
    state.currentOperation=`教材解析・${provider}（${allocated}ページ / ${bi+1}/${batches.length}回）`;
    const prompt=`あなたは高校教材を読む専門家です。これは全教材のうち、あなたに割り当てられたページの一部です。他社や他の回が担当するページは未読として扱い、内容を推測・補完しないでください。読めない箇所はwarningsへ記録してください。
 補足=${scopeNote||'なし'}
-今回の担当ページ数=${allocated}。ページラベルを保持してください。subject,grade,chapters最大6,keyPoints最大8,problemPatterns最大6,extractedText最大2200文字,warningsを指定JSON形式で返してください。問題パターンは見える範囲から抽出し、解法・難易度・例の要約・出典ページを記録してください。文章の長い転載を避け、教材外知識を追加しないでください。JSON以外は出力しないでください。`;
+今回の担当ページ数=${allocated}。ページラベルを保持してください。subject,grade,chapters最大${compactQwen?4:6},keyPoints最大${compactQwen?5:8},problemPatterns最大${compactQwen?3:6},extractedText最大${compactQwen?520:2200}文字,warningsを指定JSON形式で返してください。問題パターンは見える範囲から抽出し、解法・難易度・例の要約・出典ページを記録してください。文章の長い転載を避け、教材外知識を追加しないでください。JSON以外は出力しないでください。`;
    showStatus(`${provider}が担当ページを解析中...`,Math.min(74,24+Math.round((results.length+1)/Math.max(1,PROVIDERS.length)*42)));
-   const result=await callProvider(provider,prompt,Math.max(1400,Math.round(3900*allocated/pageTotal)),ANALYSIS_RESPONSE_SCHEMA,inputParts);
+   const requestedTokens=compactQwen?GROQ_QWEN_OUTPUT_CAP:Math.min(3200,Math.max(1400,Math.round(3400*allocated/pageTotal)));
+   const result=await callProvider(provider,prompt,requestedTokens,ANALYSIS_RESPONSE_SCHEMA,inputParts);
    results.push({provider,result,pages:allocated,units:batch});
   }
  }
@@ -668,67 +734,87 @@ function normalizeExamPoints(questions){
 }
 async function generateDistributedExam(basePrompt,settings,analysis,analysisPayload){
  const plan=weightedSchedule(settings.count),providersWithWork=PROVIDERS.filter(p=>plan.counts[p]>0);ensureProviderKeys(providersWithWork);
- const queues=Object.fromEntries(PROVIDERS.map(p=>[p,[]])),meta=[];const totalBudget=Math.min(7800,Math.max(2800,settings.count*340));const keyPointGroups=splitListByProvider(analysisPayload?.keyPoints||[]),patternGroups=splitListByProvider(analysisPayload?.problemPatterns||[]);const sharedText=String(analysisPayload?.extractedText||'').slice(0,650);
- for(const provider of PROVIDERS){const count=plan.counts[provider];if(!count)continue;state.currentOperation=`問題生成・${provider}（${count}/${settings.count}問）`;
-  const providerMaterial={subject:analysisPayload?.subject||analysis?.subject||settings.subject,grade:analysisPayload?.grade||analysis?.grade||settings.grade,chapters:(analysisPayload?.chapters||[]).slice(0,8),keyPoints:keyPointGroups[provider],problemPatterns:patternGroups[provider],sharedText};
-  const prompt=basePrompt.replaceAll(`${settings.count}問`,`${count}問`)+`\n\nこのAI専用の教材担当範囲：${JSON.stringify(providerMaterial)}\n分散生成の担当範囲：全体${settings.count}問のうち、このAIは${count}問だけを作成します。ここに示した要点・問題パターンを優先して、担当外AIの問題を作らず、重複を避けてください。配点はこの担当分の内部で仮設定して構いません。全AIの出力を結合後、アプリ側で全体100点に再配分します。`;
-  showStatus(`${provider}が担当問題を生成中...`,Math.min(80,18+Math.round(meta.reduce((n,x)=>n+x.count,0)/settings.count*58)));
-  const result=await callProvider(provider,prompt,Math.max(1800,Math.ceil(totalBudget*count/settings.count)),EXAM_RESPONSE_SCHEMA,[]);
-  const qs=Array.isArray(result.questions)?result.questions:[];if(qs.length!==count)throw new Error(`${provider}の担当は${count}問ですが、${qs.length}問しか返りませんでした。別会社への自動代替はせず、問題生成を停止しました。`);
-  for(const q of qs){q._generatedBy=provider;queues[provider].push(q);}
-  meta.push({provider,count,result});
+ const queues=Object.fromEntries(PROVIDERS.map(p=>[p,[]])),meta=[];const totalBudget=Math.min(6200,Math.max(3000,settings.count*300));const keyPointGroups=splitListByProvider(analysisPayload?.keyPoints||[]),patternGroups=splitListByProvider(analysisPayload?.problemPatterns||[]);const sharedText=String(analysisPayload?.extractedText||'').slice(0,650);
+ for(const provider of PROVIDERS){
+  const count=plan.counts[provider];if(!count)continue;
+  const compactQwen=provider==='Groq'&&isGroqQwenModel();
+  const batchCounts=compactQwen?Array.from({length:count},()=>1):[count];
+  let firstResult=null;
+  for(let bi=0;bi<batchCounts.length;bi++){
+   const chunkCount=batchCounts[bi],alreadyMade=queues[provider].map(q=>String(q.prompt||'').slice(0,100)).slice(-8);
+   state.currentOperation=`問題生成・${provider}（${queues[provider].length+chunkCount}/${count}問）`;
+   const providerMaterial={subject:analysisPayload?.subject||analysis?.subject||settings.subject,grade:analysisPayload?.grade||analysis?.grade||settings.grade,chapters:(analysisPayload?.chapters||[]).slice(0,8),keyPoints:keyPointGroups[provider],problemPatterns:patternGroups[provider],sharedText};
+   const prompt=basePrompt.replaceAll(`${settings.count}問`,`${chunkCount}問`)+`\n\nこのAI専用の教材担当範囲：${JSON.stringify(providerMaterial)}\n分散生成の担当範囲：全体${settings.count}問のうち、このAIは合計${count}問を担当します。今回のバッチは${bi+1}/${batchCounts.length}回目で、今回必ず${chunkCount}問だけ作成してください。${alreadyMade.length?`今回までに同じAIが作成済みの問題（重複禁止）：${JSON.stringify(alreadyMade)}`:''}ここに示した要点・問題パターンを優先して、担当外AIの問題を作らず、重複を避けてください。問題文・解説は必要十分な長さにまとめてください。配点はこの担当分の内部で仮設定して構いません。全AIの出力を結合後、アプリ側で全体100点に再配分します。`;
+   showStatus(`${provider}が担当問題を生成中...`,Math.min(80,18+Math.round((queues[provider].length+chunkCount)/settings.count*58)));
+   const requestedTokens=compactQwen?GROQ_QWEN_OUTPUT_CAP:Math.min(5000,Math.max(1300,Math.ceil(totalBudget*chunkCount/settings.count)));
+   const result=await callProvider(provider,prompt,requestedTokens,EXAM_RESPONSE_SCHEMA,[]);
+   if(!firstResult)firstResult=result;
+   const qs=Array.isArray(result.questions)?result.questions:[];if(qs.length!==chunkCount)throw new Error(`${provider}の今回の担当は${chunkCount}問ですが、${qs.length}問しか返りませんでした。別会社への自動代替はせず、問題生成を停止しました。`);
+   for(const q of qs){q._generatedBy=provider;queues[provider].push(q);}
+  }
+  meta.push({provider,count,result:firstResult||{}});
  }
  const allQuestions=plan.schedule.map(provider=>queues[provider].shift()).filter(Boolean);normalizeExamPoints(allQuestions);state.providerAssignments.generation=Object.fromEntries(meta.map(x=>[x.provider,x.count]));
  recordActivity('distribution','問題生成を3社に分散',meta.map(x=>`${x.provider} ${x.count}問`).join(' / '),{distribution:state.providerAssignments.generation});
  const first=meta.map(x=>x.result).find(x=>x&&typeof x==='object')||{};return{title:first.title||'3社分散AI模試',subject:first.subject||analysis?.subject||settings.subject,grade:first.grade||analysis?.grade||settings.grade,scope:first.scope||'アップロード教材の範囲',questions:allQuestions,_providerDistribution:state.providerAssignments.generation};
 }
 async function fetchProviderResponse(provider,url,options,operation,model){
- const controller=new AbortController();
- const timer=setTimeout(()=>controller.abort(),120000);
+ let controller=null,timer=null,sambaReservationAt=null;
  try{
+  // Wait for local pacing first; network timeout starts only when the actual request begins.
+  await waitForGroqQwenOutputWindow(provider,model,operation);
+  const minGap=provider==='Groq'?2100:provider==='SambaNova'?3100:250;
+  const key=`${provider}:${model}`,last=providerLastRequestAt.get(key)||0,wait=Math.max(0,minGap-(Date.now()-last));
+  if(wait>0){showStatus(`${provider}の利用枠に合わせて通信間隔を調整中...`,0);await delay(wait);}
+  if(provider==='SambaNova')sambaReservationAt=reserveSambaNovaDailyRequest(model);
+  providerLastRequestAt.set(key,Date.now());
+  controller=new AbortController();timer=setTimeout(()=>controller.abort(),120000);
   const response=await fetch(url,{...options,signal:controller.signal});
+  if(provider==='SambaNova'&&!response.ok){releaseSambaNovaDailyRequest(model,sambaReservationAt);sambaReservationAt=null;}
+  updateApiQuotaStatus(provider,response);
   const raw=await response.text();
   return{response,raw};
  }catch(e){
-  const detail=e?.name==='AbortError'?'120秒以内に応答が完了しませんでした':String(e?.message||e||'ネットワークまたはCORS制限').slice(0,150);
+  if(e?.name==='LocalQuotaGuardError')throw e;
+  const detail=e?.name==='AbortError'?'実際のAPI通信開始から120秒以内に応答が完了しませんでした':String(e?.message||e||'ネットワークまたはCORS制限').slice(0,150);
   recordActivity('api_error',`${provider} API通信エラー`,`${operation} / ${model} / ${detail}`);
   throw new Error(`${provider} APIとの通信に失敗しました（${model}）：${detail}。自動再試行・他社への切替は行いません。通信環境とAPI利用上限を確認して手動で再実行してください。`);
- }finally{clearTimeout(timer);}
+ }finally{if(timer)clearTimeout(timer);}
 }
 async function callGemini(parts, prompt, outputTokens=7000, responseSchema=null){
  const key=$('apiKey').value.trim();
  if(!key)throw new Error('Gemini APIキーを入力してください。');
  saveApiKeyIfRequested();
  const model=$('model').value||'gemini-3.8-flash',operation=state.currentOperation||'AI処理';
- const generationConfig={temperature:0.2,responseMimeType:'application/json',maxOutputTokens:outputTokens};
+ const safeOutputTokens=Math.min(GEMINI_OUTPUT_CAP,Math.max(512,Math.floor(Number(outputTokens)||2400)));
+ const generationConfig={temperature:1.0,responseMimeType:'application/json',maxOutputTokens:safeOutputTokens}; // Gemini 3系はGoogle推奨の既定温度を使用
  if(responseSchema)generationConfig.responseSchema=responseSchema;
  const body={contents:[{role:'user',parts:[{text:prompt},...parts]}],generationConfig};
  const {response,raw}=await fetchProviderResponse('Gemini',`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`,{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':key},body:JSON.stringify(body)},operation,model);
  if(!response.ok){
-  let msg=raw;try{msg=JSON.parse(raw).error?.message||raw}catch{}
-  recordActivity('api_error','Gemini APIエラー',`${operation} / ${model} / HTTP ${response.status} / ${String(msg).slice(0,110)}`);
-  if(response.status===503||response.status===429||response.status===500||response.status===502||response.status===504){
-   throw new Error(`Gemini APIエラー (${response.status})［${model}］：${msg}
-自動再試行・別モデルへの自動切替は行っていません。モデル選択欄から別モデルを手動で選び、もう一度実行してください。`);
-  }
-  throw new Error(`Gemini APIエラー (${response.status})［${model}］：${msg}`);
+  let msg=raw;try{const parsedError=JSON.parse(raw);msg=parsedError.error?.message||parsedError.error?.status||raw;}catch{}
+  const hint=providerErrorHint('Gemini',response.status,msg,response);
+  recordActivity('api_error','Gemini APIエラー',`${operation} / ${model} / HTTP ${response.status} / ${String(msg).slice(0,130)}`);
+  throw new Error(`Gemini APIエラー (${response.status})［${model}］：${msg}${hint?'\n'+hint:''}\n自動再試行・別モデルへの自動切替は行っていません。利用上限・モデル・APIキーを確認して手動で再実行してください。`);
  }
  let data;
  try{data=JSON.parse(raw);}catch(e){const detail=String(e.message||e).slice(0,150);recordActivity('api_error','Gemini応答のJSON解析エラー',`${operation} / ${model} / ${detail}`);throw new Error(`GeminiのHTTP応答をJSONとして読み取れませんでした（${model}）。詳細：${detail}。時間をおいて手動で再実行してください。`);}
  if(!data||typeof data!=='object'||Array.isArray(data))throw new Error(`Geminiから予期しない応答形式が返されました（${model}）。`);
  const usage=data.usageMetadata||{};
- state.tokenUsage.input+=Number(usage.promptTokenCount)||0;
- state.tokenUsage.output+=Number(usage.candidatesTokenCount)||0;
- state.tokenUsage.total+=Number(usage.totalTokenCount)||0;
- recordActivity('api','Gemini APIを利用',`${operation} / ${model} / 入力 ${(Number(usage.promptTokenCount)||0).toLocaleString()}・出力 ${(Number(usage.candidatesTokenCount)||0).toLocaleString()}・合計 ${(Number(usage.totalTokenCount)||0).toLocaleString()} トークン`,{provider:'Gemini',model,inputTokens:Number(usage.promptTokenCount)||0,outputTokens:Number(usage.candidatesTokenCount)||0,totalTokens:Number(usage.totalTokenCount)||0});
+ const inputUsed=Number(usage.promptTokenCount)||0,outputUsed=(Number(usage.candidatesTokenCount)||0)+(Number(usage.thoughtsTokenCount)||0),totalUsed=Number(usage.totalTokenCount)||(inputUsed+outputUsed);
+ state.tokenUsage.input+=inputUsed;state.tokenUsage.output+=outputUsed;state.tokenUsage.total+=totalUsed;
+ recordActivity('api','Gemini APIを利用',`${operation} / ${model} / 入力 ${inputUsed.toLocaleString()}・出力+思考 ${outputUsed.toLocaleString()}・合計 ${totalUsed.toLocaleString()} トークン`,{provider:'Gemini',model,inputTokens:inputUsed,outputTokens:outputUsed,totalTokens:totalUsed});
  const note=$('tokenUsageNote');
  if(note)note.textContent=`今回の担当AI：Gemini（他社と分散） ／ このページのAI利用量：入力 ${state.tokenUsage.input.toLocaleString()} / 出力 ${state.tokenUsage.output.toLocaleString()} / 合計 ${state.tokenUsage.total.toLocaleString()} トークン（採点時の追加消費 0）`;
  const candidate=data.candidates?.[0];
+ const finishReason=candidate?.finishReason||'';
+ if(finishReason==='MAX_TOKENS')throw new Error(`Geminiの出力が上限 ${safeOutputTokens.toLocaleString()} トークンで途中終了しました（${model}）。不完全な問題を採用しないため停止しました。問題数・教材ページ数を減らして再実行してください。`);
+ if(finishReason&&finishReason!=='STOP'&&finishReason!=='FINISH_REASON_UNSPECIFIED')throw new Error(`Geminiの生成が途中終了しました（${model}）。終了理由：${finishReason}。入力ブロック理由：${data.promptFeedback?.blockReason||'なし'}。教材内容または安全フィルターを確認してください。`);
  const text=candidate?.content?.parts?.map(p=>p.text||'').join('\n')||'';
  if(!text)throw new Error(`AIから本文が返りませんでした［${model}］。終了理由：${candidate?.finishReason||'不明'}／入力ブロック理由：${data.promptFeedback?.blockReason||'なし'}。安全フィルター・入力形式・出力上限の可能性があります。`);
  let parsed;
  try{parsed=parseJson(text);}catch(e){recordActivity('api_error','Gemini応答の解析エラー',`${operation} / ${model} / ${String(e.message||e).slice(0,150)}`);throw e;}
- parsed._geminiFinishReason=candidate?.finishReason||'';
+ parsed._geminiFinishReason=finishReason;
  return parsed;
 }
 function toStandardJsonSchema(schema){
@@ -746,14 +832,17 @@ function recordProviderUsage(provider,model,operation,usage={}){
  const input=Number(usage.input_tokens??usage.prompt_tokens)||0;
  const output=Number(usage.output_tokens??usage.completion_tokens)||0;
  const total=Number(usage.total_tokens)||(input+output);
+ trackGroqQwenOutput(provider,model,output);
  state.tokenUsage.input+=input;state.tokenUsage.output+=output;state.tokenUsage.total+=total;
  recordActivity('api',`${provider} APIを利用`,`${operation} / ${model} / 入力 ${input.toLocaleString()}・出力 ${output.toLocaleString()}・合計 ${total.toLocaleString()} トークン`,{provider,model,inputTokens:input,outputTokens:output,totalTokens:total});
  const note=$('tokenUsageNote');if(note)note.textContent=`3社分散処理の累計：入力 ${state.tokenUsage.input.toLocaleString()} / 出力 ${state.tokenUsage.output.toLocaleString()} / 合計 ${state.tokenUsage.total.toLocaleString()} トークン。通常採点は端末内で追加API通信なし。`;
  return {input,output,total};
 }
-function providerError(provider,operation,model,status,message){
- recordActivity('api_error',`${provider} APIエラー`,`${operation} / ${model} / HTTP ${status} / ${String(message).slice(0,130)}`);
- return new Error(`${provider} APIエラー (${status})［${model}］：${message}。自動再試行・他社への自動切替は行わず、この工程で停止しました。設定・利用上限・モデル利用権限を確認してから手動で再実行してください。`);
+function providerError(provider,operation,model,status,message,response=null){
+ const hint=providerErrorHint(provider,status,message,response);
+ const retry=getHeader(response,'retry-after');
+ recordActivity('api_error',`${provider} APIエラー`,`${operation} / ${model} / HTTP ${status} / ${String(message).slice(0,160)}`);
+ return new Error(`${provider} APIエラー (${status})［${model}］：${message}${hint?'\n'+hint:''}${retry&&!String(hint).includes(retry)?`\n再開の目安：${retry}秒後。`:''}\n自動再試行・他社への自動切替は行わず、この工程で停止しました。設定・利用上限・モデル利用権限を確認してから手動で再実行してください。`);
 }
 async function callGroqCompatible(provider,prompt,outputTokens=4000,responseSchema=null,materialParts=[]){
  const isGroq=provider==='Groq';
@@ -762,6 +851,7 @@ async function callGroqCompatible(provider,prompt,outputTokens=4000,responseSche
  saveApiKeyIfRequested();
  const model=$(isGroq?'groqModel':'sambanovaModel').value||(isGroq?'qwen/qwen3.8-27b':'gemma-4-31B-it');
  const operation=state.currentOperation||'AI処理';
+ if(!Array.isArray(materialParts))throw new Error(`${provider}への教材データの形式が正しくありません。`);
  const imageCount=materialParts.filter(part=>part&&part.inlineData).length;
  const groqVision='qwen/qwen3.8-27b',sambaVision='gemma-4-31B-it';
  if(imageCount>3)throw new Error(`${provider}への画像送信は1回につき最大3枚です。ページ数を減らして再実行してください。`);
@@ -771,25 +861,34 @@ async function callGroqCompatible(provider,prompt,outputTokens=4000,responseSche
  const promptWithSchema=`${prompt}${schemaNote}\n必ずJSONオブジェクトだけを返してください。Markdownのコードブロックや前後の説明文は付けないでください。`;
  const content=[{type:'text',text:promptWithSchema},...materialParts.flatMap(part=>part&&part.text?[{type:'text',text:part.text}]:part&&part.inlineData?[{type:'image_url',image_url:{url:`data:${part.inlineData.mimeType};base64,${part.inlineData.data}`}}]:[])];
  const url=isGroq?'https://api.groq.com/openai/v1/chat/completions':'https://api.sambanova.ai/v1/chat/completions';
- const body={model,messages:[{role:'user',content:content.length===1?promptWithSchema:content}],temperature:0.2,stream:false};
+ const qwen=isGroq&&model.startsWith('qwen/');
+ const body={model,messages:[{role:'user',content:content.length===1?promptWithSchema:content}],temperature:qwen?0.7:0.2,stream:false}; // Qwen instruct mode recommends 0.7; keep extraction models deterministic.
  if(isGroq){
-  body.max_completion_tokens=outputTokens;
+  const cap=qwen?GROQ_QWEN_OUTPUT_CAP:GROQ_GPTOSS_OUTPUT_CAP;
+  body.max_completion_tokens=Math.min(cap,Math.max(256,Math.floor(Number(outputTokens)||cap)));
   body.response_format={type:'json_object'};
-  body.reasoning_effort=operation.includes('正答検証')?'high':'medium';
-  // Groq Qwen supports reasoning_format; GPT-OSS rejects that parameter.
-  if(model.startsWith('qwen/')) body.reasoning_format='hidden';
-  else if(model.startsWith('openai/gpt-oss-')) body.include_reasoning=false;
+  if(qwen){
+   // The observed organization OTPM is 1,000. Disable internal reasoning tokens so the JSON body gets the budget.
+   body.reasoning_effort='none';
+   body.reasoning_format='hidden';
+  }else if(model.startsWith('openai/gpt-oss-')){
+   body.reasoning_effort=operation.includes('正答検証')?'medium':'low';
+   body.include_reasoning=false;
+  }
  }else{
-  body.max_tokens=outputTokens;
-  // SambaNova models vary in structured-output support; schema is included in the prompt for broad compatibility.
+  body.max_tokens=Math.min(SAMBANOVA_OUTPUT_CAP,Math.max(256,Math.floor(Number(outputTokens)||1800)));
+  body.response_format={type:'json_object'};
  }
  const {response,raw}=await fetchProviderResponse(provider,url,{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${key}`},body:JSON.stringify(body)},operation,model);
- if(!response.ok){let msg=raw;try{const parsedError=JSON.parse(raw);msg=parsedError.error?.message||parsedError.message||raw;}catch{}throw providerError(provider,operation,model,response.status,msg);}
+ if(!response.ok){let msg=raw;try{const parsedError=JSON.parse(raw);msg=parsedError.error?.message||parsedError.message||raw;}catch{}throw providerError(provider,operation,model,response.status,msg,response);}
  let data;
  try{data=JSON.parse(raw);}catch(e){const detail=String(e.message||e).slice(0,150);recordActivity('api_error',`${provider}応答のJSON解析エラー`,`${operation} / ${model} / ${detail}`);throw new Error(`${provider}のHTTP応答をJSONとして読み取れませんでした（${model}）。詳細：${detail}。自動再試行・他社への切替は行わず、処理を停止しました。`);}
  if(!data||typeof data!=='object'||Array.isArray(data))throw new Error(`${provider}から予期しない応答形式が返されました（${model}）。`);
  recordProviderUsage(provider,model,operation,data.usage||{});
- const message=data.choices?.[0]?.message||{};
+ const choice=data.choices?.[0]||{};
+ if(choice.finish_reason==='length')throw new Error(`${provider}の出力が上限 ${body.max_completion_tokens||body.max_tokens} トークンで途中終了しました（${model}）。不完全なJSONを採用しないため停止しました。問題数を減らすか、教材範囲を小さくしてください。`);
+ if(choice.finish_reason&&choice.finish_reason!=='stop'&&choice.finish_reason!=='completed'&&choice.finish_reason!=='tool_calls')throw new Error(`${provider}の生成が途中終了しました（${model}）。終了理由：${choice.finish_reason}。この返答は採用せず停止しました。`);
+ const message=choice.message||{};
  let textOut=typeof message.content==='string'?message.content:Array.isArray(message.content)?message.content.map(x=>x.text||'').join('\n'):'';
  if(!textOut&&message.refusal)textOut=String(message.refusal);
  if(!textOut){const reason=data.choices?.[0]?.finish_reason||'不明';throw new Error(`${provider}から解析可能な本文が返りませんでした（${model}）。終了理由：${reason}。自動再試行はしません。`);}
@@ -917,9 +1016,21 @@ function makeAuditPrompt(items,provider,reference){
  return `あなたは問題作成AIとは独立した${provider}の試験校閲者です。候補解答を信用せず、各問を最初から独立に解いてください。A:独立解答。B:代入・逆算・別解・単位等で再検算。C:選択式は全選択肢を照合し正解がちょうど1つか確認。D:解説と独立解答を照合。E:教材の範囲・条件・定義を確認。教科=${reference.subject}。単元=${JSON.stringify(reference.topics)}。要点=${JSON.stringify(reference.keyPoints)}。教材根拠=${reference.source}。問題=${JSON.stringify(compact)}。各検査で不確実ならREVIEW。CONFIRMEDは提案解答と独立解答が一致し、solutionCheck/explanationConsistent/sourceSupported=true、confidence>=0.92の場合のみ。CORRECTEDは提案解答が明確に誤りで修正答が一意、同じ3フラグtrue、confidence>=0.92の場合のみ。選択問題はverifiedAnswerを選択肢本文と完全一致。reviewではverifiedAnswer/independentAnswerを空文字。非選択問題はchoiceUnique=true。reason短文、verifiedExplanationは70文字以内。全IDを一度ずつ返す。JSONのみ。`;
 }
 async function requestAuditGroup(provider,items,reference){
- state.currentOperation=`正答検証・${provider}（${items.length}問）`;
- const prompt=makeAuditPrompt(items,provider,reference);
- return callProvider(provider,prompt,Math.min(6000,Math.max(1000,items.length*190)),ANSWER_AUDIT_SCHEMA,[]);
+ const compactQwen=provider==='Groq'&&isGroqQwenModel();
+ if(!compactQwen){
+  state.currentOperation=`正答検証・${provider}（${items.length}問）`;
+  const prompt=makeAuditPrompt(items,provider,reference);
+  return callProvider(provider,prompt,Math.min(4500,Math.max(1200,items.length*250)),ANSWER_AUDIT_SCHEMA,[]);
+ }
+ const allChecks=[];
+ // Small audit batches keep Qwen's output request below the 1,000-token OTPM cap.
+ for(const [index,batch] of splitIntoChunks(items,3).entries()){
+  state.currentOperation=`正答検証・${provider}（${Math.min(items.length,index*3+batch.length)}/${items.length}問）`;
+  const prompt=makeAuditPrompt(batch,provider,reference);
+  const response=await callProvider(provider,prompt,GROQ_QWEN_OUTPUT_CAP,ANSWER_AUDIT_SCHEMA,[]);
+  if(Array.isArray(response.checks))allChecks.push(...response.checks);
+ }
+ return{checks:allChecks};
 }
 async function verifyGeneratedAnswers(questions,settings,analysis){
  const precheck=new Map(),mathExpected=new Map(),seenPrompt=new Set();
