@@ -204,7 +204,7 @@ body.test-mode{background:#edf0f4!important;color:#171717!important;color-scheme
         <div><label class="label" for="pageLimit">複数ページの解析上限</label><select class="input" id="pageLimit"><option value="5">5ページ</option><option value="10" selected>10ページ（節約）</option><option value="15">15ページ</option><option value="20">20ページ</option><option value="30">30ページ</option></select></div>
         <div class="small muted" style="padding-bottom:8px">文字PDFはテキスト抽出を優先し、スキャンページ・写真だけを圧縮画像で送信します。</div>
       </div>
-      <div class="notice">📌 AIありモードでは教材ページ・生成問題・独立検証をGemini 25%／Groq 40%／SambaNova 35%の目標配分で分担します。個人情報や公開できない教材は送信しないでください。</div>
+      <div class="notice">📌 AIありモードでは教材ページ・生成問題・独立検証をGemini 30%／Groq 35%／SambaNova 35%の目標配分で分担します。個人情報や公開できない教材は送信しないでください。</div>
       <div class="label">出題対象の補足（任意）</div>
       <textarea id="scopeNote" rows="2" placeholder="例：このプリントの問1〜問8。二次関数の最大・最小を中心に。"></textarea>
       <div class="actions"><button class="btn full" id="analyzeBtn" type="button" disabled>教材を解析する</button></div>
@@ -245,23 +245,23 @@ body.test-mode{background:#edf0f4!important;color:#171717!important;color-scheme
           <div style="flex:0 0 auto;align-self:end"><a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener">APIキー取得 ↗</a></div>
         </div>
         <div class="small muted" style="margin-top:7px">モデルはここで手動選択します。選択したモデルに1回だけ送信し、混雑・エラー時に別モデルへ自動切替や自動再試行はしません。モデルの利用可否・無料枠はGoogle側のアカウント条件に従います。</div>
-        <div id="tokenUsageNote">Gemini 25%・Groq 40%・SambaNova 35%で教材解析・問題生成・検証を分担します。通常採点は端末内で行い、採点時にAPI通信しません。自動再試行・他社への代替なし。</div>
+        <div id="tokenUsageNote">Gemini 30%・Groq 35%・SambaNova 35%で教材解析・問題生成・検証を分担します。Groq Qwenは1回600トークン以内・毎分枠を端末内で保守的に管理。通常採点は端末内で行い、採点時にAPI通信しません。自動再試行・他社への代替なし。</div>
       </div>
       <section class="panel" style="margin:12px 0 0;padding:13px;background:#101b2b;border-color:#3b5271">
         <div class="section-head"><h3 style="margin:0;font-size:14px">マルチAI設定</h3><span class="tag">役割別分配</span></div>
         <p class="small muted" style="margin:6px 0 10px">3社が教材解析・問題生成・独立検証を分担します。生成したAIとは別のAIが検証し、難問は残りの1社でも追加確認します。</p>
         <div class="allocation-strip" aria-label="AI処理配分">
-          <div class="allocation-item gemini"><strong>Gemini · 25%</strong><span>教材解析・生成・検証</span></div>
-          <div class="allocation-item groq"><strong>Groq · 40%</strong><span>教材解析・生成・検証</span></div>
+          <div class="allocation-item gemini"><strong>Gemini · 30%</strong><span>教材解析・生成・検証</span></div>
+          <div class="allocation-item groq"><strong>Groq · 35%</strong><span>教材解析・生成・検証</span></div>
           <div class="allocation-item sambanova"><strong>SambaNova · 35%</strong><span>教材解析・生成・検証</span></div>
         </div>
         <div class="provider-grid">
           <section class="provider-card" style="border-top:3px solid #4285f4">
-            <div class="provider-title"><div class="provider-mark">✦</div><div><strong>Gemini · 25%</strong><small>ページ単位の教材解析・生成・検証</small></div></div>
+            <div class="provider-title"><div class="provider-mark">✦</div><div><strong>Gemini · 30%</strong><small>ページ単位の教材解析・生成・検証</small></div></div>
             <div class="provider-description">上のGemini APIキー・モデル設定を使用。担当ページと担当問題だけを処理し、全教材を毎回送信しません。</div>
           </section>
           <section class="provider-card groq">
-            <div class="provider-title"><div class="provider-mark">G</div><div><strong>Groq · 40%</strong><small>教材解析・問題生成・独立検証</small></div></div>
+            <div class="provider-title"><div class="provider-mark">G</div><div><strong>Groq · 35%</strong><small>教材解析・問題生成・独立検証</small></div></div>
             <label class="label" for="groqApiKey">APIキー</label>
             <input class="input" id="groqApiKey" type="password" autocomplete="off" placeholder="gsk_...">
             <div class="small" style="margin-top:5px"><a href="https://console.groq.com/keys" target="_blank" rel="noopener">Groq APIキー管理 ↗</a></div>
@@ -291,7 +291,7 @@ body.test-mode{background:#edf0f4!important;color:#171717!important;color-scheme
         </div>
         <div class="notice warn" style="margin-top:10px">無料枠・上限の注意：Groqの上限は組織単位で、RPM・RPD・TPMに加え、アカウントによっては入力/出力トークン毎分（ITPM/OTPM）も適用されます。今回確認されたQwenのOTPM 1,000に合わせ、1回の出力要求を950以下に制限し、解析・生成・検証を小分けにします。SambaNova Free Tierは支払方法未登録時に適用され、Gemma 4 31B／GPT-OSS 120Bは各モデル20リクエスト/分・20リクエスト/日・200,000トークン/日です。SambaNovaの掲載モデルはPreview扱いで、予告なく変更・終了する場合があります。Geminiの無料枠はプロジェクト・モデルごとに異なり、Google AI StudioのRate Limitsが優先です。どの会社も上限超過時は停止し、有料化・他社への自動切替・自動再試行はしません。</div>
         <div class="notice warn" style="margin-top:10px">接続方式：GeminiとGroqはこの端末から直接通信します。SambaNovaだけは公式のCORS制限によりCloudflare Worker中継が必要です。Gemini/Groqのキーはブラウザ内で完全には秘匿できません。SambaNovaキーはWorkerのSecretに保存し、ここには入力しません。</div>
-        <div class="small muted" id="multiApiStatus" style="margin-top:7px">AIありモードではGemini・GroqのAPIキーと、SambaNovaのWorker URL・中継アクセスキーが必要です。目標配分25/40/35。APIエラー時は自動再試行・他社への代替をせず停止します。</div>
+        <div class="small muted" id="multiApiStatus" style="margin-top:7px">AIありモードではGemini・GroqのAPIキーと、SambaNovaのWorker URL・中継アクセスキーが必要です。目標配分30/35/35。APIエラー時は自動再試行・他社への代替をせず停止します。</div>
         <div class="notice" id="apiQuotaStatus" role="status" aria-live="polite" style="margin-top:8px">API利用枠：最初の通信後、各社が返す残りリクエスト数・トークン枠を取得できた場合にここへ表示します。</div>
       </section>
       <div id="localInfo" class="notice warn hidden">AIなしモードは端末内処理です。写真OCRは初回に日本語辞書（数MB〜）をダウンロードするため、通信環境によっては数分かかる場合があります。120秒で進まない場合はエラー表示します。自由な類題生成はできません。</div>
@@ -322,7 +322,7 @@ body.test-mode{background:#edf0f4!important;color:#171717!important;color-scheme
       <div><b id="apiCallCount">0</b><span>API呼び出し回数</span></div>
       <div><b id="historyTokenCount">0</b><span>累計トークン（取得分）</span></div>
     </div>
-    <div class="small muted" style="margin-top:12px">AI別の実績トークン（API応答のusage取得分）。25/40/35%は各工程の担当件数目標で、トークン量・料金の実績比率とは異なります。</div><div id="providerUsageGrid" class="provider-usage-grid"></div>
+    <div class="small muted" style="margin-top:12px">AI別の実績トークン（API応答のusage取得分）。30/35/35%は各工程の担当件数目標で、トークン量・料金の実績比率とは異なります。</div><div id="providerUsageGrid" class="provider-usage-grid"></div>
     <div id="historyList" class="history-list" style="margin-top:12px"></div>
     <div class="actions"><button class="btn ghost" type="button" id="clearHistoryBtn">この端末の履歴を消去</button></div>
   </section>
@@ -356,13 +356,14 @@ body.test-mode{background:#edf0f4!important;color:#171717!important;color-scheme
 <script type="module">
 const $ = id => document.getElementById(id);
 const PROVIDERS=['Gemini','Groq','SambaNova'];
-const PROVIDER_WEIGHTS={Gemini:25,Groq:40,SambaNova:35};
-// Conservative per-request ceilings. The Qwen ceiling leaves headroom below the observed 1,000 OTPM cap.
+const PROVIDER_WEIGHTS={Gemini:30,Groq:35,SambaNova:35};
+// Qwen uses a smaller request budget because the organization-wide OTPM limit is only 1,000.
+// The local rolling guard reserves this full budget and leaves 100 tokens of headroom.
 const GEMINI_OUTPUT_CAP=6500;
-const GROQ_QWEN_OUTPUT_CAP=950;
+const GROQ_QWEN_OUTPUT_CAP=600;
 const GROQ_GPTOSS_OUTPUT_CAP=6000;
 const SAMBANOVA_OUTPUT_CAP=5000;
-const GROQ_QWEN_WINDOW_LIMIT=980;
+const GROQ_QWEN_WINDOW_LIMIT=900;
 const GROQ_QWEN_WINDOW_KEY='examForge.groqQwenOutputWindow.v1';
 const SAMBANOVA_DAILY_LIMIT=18; // Keep two requests of headroom below the published 20/day Free Tier limit.
 const SAMBANOVA_DAILY_WINDOW=24*60*60*1000;
@@ -375,7 +376,7 @@ function splitIntoChunks(items,size){const out=[];for(let i=0;i<items.length;i+=
 function delay(ms){return new Promise(resolve=>setTimeout(resolve,ms));}
 function readGroqQwenOutputWindow(){const cutoff=Date.now()-60000;let rows=groqQwenOutputFallback;try{const raw=localStorage.getItem(GROQ_QWEN_WINDOW_KEY);if(raw!==null){const parsed=JSON.parse(raw);if(Array.isArray(parsed))rows=parsed;}}catch{}groqQwenOutputFallback=(Array.isArray(rows)?rows:[]).filter(x=>Number(x?.at)>cutoff&&Number(x?.tokens)>0);return groqQwenOutputFallback;}
 function trackGroqQwenOutput(provider,model,tokens){if(provider!=='Groq'||model!=='qwen/qwen3.8-27b'||!(Number(tokens)>0))return;const rows=readGroqQwenOutputWindow();rows.push({at:Date.now(),tokens:Number(tokens)});groqQwenOutputFallback=rows.slice(-80);try{localStorage.setItem(GROQ_QWEN_WINDOW_KEY,JSON.stringify(groqQwenOutputFallback));}catch{}}
-async function waitForGroqQwenOutputWindow(provider,model,operation){if(provider!=='Groq'||model!=='qwen/qwen3.8-27b')return;const expected=operation.includes('教材解析')?700:operation.includes('正答検証')?400:550;while(true){const rows=readGroqQwenOutputWindow(),used=rows.reduce((n,x)=>n+Number(x.tokens||0),0);if(used+expected<=GROQ_QWEN_WINDOW_LIMIT)return;const oldest=Math.min(...rows.map(x=>Number(x.at)||Date.now()));const wait=Math.max(1000,oldest+60000-Date.now()+500);showStatus(`Groq Qwenの出力枠を保護中...（直近1分 ${Math.round(used)} / ${GROQ_QWEN_WINDOW_LIMIT} tokens。約${Math.ceil(wait/1000)}秒後に続行）`,0);await delay(wait);}}
+async function waitForGroqQwenOutputWindow(provider,model,operation){if(provider!=='Groq'||model!=='qwen/qwen3.8-27b')return;const expected=GROQ_QWEN_OUTPUT_CAP;while(true){const rows=readGroqQwenOutputWindow(),used=rows.reduce((n,x)=>n+Number(x.tokens||0),0);if(used+expected<=GROQ_QWEN_WINDOW_LIMIT)return;const oldest=Math.min(...rows.map(x=>Number(x.at)||Date.now()));const wait=Math.max(1000,oldest+60000-Date.now()+500);showStatus(`Groq Qwenの出力枠を保護中...（直近1分 ${Math.round(used)} / ${GROQ_QWEN_WINDOW_LIMIT} tokens。約${Math.ceil(wait/1000)}秒後に続行）`,0);await delay(wait);}}
 function readSambaNovaDailyRequests(){const cutoff=Date.now()-SAMBANOVA_DAILY_WINDOW;let all=sambanovaDailyFallback;try{const raw=localStorage.getItem(SAMBANOVA_DAILY_KEY);if(raw!==null){const parsed=JSON.parse(raw);if(parsed&&typeof parsed==='object'&&!Array.isArray(parsed))all=parsed;}}catch{}for(const model of Object.keys(all)){all[model]=(Array.isArray(all[model])?all[model]:[]).filter(at=>Number(at)>cutoff);}sambanovaDailyFallback=all;return all;}
 function saveSambaNovaDailyRequests(all){sambanovaDailyFallback=all;try{localStorage.setItem(SAMBANOVA_DAILY_KEY,JSON.stringify(all));}catch{}}
 function reserveSambaNovaDailyRequest(model){const now=Date.now(),all=readSambaNovaDailyRequests(),rows=all[model]||[];if(rows.length>=SAMBANOVA_DAILY_LIMIT){const resetIn=Math.max(1,Math.ceil((Math.min(...rows)+SAMBANOVA_DAILY_WINDOW-now)/60000));const err=new Error(`SambaNova ${model} のこの端末での直近24時間の利用目安に達しました（${rows.length}/${SAMBANOVA_DAILY_LIMIT}回）。Free Tierの日次上限20回を超えないため送信を停止しました。約${resetIn}分後に再開できます。別端末・他アプリの利用回数は含まれないため、管理画面の実際の残り枠も確認してください。`);err.name='LocalQuotaGuardError';throw err;}rows.push(now);all[model]=rows;saveSambaNovaDailyRequests(all);return now;}
@@ -410,7 +411,7 @@ function providerErrorHint(provider,status,message,response){
  if(status===422)return '入力内容またはモデルの処理条件が意味的に受け付けられませんでした。教材の範囲や選択モデルを確認してください。';
  if(status===429){
   const requested=msg.match(/requested\s+(\d[\d,]*)/i),limit=msg.match(/limit\s+(\d[\d,]*)/i);
-  if(provider==='Groq'&&/output tokens per minute|otpm/.test(low))return `Groq組織全体の出力トークン毎分上限（OTPM）です。今回の要求 ${requested?.[1]||'不明'} / 上限 ${limit?.[1]||'不明'}。このアプリのQwen要求は950以下に制限していますが、他端末・他アプリの使用分も合算されます。直近1分の枠が戻るまで待ってください。`+(retry?` 再開の目安：${retry}秒後。`:'');
+  if(provider==='Groq'&&/output tokens per minute|otpm/.test(low))return `Groq組織全体の出力トークン毎分上限（OTPM）です。今回の要求 ${requested?.[1]||'不明'} / 上限 ${limit?.[1]||'不明'}。このアプリのQwen出力上限は600トークンに下げ、端末内では要求上限分を毎分枠として予約します。ただし組織全体の枠は他端末・他アプリとも合算されるため、外部利用が多いと再度429になる場合があります。`+(retry?` 再開の目安：${retry}秒後。`:'');
   if(requested&&limit)return `1回の出力要求 ${requested[1]} トークンが上限 ${limit[1]} を超えています。該当モデルのリクエスト出力上限を下げる必要があります。`+(retry?` 再開の目安：${retry}秒後。`:'');
   if(/per day|daily|requests per day|tokens per day|rpd|tpd|per.?day/.test(low))return '日次のリクエスト数またはトークン上限に達しています。日次リセットまで待つ必要があります。'+(retry?` 再開の目安：${retry}秒後。`:'');
   if(/per minute|requests per minute|tokens per minute|rpm|tpm|itpm/.test(low))return '毎分のリクエスト数または入力/出力トークン上限に達しています。利用枠の回復まで待ってから手動で再実行してください。'+(retry?` 再開の目安：${retry}秒後。`:'');
@@ -751,7 +752,7 @@ async function generateDistributedExam(basePrompt,settings,analysis,analysisPayl
    const chunkCount=batchCounts[bi],alreadyMade=queues[provider].map(q=>String(q.prompt||'').slice(0,100)).slice(-8);
    state.currentOperation=`問題生成・${provider}（${queues[provider].length+chunkCount}/${count}問）`;
    const providerMaterial={subject:analysisPayload?.subject||analysis?.subject||settings.subject,grade:analysisPayload?.grade||analysis?.grade||settings.grade,chapters:(analysisPayload?.chapters||[]).slice(0,8),keyPoints:keyPointGroups[provider],problemPatterns:patternGroups[provider],sharedText};
-   const prompt=basePrompt.replaceAll(`${settings.count}問`,`${chunkCount}問`)+`\n\nこのAI専用の教材担当範囲：${JSON.stringify(providerMaterial)}\n分散生成の担当範囲：全体${settings.count}問のうち、このAIは合計${count}問を担当します。今回のバッチは${bi+1}/${batchCounts.length}回目で、今回必ず${chunkCount}問だけ作成してください。${alreadyMade.length?`今回までに同じAIが作成済みの問題（重複禁止）：${JSON.stringify(alreadyMade)}`:''}ここに示した要点・問題パターンを優先して、担当外AIの問題を作らず、重複を避けてください。問題文・解説は必要十分な長さにまとめてください。配点はこの担当分の内部で仮設定して構いません。全AIの出力を結合後、アプリ側で全体100点に再配分します。${compactQwen?'\nQwenの短文出力条件：今回の1問だけをJSONにする。問題文は120字以内、選択肢は4個・各35字以内、正答は80字以内、acceptableAnswersは最大2個、採点基準は45字以内、解説は55字以内、difficulty/sourcePageは短く。不要な前置き・長い解法説明を付けず、全必須項目を欠かさず簡潔に返す。':''}`;
+   const prompt=basePrompt.replaceAll(`${settings.count}問`,`${chunkCount}問`)+`\n\nこのAI専用の教材担当範囲：${JSON.stringify(providerMaterial)}\n分散生成の担当範囲：全体${settings.count}問のうち、このAIは合計${count}問を担当します。今回のバッチは${bi+1}/${batchCounts.length}回目で、今回必ず${chunkCount}問だけ作成してください。${alreadyMade.length?`今回までに同じAIが作成済みの問題（重複禁止）：${JSON.stringify(alreadyMade)}`:''}ここに示した要点・問題パターンを優先して、担当外AIの問題を作らず、重複を避けてください。問題文・解説は必要十分な長さにまとめてください。配点はこの担当分の内部で仮設定して構いません。全AIの出力を結合後、アプリ側で全体100点に再配分します。${compactQwen?'\nQwenの短文出力条件：今回の1問だけをJSONにする。問題文は110字以内、選択肢は4個・各30字以内、正答は60字以内、acceptableAnswersは最大1個、採点基準は35字以内、解説は45字以内、difficulty/sourcePageは短く。不要な前置き・長い解法説明を付けず、全必須項目を欠かさず簡潔に返す。':''}`;
    showStatus(`${provider}が担当問題を生成中...`,Math.min(80,18+Math.round((queues[provider].length+chunkCount)/settings.count*58)));
    const requestedTokens=compactQwen?GROQ_QWEN_OUTPUT_CAP:Math.min(5000,Math.max(1300,Math.ceil(totalBudget*chunkCount/settings.count)));
    const result=await callProvider(provider,prompt,requestedTokens,EXAM_RESPONSE_SCHEMA,[]);
@@ -770,7 +771,7 @@ async function fetchProviderResponse(provider,url,options,operation,model){
  try{
   // Wait for local pacing first; network timeout starts only when the actual request begins.
   await waitForGroqQwenOutputWindow(provider,model,operation);
-  const minGap=provider==='Groq'?2100:provider==='SambaNova'?3100:250;
+  const minGap=provider==='Groq'?(model==='qwen/qwen3.8-27b'?4500:2100):provider==='SambaNova'?3100:250;
   const key=`${provider}:${model}`,last=providerLastRequestAt.get(key)||0,wait=Math.max(0,minGap-(Date.now()-last));
   if(wait>0){showStatus(`${provider}の利用枠に合わせて通信間隔を調整中...`,0);await delay(wait);}
   if(provider==='SambaNova')sambaReservationAt=reserveSambaNovaDailyRequest(model);
@@ -831,7 +832,7 @@ function toStandardJsonSchema(schema){
  const type=String(schema.type||'STRING').toLowerCase();
  if(type==='object'){
   const properties={};for(const [key,value] of Object.entries(schema.properties||{}))properties[key]=toStandardJsonSchema(value);
-  return {type:'object',properties,required:Object.keys(properties),additionalProperties:false};
+  return {type:'object',properties,required:Array.isArray(schema.required)?schema.required:Object.keys(properties),additionalProperties:false};
  }
  if(type==='array')return {type:'array',items:toStandardJsonSchema(schema.items||{type:'STRING'})};
  if(type==='integer'||type==='number'||type==='boolean'||type==='string')return {type};
@@ -841,7 +842,7 @@ function recordProviderUsage(provider,model,operation,usage={}){
  const input=Number(usage.input_tokens??usage.prompt_tokens)||0;
  const output=Number(usage.output_tokens??usage.completion_tokens)||0;
  const total=Number(usage.total_tokens)||(input+output);
- trackGroqQwenOutput(provider,model,output);
+ trackGroqQwenOutput(provider,model,Math.max(output,GROQ_QWEN_OUTPUT_CAP));
  state.tokenUsage.input+=input;state.tokenUsage.output+=output;state.tokenUsage.total+=total;
  recordActivity('api',`${provider} APIを利用`,`${operation} / ${model} / 入力 ${input.toLocaleString()}・出力 ${output.toLocaleString()}・合計 ${total.toLocaleString()} トークン`,{provider,model,inputTokens:input,outputTokens:output,totalTokens:total});
  const note=$('tokenUsageNote');if(note)note.textContent=`3社分散処理の累計：入力 ${state.tokenUsage.input.toLocaleString()} / 出力 ${state.tokenUsage.output.toLocaleString()} / 合計 ${state.tokenUsage.total.toLocaleString()} トークン。通常採点は端末内で追加API通信なし。`;
@@ -904,7 +905,7 @@ async function callGroqCompatible(provider,prompt,outputTokens=4000,responseSche
  if(!data||typeof data!=='object'||Array.isArray(data))throw new Error(`${provider}から予期しない応答形式が返されました（${model}）。`);
  recordProviderUsage(provider,model,operation,data.usage||{});
  const choice=data.choices?.[0]||{};
- if(choice.finish_reason==='length')throw new Error(`${provider}の出力が上限 ${body.max_completion_tokens||body.max_tokens} トークンで途中終了しました（${model}）。不完全なJSONは採用しません。Qwenは1問・1ページ単位に分割していますが、この1件の回答が長すぎる可能性があります。教材の該当ページを鮮明に撮り直すか、問題形式を短くして再実行してください。`);
+ if(choice.finish_reason==='length')throw new Error(`${provider}の出力が上限 ${body.max_completion_tokens||body.max_tokens} トークンで途中終了しました（${model}）。不完全なJSONは採用しません。Qwenは1問・1ページ単位、出力上限600トークン、短文JSONで処理していますが、この1件の回答が長すぎる可能性があります。教材の該当ページを鮮明に撮り直すか、問題形式を短くして再実行してください。`);
  if(choice.finish_reason&&choice.finish_reason!=='stop'&&choice.finish_reason!=='completed'&&choice.finish_reason!=='tool_calls')throw new Error(`${provider}の生成が途中終了しました（${model}）。終了理由：${choice.finish_reason}。この返答は採用せず停止しました。`);
  const message=choice.message||{};
  let textOut=typeof message.content==='string'?message.content:Array.isArray(message.content)?message.content.map(x=>x.text||'').join('\n'):'';
@@ -1017,21 +1018,31 @@ function numericFromAnswer(value){const direct=numericAnswer(value);if(direct!==
 function isHighRiskQuestion(q){return q.type==='essay'||/証明|場合分け|微分|積分|確率|ベクトル|三角関数|図形|化学反応|実験考察|資料読解|複数条件|グラフの読み取り/.test(String(q.prompt||''));}
 function allocateVerifiers(questions){
  const creators=Object.fromEntries(PROVIDERS.map(p=>[p,questions.filter(q=>q._generatedBy===p).length]));
- const target=weightedCounts(questions.length);const g=creators.Gemini,o=creators.Groq,d=creators.SambaNova;
- // A 3x3 no-self-audit flow matrix. Rows are generators; columns are verifiers.
- // The resulting verifier totals match the 25/40/35 quota exactly.
- const minA=Math.max(0,o-d,g-d),maxA=Math.min(g,o,g+o-d);
- if(minA>maxA)throw new Error('生成担当と独立検証担当の25/40/35配分を両立できませんでした。');
+ const desired=weightedCounts(questions.length),target={};
+ // 生成元と同じAIによる自己検証は禁止。少数問題では30/35/35の厳密配分が数学的に不可能な場合があるため、可能な範囲で目標比率に近づける。
+ for(const p of PROVIDERS)target[p]=Math.min(desired[p],Math.max(0,questions.length-creators[p]));
+ let left=questions.length-PROVIDERS.reduce((sum,p)=>sum+target[p],0);
+ while(left>0){
+  const candidates=PROVIDERS.filter(p=>target[p]<questions.length-creators[p]);
+  if(!candidates.length)throw new Error('独立検証を自己検証なしで割り当てられませんでした。');
+  candidates.sort((a,b)=>(desired[b]-target[b])-(desired[a]-target[a])||PROVIDER_WEIGHTS[b]-PROVIDER_WEIGHTS[a]||PROVIDERS.indexOf(a)-PROVIDERS.indexOf(b));
+  target[candidates[0]]++;left--;
+ }
+ const g=creators.Gemini,o=creators.Groq,d=creators.SambaNova,vG=target.Gemini,vO=target.Groq,vD=target.SambaNova;
+ // 3社間の自己検証なし割当。行は生成元、列は検証元。
+ const minA=Math.max(0,g-vD,vO-d),maxA=Math.min(g,vO,g+o-vD);
+ if(minA>maxA)throw new Error('独立検証の配分を組み立てられませんでした。');
  const a=Math.round((minA+maxA)/2);
- const flow={Gemini:{Gemini:0,Groq:a,SambaNova:g-a},Groq:{Gemini:g-d+o-a,Groq:0,SambaNova:d-g+a},SambaNova:{Gemini:d-o+a,Groq:o-a,SambaNova:0}};
+ const flow={Gemini:{Gemini:0,Groq:a,SambaNova:g-a},Groq:{Gemini:g+o-vD-a,Groq:0,SambaNova:vD-g+a},SambaNova:{Gemini:vG-g-o+vD+a,Groq:vO-a,
+ SambaNova:0}};
  const groups=Object.fromEntries(PROVIDERS.map(p=>[p,[]]));
- for(const maker of PROVIDERS){const source=questions.filter(q=>q._generatedBy===maker);let cursor=0;for(const verifier of PROVIDERS){const count=flow[maker][verifier];if(!count)continue;for(const q of source.slice(cursor,cursor+count))groups[verifier].push(q);cursor+=count;}if(cursor!==source.length)throw new Error(`${maker}の生成問題を独立検証へ割り当てられませんでした。`);}
- const actual=Object.fromEntries(PROVIDERS.map(p=>[p,groups[p].length]));if(PROVIDERS.some(p=>actual[p]!==target[p]))throw new Error('独立検証の実配分が目標配分と一致しません。');
+ for(const maker of PROVIDERS){const source=questions.filter(q=>q._generatedBy===maker);let cursor=0;for(const verifier of PROVIDERS){const count=flow[maker][verifier];if(count<0)throw new Error('独立検証の割り当て数が不正です。');if(!count)continue;for(const q of source.slice(cursor,cursor+count))groups[verifier].push(q);cursor+=count;}if(cursor!==source.length)throw new Error(`${maker}の生成問題を独立検証へ割り当てられませんでした。`);}
+ const actual=Object.fromEntries(PROVIDERS.map(p=>[p,groups[p].length]));if(PROVIDERS.some(p=>actual[p]!==target[p]))throw new Error('独立検証の実配分を目標に合わせられませんでした。');
  return{groups,counts:target,flow};
 }
 function makeAuditPrompt(items,provider,reference){
  const compact=items.map(q=>({id:q.id,type:q.type,question:String(q.prompt||'').slice(0,850),choices:(q.choices||[]).slice(0,4).map(x=>String(x).slice(0,80)),proposedAnswer:String(q.answer||'').slice(0,120),explanation:String(q.explanation||'').slice(0,80)}));
- return `あなたは問題作成AIとは独立した${provider}の試験校閲者です。候補解答を信用せず、各問を最初から独立に解いてください。A:独立解答。B:代入・逆算・別解・単位等で再検算。C:選択式は全選択肢を照合し正解がちょうど1つか確認。D:解説と独立解答を照合。E:教材の範囲・条件・定義を確認。教科=${reference.subject}。単元=${JSON.stringify(reference.topics)}。要点=${JSON.stringify(reference.keyPoints)}。教材根拠=${reference.source}。問題=${JSON.stringify(compact)}。各検査で不確実ならREVIEW。CONFIRMEDは提案解答と独立解答が一致し、solutionCheck/explanationConsistent/sourceSupported=true、confidence>=0.92の場合のみ。CORRECTEDは提案解答が明確に誤りで修正答が一意、同じ3フラグtrue、confidence>=0.92の場合のみ。選択問題はverifiedAnswerを選択肢本文と完全一致。reviewではverifiedAnswer/independentAnswerを空文字。非選択問題はchoiceUnique=true。reason短文、verifiedExplanationは70文字以内。全IDを一度ずつ返す。JSONのみ。`;
+ return `あなたは問題作成AIとは独立した${provider}の試験校閲者です。候補解答を信用せず、各問を最初から独立に解いてください。A:独立解答。B:代入・逆算・別解・単位等で再検算。C:選択式は全選択肢を照合し正解がちょうど1つか確認。D:解説と独立解答を照合。E:教材の範囲・条件・定義を確認。教科=${reference.subject}。単元=${JSON.stringify(reference.topics)}。要点=${JSON.stringify(reference.keyPoints)}。教材根拠=${reference.source}。問題=${JSON.stringify(compact)}。各検査で不確実ならREVIEW。CONFIRMEDは提案解答と独立解答が一致し、solutionCheck/explanationConsistent/sourceSupported=true、confidence>=0.92の場合のみ。CORRECTEDは提案解答が明確に誤りで修正答が一意、同じ3フラグtrue、confidence>=0.92の場合のみ。選択問題はverifiedAnswerを選択肢本文と完全一致。reviewではverifiedAnswer/independentAnswerを空文字。非選択問題はchoiceUnique=true。reason短文、verifiedExplanationは45文字以内、reasonは35文字以内。全IDを一度ずつ返す。JSONのみ。`;
 }
 async function requestAuditGroup(provider,items,reference){
  const compactQwen=provider==='Groq'&&isGroqQwenModel();
