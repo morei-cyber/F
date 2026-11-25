@@ -275,9 +275,12 @@ body.test-mode{background:#edf0f4!important;color:#171717!important;color-scheme
           </section>
           <section class="provider-card sambanova">
             <div class="provider-title"><div class="provider-mark">S</div><div><strong>SambaNova · 35%</strong><small>教材解析・問題生成・独立検証</small></div></div>
-            <label class="label" for="sambanovaApiKey">APIキー</label>
-            <input class="input" id="sambanovaApiKey" type="password" autocomplete="off" placeholder="SambaNova APIキー">
-            <div class="small" style="margin-top:5px"><a href="https://cloud.sambanova.ai/dashboard" target="_blank" rel="noopener">SambaNova APIキー管理 ↗</a></div>
+            <label class="label" for="sambanovaProxyUrl">Cloudflare Worker 中継URL</label>
+            <input class="input" id="sambanovaProxyUrl" type="url" inputmode="url" autocomplete="url" value="https://examforge-relay.eramen451.workers.dev" placeholder="https://your-worker.your-subdomain.workers.dev">
+            <label class="label" for="sambanovaProxyToken">中継アクセスキー</label>
+            <input class="input" id="sambanovaProxyToken" type="password" autocomplete="off" placeholder="Worker側に設定したPROXY_ACCESS_TOKEN">
+            <div class="small" style="margin-top:5px"><a href="https://cloud.sambanova.ai/dashboard" target="_blank" rel="noopener">SambaNova APIキー管理 ↗</a> · <a href="https://dash.cloudflare.com/" target="_blank" rel="noopener">Cloudflare Worker設定 ↗</a></div>
+            <div class="provider-description">SambaNovaはブラウザから直接呼び出せないため、Cloudflare Worker経由で通信します。SambaNova APIキーはWorkerのSecretに保存し、この画面には入力しません。</div>
             <label class="label" for="sambanovaModel">使用モデル（公式Free Tier掲載モデル）</label>
             <select class="input" id="sambanovaModel">
               <option value="gemma-4-31B-it" selected>Gemma 4 31B · 画像対応</option>
@@ -287,8 +290,8 @@ body.test-mode{background:#edf0f4!important;color:#171717!important;color-scheme
           </section>
         </div>
         <div class="notice warn" style="margin-top:10px">無料枠・上限の注意：Groqの上限は組織単位で、RPM・RPD・TPMに加え、アカウントによっては入力/出力トークン毎分（ITPM/OTPM）も適用されます。今回確認されたQwenのOTPM 1,000に合わせ、1回の出力要求を850以下に制限します。SambaNova Free Tierは支払方法未登録時に適用され、Gemma 4 31B／GPT-OSS 120Bは各モデル20リクエスト/分・20リクエスト/日・200,000トークン/日です。SambaNovaの掲載モデルはPreview扱いで、予告なく変更・終了する場合があります。Geminiの無料枠はプロジェクト・モデルごとに異なり、Google AI StudioのRate Limitsが優先です。どの会社も上限超過時は停止し、有料化・他社への自動切替・自動再試行はしません。</div>
-        <div class="notice warn" style="margin-top:10px">重要：GitHub Pagesのブラウザから直接APIを呼ぶ方式です。APIキーはこの端末のブラウザに保存できますが、暗号化されず、ブラウザ内では完全に秘匿できません。共有端末では保存せず、キーを第三者に見せないでください。公開サービスとして安全に配布する場合は、サーバー側中継が必要です。</div>
-        <div class="small muted" id="multiApiStatus" style="margin-top:7px">AIありモードではGemini・Groq・SambaNovaの3社すべてのAPIキーが必要です。目標配分25/40/35。APIエラー時は自動再試行・他社への代替をせず停止します。</div>
+        <div class="notice warn" style="margin-top:10px">接続方式：GeminiとGroqはこの端末から直接通信します。SambaNovaだけは公式のCORS制限によりCloudflare Worker中継が必要です。Gemini/Groqのキーはブラウザ内で完全には秘匿できません。SambaNovaキーはWorkerのSecretに保存し、ここには入力しません。</div>
+        <div class="small muted" id="multiApiStatus" style="margin-top:7px">AIありモードではGemini・GroqのAPIキーと、SambaNovaのWorker URL・中継アクセスキーが必要です。目標配分25/40/35。APIエラー時は自動再試行・他社への代替をせず停止します。</div>
         <div class="notice" id="apiQuotaStatus" role="status" aria-live="polite" style="margin-top:8px">API利用枠：最初の通信後、各社が返す残りリクエスト数・トークン枠を取得できた場合にここへ表示します。</div>
       </section>
       <div id="localInfo" class="notice warn hidden">AIなしモードは端末内処理です。写真OCRは初回に日本語辞書（数MB〜）をダウンロードするため、通信環境によっては数分かかる場合があります。120秒で進まない場合はエラー表示します。自由な類題生成はできません。</div>
@@ -363,7 +366,7 @@ const GROQ_QWEN_WINDOW_LIMIT=900;
 const GROQ_QWEN_WINDOW_KEY='examForge.groqQwenOutputWindow.v1';
 const SAMBANOVA_DAILY_LIMIT=18; // Keep two requests of headroom below the published 20/day Free Tier limit.
 const SAMBANOVA_DAILY_WINDOW=24*60*60*1000;
-const SAMBANOVA_DAILY_KEY='examForge.sambanovaDailyRequests.v1';
+const SAMBANOVA_DAILY_KEY='examForge.sambanovaDailyRequests.v2'; // Reset the old browser-direct attempts; those failed at CORS before reaching SambaNova.
 const providerLastRequestAt=new Map();
 let groqQwenOutputFallback=[];
 let sambanovaDailyFallback={};
@@ -422,7 +425,8 @@ const state = { files: [], analysis: null, questions: [], answers: {}, graded: f
 const HISTORY_STORAGE_KEY='examForge.activity.v1';
 const API_KEY_STORAGE_KEY='examForge.geminiKey.v1';
 const GROQ_KEY_STORAGE_KEY='examForge.groqKey.v1';
-const SAMBANOVA_KEY_STORAGE_KEY='examForge.sambanovaKey.v1';
+const SAMBANOVA_PROXY_URL_STORAGE_KEY='examForge.sambanovaProxyUrl.v1';
+const SAMBANOVA_PROXY_TOKEN_STORAGE_KEY='examForge.sambanovaProxyToken.v1';
 const MODEL_STORAGE_KEY='examForge.model.v1';
 const GROQ_MODEL_STORAGE_KEY='examForge.groqModel.v1';
 const SAMBANOVA_MODEL_STORAGE_KEY='examForge.sambanovaModel.v1';
@@ -445,8 +449,8 @@ function weightedSchedule(total){
  while(out.length<total){for(const p of PROVIDERS)credits[p]+=PROVIDER_WEIGHTS[p];const candidates=PROVIDERS.filter(p=>remaining[p]>0).sort((a,b)=>credits[b]-credits[a]||PROVIDERS.indexOf(a)-PROVIDERS.indexOf(b));const pick=candidates[0];out.push(pick);remaining[pick]--;credits[pick]-=100;}
  return {schedule:out,counts};
 }
-function providerKeyField(provider){return provider==='Gemini'?'apiKey':provider==='Groq'?'groqApiKey':'sambanovaApiKey';}
-function ensureProviderKeys(providers){const missing=[...new Set(providers)].filter(p=>!$(providerKeyField(p))?.value.trim());if(missing.length)throw new Error(`${missing.join('・')}のAPIキーが必要です。この処理では3社の役割を固定分配し、キー未設定の会社を別会社で代替しません。`);}
+function providerKeyField(provider){return provider==='Gemini'?'apiKey':'groqApiKey';}
+function ensureProviderKeys(providers){const missing=[];for(const p of new Set(providers)){if(p==='SambaNova'){if(!$('sambanovaProxyUrl')?.value.trim()||!$('sambanovaProxyToken')?.value.trim())missing.push('SambaNova Worker URL・中継アクセスキー');}else if(!$(providerKeyField(p))?.value.trim())missing.push(p+' APIキー');}if(missing.length)throw new Error(`${missing.join('・')}を設定してください。この処理では担当会社を固定し、未設定の会社を別会社で代替しません。`);}
 function uniqueStrings(values,max=20){const out=[],seen=new Set();for(const value of values||[]){const text=String(value||'').trim();const key=text.normalize('NFKC').replace(/\s+/g,' ');if(text&&!seen.has(key)){seen.add(key);out.push(text);if(out.length>=max)break;}}return out;}
 function splitUnitsByProvider(units){const plan=weightedSchedule(units.length),groups=Object.fromEntries(PROVIDERS.map(p=>[p,[]]));units.forEach((unit,i)=>groups[plan.schedule[i]].push(unit));return{groups,counts:plan.counts,schedule:plan.schedule};}
 function splitListByProvider(items){const values=Array.isArray(items)?items:[],plan=weightedSchedule(values.length),groups=Object.fromEntries(PROVIDERS.map(p=>[p,[]]));values.forEach((item,i)=>groups[plan.schedule[i]].push(item));return groups;}
@@ -493,29 +497,32 @@ async function persistentSet(key,value){try{localStorage.setItem(key,value);retu
 async function persistentRemove(key){let localOk=false;try{localStorage.removeItem(key);localOk=true;}catch(e){}try{await idbRemove(key);}catch(e){if(!localOk)throw e;}}
 async function saveApiKeyIfRequested(){
  const checked=$('rememberApiKey')?.checked;
- const fields=[['apiKey',API_KEY_STORAGE_KEY],['groqApiKey',GROQ_KEY_STORAGE_KEY],['sambanovaApiKey',SAMBANOVA_KEY_STORAGE_KEY]];
+ const fields=[['apiKey',API_KEY_STORAGE_KEY],['groqApiKey',GROQ_KEY_STORAGE_KEY],['sambanovaProxyToken',SAMBANOVA_PROXY_TOKEN_STORAGE_KEY]];
  try{
   if(checked){let backend='Safari標準領域',saved=0;for(const [id,key] of fields){const value=$(id)?.value.trim()||'';if(value){backend=await persistentSet(key,value);saved++;}else await persistentRemove(key);}
-   $('apiKeyStatus').textContent=saved?`APIキー ${saved}件を${backend}に保存しました。次回から入力を省略できます。`:'保存するAPIキーがまだ入力されていません。';
+   $('apiKeyStatus').textContent=saved?`APIキー・中継アクセスキー ${saved}件を${backend}に保存しました。次回から入力を省略できます。`:'保存するAPIキーがまだ入力されていません。';
   }else{for(const [,key] of fields)await persistentRemove(key);$('apiKeyStatus').textContent='APIキーは保存していません。';}
  }catch(e){$('apiKeyStatus').textContent=`保存できませんでした：${e.message||e}`;}
 }
 async function setupLocalPersistence(){
- ['apiKey','groqApiKey','sambanovaApiKey'].forEach(id=>$(id).addEventListener('change',()=>{if($('rememberApiKey').checked)saveApiKeyIfRequested();}));
+ ['apiKey','groqApiKey','sambanovaProxyToken'].forEach(id=>$(id).addEventListener('change',()=>{if($('rememberApiKey').checked)saveApiKeyIfRequested();}));
+ $('sambanovaProxyUrl').addEventListener('change',()=>{const v=$('sambanovaProxyUrl').value.trim();if(v)persistentSet(SAMBANOVA_PROXY_URL_STORAGE_KEY,v).catch(()=>{});else persistentRemove(SAMBANOVA_PROXY_URL_STORAGE_KEY).catch(()=>{});});
  $('rememberApiKey').addEventListener('change',saveApiKeyIfRequested);
- $('clearSavedApiKey').addEventListener('click',async()=>{for(const key of [API_KEY_STORAGE_KEY,GROQ_KEY_STORAGE_KEY,SAMBANOVA_KEY_STORAGE_KEY,'examForge.openaiKey.v1','examForge.openaiModel.v1','examForge.deepseekKey.v1','examForge.deepseekModel.v1','examForge.claudeKey.v1','examForge.claudeModel.v1']){try{await persistentRemove(key);}catch(e){}}['apiKey','groqApiKey','sambanovaApiKey'].forEach(id=>$(id).value='');$('rememberApiKey').checked=false;$('apiKeyStatus').textContent='保存済みAPIキーを削除しました。';});
+ $('clearSavedApiKey').addEventListener('click',async()=>{for(const key of [API_KEY_STORAGE_KEY,GROQ_KEY_STORAGE_KEY,'examForge.sambanovaKey.v1','examForge.openaiKey.v1','examForge.openaiModel.v1','examForge.deepseekKey.v1','examForge.deepseekModel.v1','examForge.claudeKey.v1','examForge.claudeModel.v1',SAMBANOVA_PROXY_URL_STORAGE_KEY,SAMBANOVA_PROXY_TOKEN_STORAGE_KEY]){try{await persistentRemove(key);}catch(e){}}['apiKey','groqApiKey','sambanovaProxyToken'].forEach(id=>$(id).value='');$('sambanovaProxyUrl').value='';$('rememberApiKey').checked=false;$('apiKeyStatus').textContent='保存済みAPIキーを削除しました。';});
  $('model').addEventListener('change',()=>persistentSet(MODEL_STORAGE_KEY,$('model').value).catch(()=>{}));
  $('groqModel').addEventListener('change',()=>persistentSet(GROQ_MODEL_STORAGE_KEY,$('groqModel').value).catch(()=>{}));
  $('sambanovaModel').addEventListener('change',()=>persistentSet(SAMBANOVA_MODEL_STORAGE_KEY,$('sambanovaModel').value).catch(()=>{}));
  $('clearHistoryBtn').addEventListener('click',()=>{if(!confirm('この端末に保存した利用・訪問履歴をすべて削除しますか？'))return;try{localStorage.removeItem(HISTORY_STORAGE_KEY);}catch{}renderActivityHistory();});
  try{
-  const pairs=[['apiKey',API_KEY_STORAGE_KEY],['groqApiKey',GROQ_KEY_STORAGE_KEY],['sambanovaApiKey',SAMBANOVA_KEY_STORAGE_KEY]];let restored=0,backend='Safari標準領域';
+  const pairs=[['apiKey',API_KEY_STORAGE_KEY],['groqApiKey',GROQ_KEY_STORAGE_KEY],['sambanovaProxyToken',SAMBANOVA_PROXY_TOKEN_STORAGE_KEY]];let restored=0,backend='Safari標準領域';
   for(const [id,key] of pairs){const saved=await persistentGet(key);if(saved){$(id).value=saved;restored++;try{if(localStorage.getItem(key)===null)backend='IndexedDB';}catch(e){backend='IndexedDB';}}}
   const model=await persistentGet(MODEL_STORAGE_KEY);if(model&&[...$('model').options].some(o=>o.value===model))$('model').value=model;
   const groqModel=await persistentGet(GROQ_MODEL_STORAGE_KEY);if(groqModel&&[...$('groqModel').options].some(o=>o.value===groqModel))$('groqModel').value=groqModel;
   const sambanovaModel=await persistentGet(SAMBANOVA_MODEL_STORAGE_KEY);if(sambanovaModel&&[...$('sambanovaModel').options].some(o=>o.value===sambanovaModel))$('sambanovaModel').value=sambanovaModel;
+  const proxyUrl=await persistentGet(SAMBANOVA_PROXY_URL_STORAGE_KEY);if(proxyUrl)$('sambanovaProxyUrl').value=proxyUrl;
+  // Keep any legacy saved SambaNova key untouched; the new relay uses a Worker secret instead.
   try{localStorage.removeItem('examForge.claudeKey.v1');localStorage.removeItem('examForge.claudeModel.v1');}catch(e){}
-  if(restored){$('rememberApiKey').checked=true;$('apiKeyStatus').textContent=`保存済みAPIキー ${restored}/3件を${backend}から読み込みました。`;}else $('apiKeyStatus').textContent='保存先を確認しました。キーを入力して「この端末に保存」をONにすると次回から省略できます。';
+  if(restored){$('rememberApiKey').checked=true;$('apiKeyStatus').textContent=`保存済みAPIキー・中継アクセスキー ${restored}件を${backend}から読み込みました。`;}else $('apiKeyStatus').textContent='保存先を確認しました。キーを入力して「この端末に保存」をONにすると次回から省略できます。';
  }catch(e){$('apiKeyStatus').textContent=`保存領域を確認できません：${e.message||e}。Safariの通常モードでGitHub Pagesを開いてください。`;}
  renderActivityHistory();recordActivity('visit','アプリを開いた','この端末のSafari内に記録。サイト全体の訪問者数ではありません。');
 }
@@ -776,9 +783,11 @@ async function fetchProviderResponse(provider,url,options,operation,model){
   return{response,raw};
  }catch(e){
   if(e?.name==='LocalQuotaGuardError')throw e;
-  const detail=e?.name==='AbortError'?'実際のAPI通信開始から120秒以内に応答が完了しませんでした':String(e?.message||e||'ネットワークまたはCORS制限').slice(0,150);
+  const rawDetail=String(e?.message||e||'ネットワークまたはCORS制限');
+  const safariLoadFailed=/load failed|failed to fetch|networkerror/i.test(rawDetail);
+  const detail=e?.name==='AbortError'?'実際のAPI通信開始から120秒以内に応答が完了しませんでした':provider==='SambaNova'&&safariLoadFailed?'SafariがWorker中継から応答を取得できませんでした。Worker URL・ALLOWED_ORIGIN・中継アクセスキー・通信状態を確認してください。SambaNova APIへの直接接続はCORS制限により使用できません。':rawDetail.slice(0,180);
   recordActivity('api_error',`${provider} API通信エラー`,`${operation} / ${model} / ${detail}`);
-  throw new Error(`${provider} APIとの通信に失敗しました（${model}）：${detail}。自動再試行・他社への切替は行いません。通信環境とAPI利用上限を確認して手動で再実行してください。`);
+  throw new Error(`${provider} APIとの通信に失敗しました（${model}）：${detail}。HTTP応答を受け取れていないため、429やAPIキー誤りとは断定できません。自動再試行・他社への切替は行いません。`);
  }finally{if(timer)clearTimeout(timer);}
 }
 async function callGemini(parts, prompt, outputTokens=7000, responseSchema=null){
@@ -846,8 +855,8 @@ function providerError(provider,operation,model,status,message,response=null){
 }
 async function callGroqCompatible(provider,prompt,outputTokens=4000,responseSchema=null,materialParts=[]){
  const isGroq=provider==='Groq';
- const key=$(isGroq?'groqApiKey':'sambanovaApiKey').value.trim();
- if(!key)throw new Error(`${provider} APIキーを入力してください。`);
+ const key=isGroq?$('groqApiKey').value.trim():$('sambanovaProxyToken').value.trim();
+ if(!key)throw new Error(isGroq?'Groq APIキーを入力してください。':'SambaNova Workerの中継アクセスキーを入力してください。');
  saveApiKeyIfRequested();
  const model=$(isGroq?'groqModel':'sambanovaModel').value||(isGroq?'qwen/qwen3.8-27b':'gemma-4-31B-it');
  const operation=state.currentOperation||'AI処理';
@@ -860,7 +869,16 @@ async function callGroqCompatible(provider,prompt,outputTokens=4000,responseSche
  const schemaNote=responseSchema?`\n\n出力JSONスキーマ（全項目に従うこと）：\n${JSON.stringify(toStandardJsonSchema(responseSchema))}`:'';
  const promptWithSchema=`${prompt}${schemaNote}\n必ずJSONオブジェクトだけを返してください。Markdownのコードブロックや前後の説明文は付けないでください。`;
  const content=[{type:'text',text:promptWithSchema},...materialParts.flatMap(part=>part&&part.text?[{type:'text',text:part.text}]:part&&part.inlineData?[{type:'image_url',image_url:{url:`data:${part.inlineData.mimeType};base64,${part.inlineData.data}`}}]:[])];
- const url=isGroq?'https://api.groq.com/openai/v1/chat/completions':'https://api.sambanova.ai/v1/chat/completions';
+ let url,requestHeaders;
+ if(isGroq){url='https://api.groq.com/openai/v1/chat/completions';requestHeaders={'Content-Type':'application/json','Authorization':`Bearer ${key}`};}
+ else{
+  const proxyBase=$('sambanovaProxyUrl').value.trim();
+  if(!proxyBase)throw new Error('SambaNovaはブラウザから直接接続できません。Cloudflare Workerの中継URLを設定してください。');
+  let parsed;try{parsed=new URL(proxyBase);}catch{throw new Error('SambaNova Worker URLの形式が正しくありません。https:// から始まるURLを入力してください。');}
+  if(parsed.protocol!=='https:')throw new Error('SambaNova Worker URLはHTTPSである必要があります。');
+  const base=proxyBase.replace(/\/+$/,'');url=base.endsWith('/v1/chat/completions')?base:`${base}/v1/chat/completions`;
+  requestHeaders={'Content-Type':'application/json','x-proxy-token':key};
+ }
  const qwen=isGroq&&model.startsWith('qwen/');
  const body={model,messages:[{role:'user',content:content.length===1?promptWithSchema:content}],temperature:qwen?0.7:0.2,stream:false}; // Qwen instruct mode recommends 0.7; keep extraction models deterministic.
  if(isGroq){
@@ -879,7 +897,7 @@ async function callGroqCompatible(provider,prompt,outputTokens=4000,responseSche
   body.max_tokens=Math.min(SAMBANOVA_OUTPUT_CAP,Math.max(256,Math.floor(Number(outputTokens)||1800)));
   body.response_format={type:'json_object'};
  }
- const {response,raw}=await fetchProviderResponse(provider,url,{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${key}`},body:JSON.stringify(body)},operation,model);
+ const {response,raw}=await fetchProviderResponse(provider,url,{method:'POST',headers:requestHeaders,body:JSON.stringify(body)},operation,model);
  if(!response.ok){let msg=raw;try{const parsedError=JSON.parse(raw);msg=parsedError.error?.message||parsedError.message||raw;}catch{}throw providerError(provider,operation,model,response.status,msg,response);}
  let data;
  try{data=JSON.parse(raw);}catch(e){const detail=String(e.message||e).slice(0,150);recordActivity('api_error',`${provider}応答のJSON解析エラー`,`${operation} / ${model} / ${detail}`);throw new Error(`${provider}のHTTP応答をJSONとして読み取れませんでした（${model}）。詳細：${detail}。自動再試行・他社への切替は行わず、処理を停止しました。`);}
