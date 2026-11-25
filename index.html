@@ -204,7 +204,7 @@ body.test-mode{background:#edf0f4!important;color:#171717!important;color-scheme
         <div><label class="label" for="pageLimit">複数ページの解析上限</label><select class="input" id="pageLimit"><option value="5">5ページ</option><option value="10" selected>10ページ（節約）</option><option value="15">15ページ</option><option value="20">20ページ</option><option value="30">30ページ</option></select></div>
         <div class="small muted" style="padding-bottom:8px">文字PDFはテキスト抽出を優先し、スキャンページ・写真だけを圧縮画像で送信します。</div>
       </div>
-      <div class="notice">📌 AIありモードでは教材ページ・生成問題・独立検証をGemini 30%／Groq 35%／SambaNova 35%の目標配分で分担します。個人情報や公開できない教材は送信しないでください。</div>
+      <div class="notice">📌 AIありモードでは画像・スキャン教材の文字起こしをGeminiが全ページ担当し、その文字起こし結果とテキストPDFをGemini 30%／Groq 35%／SambaNova 35%で分析・問題生成・独立検証します。画像データはGroq・SambaNovaへ送信しません。個人情報や公開できない教材は送信しないでください。</div>
       <div class="label">出題対象の補足（任意）</div>
       <textarea id="scopeNote" rows="2" placeholder="例：このプリントの問1〜問8。二次関数の最大・最小を中心に。"></textarea>
       <div class="actions"><button class="btn full" id="analyzeBtn" type="button" disabled>教材を解析する</button></div>
@@ -245,7 +245,7 @@ body.test-mode{background:#edf0f4!important;color:#171717!important;color-scheme
           <div style="flex:0 0 auto;align-self:end"><a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener">APIキー取得 ↗</a></div>
         </div>
         <div class="small muted" style="margin-top:7px">モデルはここで手動選択します。選択したモデルに1回だけ送信し、混雑・エラー時に別モデルへ自動切替や自動再試行はしません。モデルの利用可否・無料枠はGoogle側のアカウント条件に従います。</div>
-        <div id="tokenUsageNote">Gemini 30%・Groq 35%・SambaNova 35%で教材解析・問題生成・検証を分担します。Groq Qwenは1回600トークン以内・毎分枠を端末内で保守的に管理。通常採点は端末内で行い、採点時にAPI通信しません。自動再試行・他社への代替なし。</div>
+        <div id="tokenUsageNote">画像・スキャン教材の文字起こしはGeminiが担当。文字起こし後の教材分析・問題生成・独立検証はGemini 30%・Groq 35%・SambaNova 35%で分担します。Groq Qwenは組織全体のOTPM制限を考慮して小分けに処理。通常採点は端末内で行い、採点時にAPI通信しません。自動再試行・他社への代替なし。</div>
       </div>
       <section class="panel" style="margin:12px 0 0;padding:13px;background:#101b2b;border-color:#3b5271">
         <div class="section-head"><h3 style="margin:0;font-size:14px">マルチAI設定</h3><span class="tag">役割別分配</span></div>
@@ -257,8 +257,8 @@ body.test-mode{background:#edf0f4!important;color:#171717!important;color-scheme
         </div>
         <div class="provider-grid">
           <section class="provider-card" style="border-top:3px solid #4285f4">
-            <div class="provider-title"><div class="provider-mark">✦</div><div><strong>Gemini · 30%</strong><small>ページ単位の教材解析・生成・検証</small></div></div>
-            <div class="provider-description">上のGemini APIキー・モデル設定を使用。担当ページと担当問題だけを処理し、全教材を毎回送信しません。</div>
+            <div class="provider-title"><div class="provider-mark">✦</div><div><strong>Gemini · 30%</strong><small>全画像ページの文字起こし＋担当分の分析・生成・検証</small></div></div>
+            <div class="provider-description">上のGemini APIキー・モデル設定を使用。画像・スキャンページは最初にGeminiが文字起こしし、他社には文字データだけを渡します。</div>
           </section>
           <section class="provider-card groq">
             <div class="provider-title"><div class="provider-mark">G</div><div><strong>Groq · 35%</strong><small>教材解析・問題生成・独立検証</small></div></div>
@@ -283,15 +283,15 @@ body.test-mode{background:#edf0f4!important;color:#171717!important;color-scheme
             <div class="provider-description">SambaNovaはブラウザから直接呼び出せないため、Cloudflare Worker経由で通信します。SambaNova APIキーはWorkerのSecretに保存し、この画面には入力しません。</div>
             <label class="label" for="sambanovaModel">使用モデル（公式Free Tier掲載モデル）</label>
             <select class="input" id="sambanovaModel">
-              <option value="gemma-4-31B-it" selected>Gemma 4 31B · 画像対応</option>
-              <option value="gpt-oss-120b">GPT-OSS 120B · 高精度推論（テキスト）</option>
+              <option value="gemma-4-31B-it">Gemma 4 31B · テキスト分析にも使用可能</option>
+              <option value="gpt-oss-120b" selected>GPT-OSS 120B · テキスト分析（標準）</option>
             </select>
-            <div class="provider-description">Gemma 4は画像入力対応。GPT-OSS 120Bはテキスト専用。両モデルともFree Tier対象ですが、SambaNova公式ではPreviewモデル扱いです。</div>
+            <div class="provider-description">画像文字起こしはGeminiが担当するため、SambaNovaはテキスト専用のGPT-OSS 120Bを標準にしています。Gemma 4も手動選択できますが、402が出る場合はGPT-OSSへ切り替えてください。モデルの自動切替はしません。公式Free Tier掲載モデルですが、両モデルともPreview扱いです。</div>
           </section>
         </div>
-        <div class="notice warn" style="margin-top:10px">無料枠・上限の注意：Groqの上限は組織単位で、RPM・RPD・TPMに加え、アカウントによっては入力/出力トークン毎分（ITPM/OTPM）も適用されます。今回確認されたQwenのOTPM 1,000に合わせ、1回の出力要求を950以下に制限し、解析・生成・検証を小分けにします。SambaNova Free Tierは支払方法未登録時に適用され、Gemma 4 31B／GPT-OSS 120Bは各モデル20リクエスト/分・20リクエスト/日・200,000トークン/日です。SambaNovaの掲載モデルはPreview扱いで、予告なく変更・終了する場合があります。Geminiの無料枠はプロジェクト・モデルごとに異なり、Google AI StudioのRate Limitsが優先です。どの会社も上限超過時は停止し、有料化・他社への自動切替・自動再試行はしません。</div>
+        <div class="notice warn" style="margin-top:10px">無料枠・上限の注意：Groqの上限は組織単位で、RPM・RPD・TPMに加え、アカウントによっては入力/出力トークン毎分（ITPM/OTPM）も適用されます。今回確認されたQwenのOTPM 1,000に配慮し、Qwenの処理を小分けにします。画像OCRはGeminiのみで行い、画像を他社へ送信しません。SambaNova Free Tierは支払方法未登録時に適用され、Gemma 4 31B／GPT-OSS 120Bは各モデル20リクエスト/分・20リクエスト/日・200,000トークン/日です。SambaNovaの掲載モデルはPreview扱いで、予告なく変更・終了する場合があります。Geminiの無料枠はプロジェクト・モデルごとに異なり、Google AI StudioのRate Limitsが優先です。どの会社も上限超過時は停止し、有料化・他社への自動切替・自動再試行はしません。</div>
         <div class="notice warn" style="margin-top:10px">接続方式：GeminiとGroqはこの端末から直接通信します。SambaNovaだけは公式のCORS制限によりCloudflare Worker中継が必要です。Gemini/Groqのキーはブラウザ内で完全には秘匿できません。SambaNovaキーはWorkerのSecretに保存し、ここには入力しません。</div>
-        <div class="small muted" id="multiApiStatus" style="margin-top:7px">AIありモードではGemini・GroqのAPIキーと、SambaNovaのWorker URL・中継アクセスキーが必要です。目標配分30/35/35。APIエラー時は自動再試行・他社への代替をせず停止します。</div>
+        <div class="small muted" id="multiApiStatus" style="margin-top:7px">AIありモードではGemini・GroqのAPIキーと、SambaNovaのWorker URL・中継アクセスキーが必要です。画像OCRはGeminiが担当し、OCR後の処理を目標配分30/35/35で分担します。APIエラー時は自動再試行・他社への代替をせず停止します。</div>
         <div class="notice" id="apiQuotaStatus" role="status" aria-live="polite" style="margin-top:8px">API利用枠：最初の通信後、各社が返す残りリクエスト数・トークン枠を取得できた場合にここへ表示します。</div>
       </section>
       <div id="localInfo" class="notice warn hidden">AIなしモードは端末内処理です。写真OCRは初回に日本語辞書（数MB〜）をダウンロードするため、通信環境によっては数分かかる場合があります。120秒で進まない場合はエラー表示します。自由な類題生成はできません。</div>
@@ -404,6 +404,7 @@ function updateApiQuotaStatus(provider,response){
 function providerErrorHint(provider,status,message,response){
  const msg=String(message||'');const low=msg.toLowerCase();const retry=getHeader(response,'retry-after');
  if(status===400){if(/model|unsupported|invalid.*parameter|unknown.*field/.test(low))return 'モデル名または、そのモデルで使えないリクエスト項目の可能性があります。モデル選択とAPI仕様を確認してください。';return 'リクエスト形式・入力データ・JSON指定の不整合が考えられます。';}
+ if(status===402&&provider==='SambaNova')return 'SambaNovaから支払い方法必須の応答が返されました。ただし公式Rate Limitsでは、支払い方法未登録のFree TierにもGemma 4 31BとGPT-OSS 120Bが掲載されています。モデル側の一時的な判定・アカウント状態の可能性もあります。有料登録はせず、時間をおいて手動再実行するか、SambaNova欄でGPT-OSS 120Bを手動選択してください。画像OCRはGeminiが担当するため、テキスト専用モデルで処理できます。自動切替は行いません。';
  if(status===402)return '無料利用枠の対象外、残高・契約状態、または請求設定に関する拒否の可能性があります。有料登録や課金をせず、各社のFree Tier利用状況を確認してください。';
  if(status===403)return 'モデル利用権限、Free Tier対象外、またはプロジェクト/アカウント制限の可能性があります。請求・利用権限の画面を確認してください。有料化は自動で行いません。';
  if(status===404)return '選択モデルが廃止・非公開・利用対象外になっている可能性があります。公式の現行モデル一覧を確認してください。';
@@ -670,6 +671,9 @@ async function prepareGeminiMaterials(files,pageLimit){
  if(bytesSent>12*1024*1024)throw new Error('圧縮後の画像合計が12MBを超えました。ページ上限を下げるか、ファイルを分けてください。');
  return{parts,units,note};
 }
+const OCR_RESPONSE_SCHEMA={type:'OBJECT',properties:{
+ extractedText:{type:'STRING'}
+},required:['extractedText']};
 const ANALYSIS_RESPONSE_SCHEMA={type:'OBJECT',properties:{
  subject:{type:'STRING'},grade:{type:'STRING'},chapters:{type:'ARRAY',items:{type:'STRING'}},keyPoints:{type:'ARRAY',items:{type:'STRING'}},
  problemPatterns:{type:'ARRAY',items:{type:'OBJECT',properties:{type:{type:'STRING'},pattern:{type:'STRING'},difficulty:{type:'STRING'},method:{type:'STRING'},exampleSummary:{type:'STRING'},sourcePage:{type:'STRING'}},required:['type','pattern','difficulty','method','exampleSummary','sourcePage']}},
@@ -710,8 +714,35 @@ function splitAnalysisBatches(units,maxImages=1){
  if(batch.length)batches.push(batch);
  return batches;
 }
+async function transcribeImageUnitsWithGemini(units,scopeNote){
+ const imageIndexes=[];
+ for(let i=0;i<units.length;i++)if((units[i]||[]).some(part=>part&&part.inlineData))imageIndexes.push(i);
+ if(!imageIndexes.length)return units;
+ ensureProviderKeys(['Gemini']);
+ const converted=units.slice();
+ for(let n=0;n<imageIndexes.length;n++){
+  const index=imageIndexes[n],unit=units[index]||[],imageParts=unit.filter(part=>part&&part.inlineData);
+  const labels=unit.filter(part=>part&&typeof part.text==='string').map(part=>part.text.trim()).filter(Boolean);
+  const pageLabel=labels.join(' / ')||`画像ページ ${index+1}`;
+  state.currentOperation=`画像文字起こし・Gemini（${n+1}/${imageIndexes.length}ページ）`;
+  showStatus(`Geminiが画像教材を文字起こし中...（${n+1}/${imageIndexes.length}ページ）`,Math.min(68,8+Math.round((n+1)/imageIndexes.length*58)));
+  const prompt=`あなたは正確な日本語教材OCRエンジンです。添付画像に写っている文字・数字・記号を、見える範囲でできる限り原文どおりに文字起こししてください。
+ページ=${pageLabel}
+補足=${scopeNote||'なし'}
+見出し・段落・箇条書き・表の行列・図表のラベル・脚注・ページ番号をできるだけ保持してください。数式・化学式・英語・固有名詞・単位は勝手に修正せず、見たまま転記してください。読めない文字は[判読不能]とし、推測で補完しないでください。文章の要約、問題作成、解説、教材外知識の追加は禁止です。読み取れた本文だけをextractedTextに入れ、指定JSONだけを返してください。`;
+  const result=await callProvider('Gemini',prompt,GEMINI_OUTPUT_CAP,OCR_RESPONSE_SCHEMA,imageParts);
+  const extracted=String(result.extractedText||'').trim();
+  if(!extracted)throw new Error(`Geminiの画像文字起こし結果が空でした：${pageLabel}。このページの文字を確定できないため停止しました。`);
+  converted[index]=[{text:`${pageLabel}\n【Geminiによる画像文字起こし】\n${extracted}`}];
+ }
+ state.providerAssignments.ocr={Gemini:imageIndexes.length};
+ recordActivity('distribution','画像教材の文字起こしをGeminiに集約',`${imageIndexes.length}画像ページをGeminiで文字起こし。Groq・SambaNovaには画像を送信せず、文字データのみ共有。`,{distribution:state.providerAssignments.ocr});
+ return converted;
+}
 async function analyzeMaterialsDistributed(prepared,scopeNote){
- const units=prepared.units?.length?prepared.units:[prepared.parts||[]];const split=splitUnitsByProvider(units);ensureProviderKeys(PROVIDERS.filter(p=>split.groups[p].length));
+ const originalUnits=prepared.units?.length?prepared.units:[prepared.parts||[]];
+ const units=await transcribeImageUnitsWithGemini(originalUnits,scopeNote);
+ const split=splitUnitsByProvider(units);ensureProviderKeys(PROVIDERS.filter(p=>split.groups[p].length));
  const results=[],providerPages={};const pageTotal=units.length;
  for(const provider of PROVIDERS){
   const assigned=split.groups[provider];if(!assigned.length)continue;providerPages[provider]=assigned.length;
@@ -742,7 +773,7 @@ function normalizeExamPoints(questions){
 }
 async function generateDistributedExam(basePrompt,settings,analysis,analysisPayload){
  const plan=weightedSchedule(settings.count),providersWithWork=PROVIDERS.filter(p=>plan.counts[p]>0);ensureProviderKeys(providersWithWork);
- const queues=Object.fromEntries(PROVIDERS.map(p=>[p,[]])),meta=[];const keyPointGroups=splitListByProvider(analysisPayload?.keyPoints||[]),patternGroups=splitListByProvider(analysisPayload?.problemPatterns||[]);const sharedText=String(analysisPayload?.extractedText||'').slice(0,650);
+ const queues=Object.fromEntries(PROVIDERS.map(p=>[p,[]])),meta=[];const keyPointGroups=splitListByProvider(analysisPayload?.keyPoints||[]),patternGroups=splitListByProvider(analysisPayload?.problemPatterns||[]);const sharedText=String(analysisPayload?.extractedText||'').slice(0,1800);
  for(const provider of PROVIDERS){
   const count=plan.counts[provider];if(!count)continue;
   const compactQwen=provider==='Groq'&&isGroqQwenModel();
@@ -971,7 +1002,7 @@ $('analyzeBtn').addEventListener('click',async()=>{
    const pageLimit=Number($('pageLimit').value)||15;
    showStatus(`複数ページを整理中...（上限 ${pageLimit} ページ）`,5);
    const prepared=await prepareGeminiMaterials(state.files,pageLimit);state.materialMeta=prepared.note;
-   showStatus(`教材内容を3社に分散解析中...（${prepared.note.pagesUsed}ページ）`,76);
+   showStatus(`画像ページはGeminiが文字起こしし、その後3社で教材内容を分析します...（${prepared.note.pagesUsed}ページ）`,8);
    result=await analyzeMaterialsDistributed(prepared,$('scopeNote').value||'なし');
   }else{
    const text=await extractLocal();if(!text||text.replace(/\s/g,'').length<20)throw new Error('文字をほとんど読み取れませんでした。写真を鮮明にするか、テキストを含むPDFをお試しください。');
