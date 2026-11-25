@@ -742,7 +742,7 @@ function normalizeExamPoints(questions){
 }
 async function generateDistributedExam(basePrompt,settings,analysis,analysisPayload){
  const plan=weightedSchedule(settings.count),providersWithWork=PROVIDERS.filter(p=>plan.counts[p]>0);ensureProviderKeys(providersWithWork);
- const queues=Object.fromEntries(PROVIDERS.map(p=>[p,[]])),meta=[];const totalBudget=Math.min(6200,Math.max(3000,settings.count*300));const keyPointGroups=splitListByProvider(analysisPayload?.keyPoints||[]),patternGroups=splitListByProvider(analysisPayload?.problemPatterns||[]);const sharedText=String(analysisPayload?.extractedText||'').slice(0,650);
+ const queues=Object.fromEntries(PROVIDERS.map(p=>[p,[]])),meta=[];const keyPointGroups=splitListByProvider(analysisPayload?.keyPoints||[]),patternGroups=splitListByProvider(analysisPayload?.problemPatterns||[]);const sharedText=String(analysisPayload?.extractedText||'').slice(0,650);
  for(const provider of PROVIDERS){
   const count=plan.counts[provider];if(!count)continue;
   const compactQwen=provider==='Groq'&&isGroqQwenModel();
@@ -754,7 +754,9 @@ async function generateDistributedExam(basePrompt,settings,analysis,analysisPayl
    const providerMaterial={subject:analysisPayload?.subject||analysis?.subject||settings.subject,grade:analysisPayload?.grade||analysis?.grade||settings.grade,chapters:(analysisPayload?.chapters||[]).slice(0,8),keyPoints:keyPointGroups[provider],problemPatterns:patternGroups[provider],sharedText};
    const prompt=basePrompt.replaceAll(`${settings.count}問`,`${chunkCount}問`)+`\n\nこのAI専用の教材担当範囲：${JSON.stringify(providerMaterial)}\n分散生成の担当範囲：全体${settings.count}問のうち、このAIは合計${count}問を担当します。今回のバッチは${bi+1}/${batchCounts.length}回目で、今回必ず${chunkCount}問だけ作成してください。${alreadyMade.length?`今回までに同じAIが作成済みの問題（重複禁止）：${JSON.stringify(alreadyMade)}`:''}ここに示した要点・問題パターンを優先して、担当外AIの問題を作らず、重複を避けてください。問題文・解説は必要十分な長さにまとめてください。配点はこの担当分の内部で仮設定して構いません。全AIの出力を結合後、アプリ側で全体100点に再配分します。${compactQwen?'\nQwenの短文出力条件：今回の1問だけをJSONにする。問題文は110字以内、選択肢は4個・各30字以内、正答は60字以内、acceptableAnswersは最大1個、採点基準は35字以内、解説は45字以内、difficulty/sourcePageは短く。不要な前置き・長い解法説明を付けず、全必須項目を欠かさず簡潔に返す。':''}`;
    showStatus(`${provider}が担当問題を生成中...`,Math.min(80,18+Math.round((queues[provider].length+chunkCount)/settings.count*58)));
-   const requestedTokens=compactQwen?GROQ_QWEN_OUTPUT_CAP:Math.min(5000,Math.max(1300,Math.ceil(totalBudget*chunkCount/settings.count)));
+   // Provider weights control how many questions each AI receives, not how much output it may return.
+   // Use each provider's configured output ceiling so Gemini is not accidentally cut to 1,300 tokens.
+   const requestedTokens=compactQwen?GROQ_QWEN_OUTPUT_CAP:provider==='Gemini'?GEMINI_OUTPUT_CAP:provider==='Groq'?GROQ_GPTOSS_OUTPUT_CAP:SAMBANOVA_OUTPUT_CAP;
    const result=await callProvider(provider,prompt,requestedTokens,EXAM_RESPONSE_SCHEMA,[]);
    if(!firstResult)firstResult=result;
    const qs=Array.isArray(result.questions)?result.questions:[];if(qs.length!==chunkCount)throw new Error(`${provider}の今回の担当は${chunkCount}問ですが、${qs.length}問しか返りませんでした。別会社への自動代替はせず、問題生成を停止しました。`);
