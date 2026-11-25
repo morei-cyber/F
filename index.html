@@ -471,9 +471,24 @@ function escapeHtml(v=''){return String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','
 function setMode(){const mode=document.querySelector('input[name="mode"]:checked').value;$('aiSettings').classList.toggle('hidden',mode!=='ai');$('localInfo').classList.toggle('hidden',mode!=='local');$('generateBtn').textContent=mode==='ai'?'AIで類題を生成':'AIなしで問題を作成';}
 document.querySelectorAll('input[name="mode"]').forEach(x=>x.addEventListener('change',setMode));setMode();
 function renderFiles(){ $('fileCount').textContent=state.files.length+' ファイル'; $('fileList').innerHTML=state.files.map((f,i)=>`<div class="file"><div class="ficon">${f.type==='application/pdf'?'📕':'🖼️'}</div><div class="fname">${escapeHtml(f.name)}<span class="meta">${fmtSize(f.size)} · ${f.type||'画像'}</span></div><button type="button" aria-label="削除" data-remove="${i}">×</button></div>`).join('');$('analyzeBtn').disabled=!state.files.length;$('generateBtn').disabled=!state.analysis;}
-function addFiles(list){const incoming=[...list];let added=0;for(const f of incoming){if(state.files.length>=MAX_FILES)break;if(!['application/pdf','image/jpeg','image/png','image/webp'].includes(f.type)){continue;}if(f.size>MAX_FILE_BYTES){alert(`${f.name} は20MBを超えています。ファイルを小さくしてから追加してください。`);continue;}if(!state.files.some(x=>x.name===f.name&&x.size===f.size)){state.files.push(f);added++;}}if(added){state.analysis=null;$('summary').classList.remove('show');$('examSection').classList.remove('show');recordActivity('upload','教材ファイルを追加',`${added}ファイルを追加（ファイル名・内容は履歴に保存しません）`);}renderFiles();}
+function addFiles(list){
+ const incoming=[...list];let added=0,unsupported=0,tooLarge=0,duplicates=0,limitReached=false;
+ for(const f of incoming){
+  if(state.files.length>=MAX_FILES){limitReached=true;break;}
+  const supportedMime=['application/pdf','image/jpeg','image/png','image/webp'].includes(f.type);
+  const supportedName=/\.(pdf|jpe?g|png|webp)$/i.test(f.name||'');
+  if(!supportedMime&&!supportedName){unsupported++;continue;}
+  if(f.size>MAX_FILE_BYTES){tooLarge++;continue;}
+  if(state.files.some(x=>x.name===f.name&&x.size===f.size&&x.lastModified===f.lastModified)){duplicates++;continue;}
+  state.files.push(f);added++;
+ }
+ if(added){state.analysis=null;$('summary').classList.remove('show');$('examSection').classList.remove('show');recordActivity('upload','教材ファイルを追加',`${added}ファイルを追加（ファイル名・内容は履歴に保存しません）`);}
+ const notices=[];if(unsupported)notices.push(`対応していない形式：${unsupported}件`);if(tooLarge)notices.push(`20MB超過：${tooLarge}件`);if(duplicates)notices.push(`重複：${duplicates}件`);if(limitReached||state.files.length>=MAX_FILES&&incoming.length>added)notices.push(`上限は${MAX_FILES}ファイルです`);
+ if(notices.length)alert(notices.join('\n'));
+ renderFiles();
+}
 $('pickFiles').addEventListener('click',()=>$('fileInput').click());$('fileInput').addEventListener('change',e=>{addFiles(e.target.files);e.target.value='';});
-$('fileList').addEventListener('click',e=>{const b=e.target.closest('[data-remove]');if(!b)return;state.files.splice(Number(b.dataset.remove),1);state.analysis=null;$('summary').classList.remove('show');renderFiles();});
+$('fileList').addEventListener('click',e=>{const b=e.target.closest('[data-remove]');if(!b)return;const index=Number(b.dataset.remove);if(!Number.isInteger(index)||index<0||index>=state.files.length)return;state.files.splice(index,1);state.analysis=null;$('summary').classList.remove('show');$('examSection').classList.remove('show');$('resultBox').classList.remove('show');renderFiles();});
 const dz=$('dropZone');dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('over')});dz.addEventListener('dragleave',()=>dz.classList.remove('over'));dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('over');addFiles(e.dataTransfer.files)});
 async function loadPdfJs(){if(state.pdfjs)return state.pdfjs;showStatus('PDF解析ライブラリを読み込み中...',5);const lib=await import('https://cdn.jsdelivr.net/npm/pdfjs-dist@5.4.624/build/pdf.min.mjs');lib.GlobalWorkerOptions.workerSrc='https://cdn.jsdelivr.net/npm/pdfjs-dist@5.4.624/build/pdf.worker.min.mjs';state.pdfjs=lib;return lib;}
 async function loadTesseractScript(){
@@ -667,6 +682,19 @@ async function generateDistributedExam(basePrompt,settings,analysis,analysisPayl
  recordActivity('distribution','問題生成を3社に分散',meta.map(x=>`${x.provider} ${x.count}問`).join(' / '),{distribution:state.providerAssignments.generation});
  const first=meta.map(x=>x.result).find(x=>x&&typeof x==='object')||{};return{title:first.title||'3社分散AI模試',subject:first.subject||analysis?.subject||settings.subject,grade:first.grade||analysis?.grade||settings.grade,scope:first.scope||'アップロード教材の範囲',questions:allQuestions,_providerDistribution:state.providerAssignments.generation};
 }
+async function fetchProviderResponse(provider,url,options,operation,model){
+ const controller=new AbortController();
+ const timer=setTimeout(()=>controller.abort(),120000);
+ try{
+  const response=await fetch(url,{...options,signal:controller.signal});
+  const raw=await response.text();
+  return{response,raw};
+ }catch(e){
+  const detail=e?.name==='AbortError'?'120秒以内に応答が完了しませんでした':String(e?.message||e||'ネットワークまたはCORS制限').slice(0,150);
+  recordActivity('api_error',`${provider} API通信エラー`,`${operation} / ${model} / ${detail}`);
+  throw new Error(`${provider} APIとの通信に失敗しました（${model}）：${detail}。自動再試行・他社への切替は行いません。通信環境とAPI利用上限を確認して手動で再実行してください。`);
+ }finally{clearTimeout(timer);}
+}
 async function callGemini(parts, prompt, outputTokens=7000, responseSchema=null){
  const key=$('apiKey').value.trim();
  if(!key)throw new Error('Gemini APIキーを入力してください。');
@@ -675,15 +703,9 @@ async function callGemini(parts, prompt, outputTokens=7000, responseSchema=null)
  const generationConfig={temperature:0.2,responseMimeType:'application/json',maxOutputTokens:outputTokens};
  if(responseSchema)generationConfig.responseSchema=responseSchema;
  const body={contents:[{role:'user',parts:[{text:prompt},...parts]}],generationConfig};
- let response;
- try{
-  response=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`,{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':key},body:JSON.stringify(body)});
- }catch(e){
-  recordActivity('api_error','Gemini API通信エラー',`${operation} / ${model} / ${String(e.message||e).slice(0,130)}`);
-  throw new Error(`通信エラー（${model}）：${e.message||'ネットワークに接続できません'}。自動再試行は行っていません。モデルを変更するか、通信環境を確認して手動で再実行してください。`);
- }
+ const {response,raw}=await fetchProviderResponse('Gemini',`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`,{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':key},body:JSON.stringify(body)},operation,model);
  if(!response.ok){
-  const raw=await response.text();let msg=raw;try{msg=JSON.parse(raw).error?.message||raw}catch{}
+  let msg=raw;try{msg=JSON.parse(raw).error?.message||raw}catch{}
   recordActivity('api_error','Gemini APIエラー',`${operation} / ${model} / HTTP ${response.status} / ${String(msg).slice(0,110)}`);
   if(response.status===503||response.status===429||response.status===500||response.status===502||response.status===504){
    throw new Error(`Gemini APIエラー (${response.status})［${model}］：${msg}
@@ -691,8 +713,10 @@ async function callGemini(parts, prompt, outputTokens=7000, responseSchema=null)
   }
   throw new Error(`Gemini APIエラー (${response.status})［${model}］：${msg}`);
  }
- const raw=await response.text();
- const data=JSON.parse(raw),usage=data.usageMetadata||{};
+ let data;
+ try{data=JSON.parse(raw);}catch(e){const detail=String(e.message||e).slice(0,150);recordActivity('api_error','Gemini応答のJSON解析エラー',`${operation} / ${model} / ${detail}`);throw new Error(`GeminiのHTTP応答をJSONとして読み取れませんでした（${model}）。詳細：${detail}。時間をおいて手動で再実行してください。`);}
+ if(!data||typeof data!=='object'||Array.isArray(data))throw new Error(`Geminiから予期しない応答形式が返されました（${model}）。`);
+ const usage=data.usageMetadata||{};
  state.tokenUsage.input+=Number(usage.promptTokenCount)||0;
  state.tokenUsage.output+=Number(usage.candidatesTokenCount)||0;
  state.tokenUsage.total+=Number(usage.totalTokenCount)||0;
@@ -701,7 +725,7 @@ async function callGemini(parts, prompt, outputTokens=7000, responseSchema=null)
  if(note)note.textContent=`今回の担当AI：Gemini（他社と分散） ／ このページのAI利用量：入力 ${state.tokenUsage.input.toLocaleString()} / 出力 ${state.tokenUsage.output.toLocaleString()} / 合計 ${state.tokenUsage.total.toLocaleString()} トークン（採点時の追加消費 0）`;
  const candidate=data.candidates?.[0];
  const text=candidate?.content?.parts?.map(p=>p.text||'').join('\n')||'';
- if(!text)throw new Error(`AIから本文が返りませんでした［${model}］。終了理由：${candidate?.finishReason||'不明'}。安全フィルターや出力上限の可能性があります。`);
+ if(!text)throw new Error(`AIから本文が返りませんでした［${model}］。終了理由：${candidate?.finishReason||'不明'}／入力ブロック理由：${data.promptFeedback?.blockReason||'なし'}。安全フィルター・入力形式・出力上限の可能性があります。`);
  let parsed;
  try{parsed=parseJson(text);}catch(e){recordActivity('api_error','Gemini応答の解析エラー',`${operation} / ${model} / ${String(e.message||e).slice(0,150)}`);throw e;}
  parsed._geminiFinishReason=candidate?.finishReason||'';
@@ -752,21 +776,24 @@ async function callGroqCompatible(provider,prompt,outputTokens=4000,responseSche
   body.max_completion_tokens=outputTokens;
   body.response_format={type:'json_object'};
   body.reasoning_effort=operation.includes('正答検証')?'high':'medium';
-  body.reasoning_format='hidden';
+  // Groq Qwen supports reasoning_format; GPT-OSS rejects that parameter.
+  if(model.startsWith('qwen/')) body.reasoning_format='hidden';
+  else if(model.startsWith('openai/gpt-oss-')) body.include_reasoning=false;
  }else{
   body.max_tokens=outputTokens;
   // SambaNova models vary in structured-output support; schema is included in the prompt for broad compatibility.
  }
- let response;
- try{response=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${key}`},body:JSON.stringify(body)});}
- catch(e){recordActivity('api_error',`${provider} API通信エラー`,`${operation} / ${model} / ${String(e.message||e).slice(0,120)}`);throw new Error(`${provider}との通信に失敗しました（${model}）：${e.message||'ネットワークまたはCORS制限'}。自動再試行はしません。`);}
- if(!response.ok){const raw=await response.text();let msg=raw;try{msg=JSON.parse(raw).error?.message||JSON.parse(raw).message||raw;}catch{}throw providerError(provider,operation,model,response.status,msg);}
- const data=await response.json();recordProviderUsage(provider,model,operation,data.usage||{});
+ const {response,raw}=await fetchProviderResponse(provider,url,{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${key}`},body:JSON.stringify(body)},operation,model);
+ if(!response.ok){let msg=raw;try{const parsedError=JSON.parse(raw);msg=parsedError.error?.message||parsedError.message||raw;}catch{}throw providerError(provider,operation,model,response.status,msg);}
+ let data;
+ try{data=JSON.parse(raw);}catch(e){const detail=String(e.message||e).slice(0,150);recordActivity('api_error',`${provider}応答のJSON解析エラー`,`${operation} / ${model} / ${detail}`);throw new Error(`${provider}のHTTP応答をJSONとして読み取れませんでした（${model}）。詳細：${detail}。自動再試行・他社への切替は行わず、処理を停止しました。`);}
+ if(!data||typeof data!=='object'||Array.isArray(data))throw new Error(`${provider}から予期しない応答形式が返されました（${model}）。`);
+ recordProviderUsage(provider,model,operation,data.usage||{});
  const message=data.choices?.[0]?.message||{};
  let textOut=typeof message.content==='string'?message.content:Array.isArray(message.content)?message.content.map(x=>x.text||'').join('\n'):'';
  if(!textOut&&message.refusal)textOut=String(message.refusal);
  if(!textOut){const reason=data.choices?.[0]?.finish_reason||'不明';throw new Error(`${provider}から解析可能な本文が返りませんでした（${model}）。終了理由：${reason}。自動再試行はしません。`);}
- try{return parseJson(textOut);}catch(e){recordActivity('api_error',`${provider}応答のJSON解析エラー`,`${operation} / ${model} / ${String(e.message||e).slice(0,130)}`);throw new Error(`${provider}の返答を指定JSONとして読み取れませんでした（${model}）。自動再試行・他社への切替は行いません。問題数を減らすか、モデルを手動で変更して再実行してください。`);}
+ try{return parseJson(textOut);}catch(e){const detail=String(e.message||e).slice(0,180);recordActivity('api_error',`${provider}応答のJSON解析エラー`,`${operation} / ${model} / ${detail}`);throw new Error(`${provider}の返答をJSONとして読み取れませんでした（${model}）。詳細：${detail}。自動再試行・他社への切替は行いません。問題数を減らすか、モデルを手動で変更して再実行してください。`);}
 }
 function stripJsonEnvelope(source){
  let v=String(source??'').replace(/^\uFEFF/,'').trim();
@@ -1082,9 +1109,10 @@ function gradeLocally(){
   return{id:q.id,score,maxPoints:q.points,status,judgement:status==='correct'?'正解':status==='review'?'要確認':'不正解',reason,needsReview:status==='review'};
  });
  const reviewCount=results.filter(r=>r.needsReview).length;
+ const earnedScore=results.reduce((sum,r)=>sum+Math.max(0,Math.min(Number(r.maxPoints)||0,Number(r.score)||0)),0);
  showGradeResults(results,`自動採点 ${results.length-reviewCount}問／確認待ち ${reviewCount}問。採点処理はこの端末内で完了しました。`,[]);
  $('gradeBtn').textContent='もう一度採点する';
- recordActivity('grading','模試を採点',`${state.questions.length}問 / ${score}点・採点処理は端末内`);
+ recordActivity('grading','模試を採点',`${state.questions.length}問 / ${earnedScore}点・採点処理は端末内`);
  showStatus('端末内で採点が完了しました。AI APIの追加消費はありません。',100);setTimeout(hideStatus,2300);
 }
 $('gradeBtn').addEventListener('click',()=>{
