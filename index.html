@@ -195,6 +195,45 @@ body.test-mode{background:#edf0f4!important;color:#171717!important;color-scheme
 @media(max-width:600px){.settings-overlay{padding:0}.settings-dialog{margin:0 auto;min-height:100%;border-radius:0}.settings-dialog-head{padding:12px}.settings-dialog-head h2{font-size:18px}.settings-panel{padding:12px!important}.check-grid{grid-template-columns:1fr 1fr}.settings-panel .provider-grid{grid-template-columns:1fr}.drawing-box canvas{height:190px}}
 @media print{.diagram-wrap{border:0;padding:0;margin:8px 0}.diagram-svg{max-height:270px}.drawing-box{border:1px solid #777}.drawing-box canvas{background-image:linear-gradient(#ddd 1px,transparent 1px),linear-gradient(90deg,#ddd 1px,transparent 1px)}.drawing-tools button,.drawing-tools small{display:none!important}}
 
+
+/* A4 compact print layout: prioritize one-sheet output without forcing unreadable scaling */
+@page{size:A4 portrait;margin:7mm 8mm 7mm}
+@media print{
+ html,body{font-size:8.5pt!important;line-height:1.3!important}
+ .test-paper .exam{padding:0!important}
+ .print-head{margin-bottom:5px!important}
+ .print-school-line{font-size:7.5pt!important;padding-bottom:2px!important}
+ .print-head h1{font-size:14pt!important;margin:3px 0!important;line-height:1.2!important}
+ .print-meta{font-size:7.3pt!important;gap:4px!important;padding:2px 0!important}
+ .print-student-fields{margin:4px 0!important}
+ .print-student-fields div{padding:3px 5px!important;min-height:21px!important;font-size:7.8pt!important}
+ .print-instructions{font-size:7.4pt!important;line-height:1.25!important;margin:3px 0 5px!important}
+ .test-paper .subject-paper-note{font-size:7.5pt!important;line-height:1.25!important;margin:3px 0!important;padding:2px 4px!important}
+ .test-paper .paper-meta-strip{font-size:7pt!important;gap:8px!important;padding-top:2px!important;margin-top:2px!important}
+ .qcard{padding:3px 0 4px!important;margin:0 0 2px!important;break-inside:avoid-page!important;page-break-inside:avoid!important}
+ .qtop{font-size:7.4pt!important;line-height:1.2!important}
+ .test-paper .q-number{font-size:8.5pt!important}
+ .test-paper .question-kind{font-size:7pt!important;padding:0 3px!important}
+ .qcard h3,.test-paper .qcard h3{font-size:8.35pt!important;line-height:1.3!important;margin:3px 0 4px!important}
+ .test-paper .prompt-line{min-height:0!important;line-height:1.3!important}
+ .choice{font-size:7.8pt!important;line-height:1.25!important;padding:0 1px!important;margin:1px 0!important;gap:5px!important}
+ .choice-letter{font-size:7pt!important;width:16px!important;height:16px!important;flex-basis:16px!important}
+ .print-choice-answer{font-size:7.7pt!important;margin-top:2px!important}
+ .print-writing-space{margin-top:1px!important}
+ .print-line{height:9px!important}
+ .diagram-wrap{margin:3px 0!important;padding:2px!important}
+ .diagram-svg{max-height:88px!important}
+ .drawing-box{margin:3px 0!important;padding:3px!important;break-inside:avoid!important}
+ .drawing-box canvas{height:48px!important;max-height:48px!important}
+ .drawing-tools{display:none!important}
+ .answer-sheet-table,.key-table{font-size:7.5pt!important;margin-top:3px!important;line-height:1.22!important}
+ .answer-sheet-table th,.answer-sheet-table td,.key-table th,.key-table td{padding:3px 4px!important;line-height:1.22!important}
+ .print-section-title{font-size:12pt!important;margin:4px 0!important}
+ #answerSheetPrint [style*="height:130px"]{height:42px!important}
+ #answerSheetPrint [style*="height:72px"]{height:25px!important}
+ #answerSheetPrint [style*="height:35px"]{height:15px!important}
+ .print-footer{margin-top:4px!important;font-size:7pt!important}
+}
 </style>
 </head>
 <body>
