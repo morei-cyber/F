@@ -169,13 +169,38 @@ body.test-mode{background:#edf0f4!important;color:#171717!important;color-scheme
  .test-paper .math-work-area{background:none!important;border:0!important;min-height:0!important}
 }
 
+
+/* Settings modal and advanced exam builder */
+.upload-grid{grid-template-columns:1fr}.header-actions{display:flex;align-items:center;gap:8px}.settings-open-btn{padding:9px 14px;white-space:nowrap}
+.settings-overlay{display:none;position:fixed;inset:0;z-index:1000;background:#030914d9;padding:14px;overflow-y:auto;overscroll-behavior:contain}
+.settings-overlay.open{display:block}
+.settings-dialog{width:min(920px,100%);margin:12px auto 34px;background:#0d1828;border:1px solid #486080;border-radius:20px;box-shadow:0 24px 80px #0009;overflow:hidden}
+.settings-dialog-head{position:sticky;top:0;z-index:3;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:15px 18px;background:#101d30f5;border-bottom:1px solid #344862;backdrop-filter:blur(12px)}
+.settings-dialog-head h2{margin:2px 0;font-size:20px}.settings-dialog-head p{margin:0;color:#aabbd0;font-size:11px}.settings-panel{margin:0!important;border:0!important;border-radius:0!important;box-shadow:none!important;padding:16px!important}
+.settings-intro{display:grid;gap:3px;padding:12px;border:1px solid #395575;border-radius:12px;background:#12233a;margin:12px 0}.settings-intro span{color:#aabbd0;font-size:11px}
+.advanced-block{border:1px solid #344b68;border-radius:13px;background:#101d30;margin:10px 0;overflow:hidden}
+.advanced-block summary{cursor:pointer;list-style:none;padding:13px 14px;font-weight:800;font-size:13px;display:flex;align-items:center;gap:9px}
+.advanced-block summary::-webkit-details-marker{display:none}.advanced-block summary:after{content:'＋';margin-left:auto;color:#91baff;font-size:18px}.advanced-block[open] summary:after{content:'−'}
+.advanced-block summary small{font-weight:500;color:#91a8c5;font-size:10px;margin-left:0}.advanced-content{border-top:1px solid #2a3d57;padding:5px 13px 14px}
+.check-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:8px 0 12px}
+.check-card{display:flex;align-items:flex-start;gap:9px;padding:10px;border:1px solid #344962;border-radius:10px;background:#0d1828;min-width:0;cursor:pointer}
+.check-card input{margin:3px 0 0;accent-color:#7faeff;flex:0 0 auto}.check-card b{display:block;font-size:12px}.check-card small{display:block;color:#9fb1c8;font-size:10px;line-height:1.45;margin-top:2px}
+.settings-panel .choice{margin:5px 0}.settings-panel .provider-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+.drawing-box{border:1px solid #aab3bf;background:#fff;border-radius:8px;padding:8px;margin-top:12px;break-inside:avoid}
+.drawing-box canvas{display:block;width:100%;height:210px;border:1px dashed #9aa6b5;background-color:#fff;background-image:linear-gradient(#e8edf3 1px,transparent 1px),linear-gradient(90deg,#e8edf3 1px,transparent 1px);background-size:20px 20px;touch-action:none;cursor:crosshair}
+.drawing-tools{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:7px}.drawing-tools small{color:#657287;font-size:10px}
+.diagram-wrap{margin:12px 0;padding:9px;border:1px solid #d4d9e0;background:#fff;border-radius:8px;break-inside:avoid}
+.diagram-svg{display:block;width:100%;height:auto;max-height:330px}.diagram-caption{font-size:10px;color:#536173;margin-top:4px}
+@media(max-width:600px){.settings-overlay{padding:0}.settings-dialog{margin:0 auto;min-height:100%;border-radius:0}.settings-dialog-head{padding:12px}.settings-dialog-head h2{font-size:18px}.settings-panel{padding:12px!important}.check-grid{grid-template-columns:1fr 1fr}.settings-panel .provider-grid{grid-template-columns:1fr}.drawing-box canvas{height:190px}}
+@media print{.diagram-wrap{border:0;padding:0;margin:8px 0}.diagram-svg{max-height:270px}.drawing-box{border:1px solid #777}.drawing-box canvas{background-image:linear-gradient(#ddd 1px,transparent 1px),linear-gradient(90deg,#ddd 1px,transparent 1px)}.drawing-tools button,.drawing-tools small{display:none!important}}
+
 </style>
 </head>
 <body>
 <div class="wrap" id="builderPage">
   <header class="top">
     <div class="brand"><div class="logo">✦</div><div><small>AI STUDY WORKSHOP</small><strong>EXAM FORGE <span style="color:#7eaaff">/ 模試メーカー</span></strong></div></div>
-    <div class="pill">iPad / Safari 対応 · 試作版 1.0</div>
+    <div class="header-actions"><span class="pill">iPad / Safari 対応</span><button class="btn settings-open-btn" id="openSettingsBtn" type="button" aria-haspopup="dialog" aria-controls="settingsOverlay">⚙ 設定</button></div>
   </header>
   <section class="hero">
     <div class="eyebrow">FROM YOUR MATERIALS TO YOUR MOCK EXAM</div>
@@ -189,7 +214,7 @@ body.test-mode{background:#edf0f4!important;color:#171717!important;color-scheme
     <div class="step"><b><span>04</span>受験・採点</b>結果と解説を確認</div>
   </div>
 
-  <div class="grid">
+  <div class="grid upload-grid">
     <section class="panel">
       <div class="section-head"><h2>01 / 教材をアップロード</h2><span class="tag" id="fileCount">0 ファイル</span></div>
       <p class="sub">PDF・JPEG・PNG・WebPに対応。複数ファイルをまとめて追加できます。</p>
@@ -208,6 +233,8 @@ body.test-mode{background:#edf0f4!important;color:#171717!important;color-scheme
       <div class="label">出題対象の補足（任意）</div>
       <textarea id="scopeNote" rows="2" placeholder="例：このプリントの問1〜問8。二次関数の最大・最小を中心に。"></textarea>
       <div class="actions"><button class="btn full" id="analyzeBtn" type="button" disabled>教材を解析する</button></div>
+      <div class="small muted" style="margin-top:7px">同じ教材・ページ上限・範囲補足・AIモデルの解析結果は、この端末に保存して再利用します。再利用時はOCR・教材分析のAPI通信を省略します。</div>
+      <div class="actions"><button class="btn ghost" id="clearAnalysisCacheBtn" type="button">保存した教材解析を削除</button></div>
       <div class="status" id="status"><div id="statusText">準備中...</div><div class="bar"><i id="progressBar"></i></div></div>
       <div class="summary" id="summary">
         <strong>解析結果</strong><div id="summaryBody" class="small" style="margin-top:8px"></div>
@@ -216,8 +243,12 @@ body.test-mode{background:#edf0f4!important;color:#171717!important;color-scheme
         <div class="small muted" style="margin-top:6px">※ AIありでは、AIが抽出した文章・問題パターンを表示します。AIなしではOCR・PDF文字抽出の結果です。</div>
       </div>
     </section>
+  </div>
 
-    <section class="panel">
+  <div class="settings-overlay" id="settingsOverlay" aria-hidden="true">
+    <div class="settings-dialog" role="dialog" aria-modal="true" aria-labelledby="settingsDialogTitle">
+      <div class="settings-dialog-head"><div><div class="eyebrow">EXAM CONFIGURATION</div><h2 id="settingsDialogTitle">模試の設定</h2><p>基本設定・問題形式・図形/作図・AI設定をここで変更できます。</p></div><button class="btn secondary" id="settingsCloseBtn" type="button">閉じる ✕</button></div>
+    <section class="panel settings-panel">
       <div class="section-head"><h2>02 / 作成設定</h2><span class="tag">類題モード</span></div>
       <p class="sub">教材の問題形式・解法・難易度を参考に、新しい問題を作成します。</p>
       <div class="label">生成方式</div>
@@ -292,7 +323,80 @@ body.test-mode{background:#edf0f4!important;color:#171717!important;color-scheme
         <div class="small muted" id="multiApiStatus" style="margin-top:7px">AIありモードではGemini APIキーが必須です。画像OCR・教材全体分析はGeminiのみ。問題作成はGemini 65%／Groq 35%を目安に分担し、計算・記述・曖昧な問題を別AIで重点検証します。Groqキーは任意で、未入力・利用上限時はGeminiが代替します。</div>
         <div class="notice" id="apiQuotaStatus" role="status" aria-live="polite" style="margin-top:8px">API利用枠：最初の通信後、各社が返す残りリクエスト数・トークン枠を取得できた場合にここへ表示します。</div>
       </section>
-      <div id="localInfo" class="notice warn hidden">AIなしモードは端末内処理です。写真OCRは初回に日本語辞書（数MB〜）をダウンロードするため、通信環境によっては数分かかる場合があります。120秒で進まない場合はエラー表示します。自由な類題生成はできません。</div>
+      <div id="localInfo" class="notice warn hidden">AIなしモードは端末内処理です。写真OCRは初回に日本語辞書（数MB〜）をダウンロードするため、通信環境によっては数分かかる場合があります。120秒で進まない場合はエラー表示します。自由な類題生成はできません。詳細な出題指定はAIありモードで反映されます。</div>
+
+      <div class="settings-intro"><strong>かんたん設定</strong><span>まずは教科・学年・問題数・難易度を選択。もっと細かくしたいときだけ下の項目を開いてください。</span></div>
+      <details class="advanced-block" open>
+        <summary>① どんな模試にする？ <small>目的・範囲・出題の方針</small></summary>
+        <div class="advanced-content">
+          <label class="label" for="examStyle">模試の目的</label>
+          <select class="input" id="examStyle"><option value="教材準拠の定期テスト">定期テスト（教材に忠実）</option><option value="入試・受験対策">入試・受験対策</option><option value="苦手克服・基礎定着">苦手克服・基礎定着</option><option value="実力確認・総合テスト">実力確認・総合テスト</option><option value="応用・発展演習">応用・発展演習</option></select>
+          <label class="label" for="focusTopics">重点的に出したい単元・テーマ（任意）</label>
+          <textarea id="focusTopics" rows="2" placeholder="例：二次関数、平方完成、最大値・最小値。重要語句は鎌倉時代を中心に。"></textarea>
+          <label class="label" for="excludeTopics">出題しない単元・内容（任意）</label>
+          <textarea id="excludeTopics" rows="2" placeholder="例：微分積分は出さない。教材の発展コラムは除外。"></textarea>
+          <label class="switchline"><input type="checkbox" id="sourceOnly" checked> アップロード教材に根拠がある内容を優先する</label>
+          <label class="switchline"><input type="checkbox" id="avoidCopied" checked> 元の問題文をそのまま転載せず、条件や数値を変えた類題にする</label>
+        </div>
+      </details>
+      <details class="advanced-block">
+        <summary>② 出題する問題の種類 <small>使いたい形式にチェック</small></summary>
+        <div class="advanced-content">
+          <div class="check-grid">
+            <label class="check-card"><input type="checkbox" id="typeChoice" checked><span><b>選択問題</b><small>四択・正誤（1つ選択）</small></span></label>
+            <label class="check-card"><input type="checkbox" id="typeShort" checked><span><b>短答・穴埋め</b><small>用語・数値・空欄補充</small></span></label>
+            <label class="check-card"><input type="checkbox" id="typeCalculation" checked><span><b>計算問題</b><small>式・途中式・単位</small></span></label>
+            <label class="check-card"><input type="checkbox" id="typeEssay" checked><span><b>記述・論述</b><small>理由説明・証明・考察</small></span></label>
+            <label class="check-card"><input type="checkbox" id="typeData" checked><span><b>資料読み取り</b><small>表・グラフ・地図・実験</small></span></label>
+            <label class="check-card"><input type="checkbox" id="typeDrawing"><span><b>図形・作図問題</b><small>図形の読み取り・補助線・コンパス作図を出題</small></span></label>
+          </div>
+          <label class="label" for="typeBalance">問題形式の配分</label>
+          <select class="input" id="typeBalance"><option value="教材に最適化">教材に合わせて自動配分</option><option value="選択問題を多め">選択問題を多め</option><option value="記述・論述を多め">記述・論述を多め</option><option value="計算問題を多め">計算問題を多め</option><option value="資料読み取りを多め">資料読み取りを多め</option><option value="図形・作図を多め">図形・作図を多め</option><option value="全形式を均等">選んだ形式を均等に</option></select>
+          <p class="small muted">選択した形式だけを優先します。教材に合わない形式は無理に作らず、指定数に足りない場合は不足を知らせます。</p>
+        </div>
+      </details>
+      <details class="advanced-block">
+        <summary>③ 難易度・解答の詳しさ <small>基礎〜難関の配分</small></summary>
+        <div class="advanced-content">
+          <label class="label" for="difficultyBalance">難易度の配分</label>
+          <select class="input" id="difficultyBalance"><option value="基礎30%・標準50%・応用20%">標準型（基礎30・標準50・応用20）</option><option value="基礎50%・標準40%・応用10%">基礎多め</option><option value="基礎10%・標準50%・応用40%">応用多め</option><option value="基礎10%・標準30%・応用40%・難関20%">難関多め</option><option value="全難易度を均等">均等配分</option></select>
+          <label class="label" for="explanationDepth">解説の詳しさ</label>
+          <select class="input" id="explanationDepth"><option value="短く要点だけ">短く要点だけ（節約）</option><option value="標準的に手順も説明" selected>標準（手順も説明）</option><option value="詳しく、途中式・考え方まで">詳しく（途中式・考え方まで）</option></select>
+          <label class="label" for="answerSpaceMode">解答欄の広さ</label>
+          <select class="input" id="answerSpaceMode"><option value="標準">標準</option><option value="広め">広め（記述・計算向け）</option><option value="最小限">最小限（紙を節約）</option></select>
+        </div>
+      </details>
+      <details class="advanced-block">
+        <summary>④ 図形・グラフ・作図 <small>数学・理科などの図を指定</small></summary>
+        <div class="advanced-content">
+          <label class="switchline"><input type="checkbox" id="enableFigures" checked> 問題文に必要な図・グラフ・表を表示する</label>
+          <label class="switchline"><input type="checkbox" id="enableDrawing"> 生徒が画面上で直接描いて回答できるキャンバスを付ける</label>
+          <label class="label" for="figureCount">図形・作図問題の数</label>
+          <select class="input" id="figureCount"><option value="auto">教材に合わせて自動</option><option value="1">1問</option><option value="2">2問</option><option value="3">3問</option><option value="4">4問</option><option value="5">5問</option></select>
+          <div class="label">使いたい図の種類</div>
+          <div class="check-grid">
+            <label class="check-card"><input type="checkbox" id="figurePlane" checked><span><b>平面図形</b><small>三角形・円・多角形</small></span></label>
+            <label class="check-card"><input type="checkbox" id="figureSolid"><span><b>立体図形</b><small>立方体・円柱・円錐</small></span></label>
+            <label class="check-card"><input type="checkbox" id="figureGraph" checked><span><b>グラフ・座標</b><small>関数・放物線・座標</small></span></label>
+            <label class="check-card"><input type="checkbox" id="figureChart"><span><b>表・統計図</b><small>表・棒・折れ線・円</small></span></label>
+            <label class="check-card"><input type="checkbox" id="figureConstruction"><span><b>コンパス作図</b><small>垂線・二等分線・円弧</small></span></label>
+          </div>
+          <div class="notice">図はAIに画像を生成させず、座標データから端末内SVGで描画します。図の描画そのものに画像生成APIや追加トークンは使いません。立体図形・複雑な図は表示確認が必要です。</div>
+        </div>
+      </details>
+      <details class="advanced-block">
+        <summary>⑤ 採点・試験の細かい設定 <small>単位・途中式・ランダム化</small></summary>
+        <div class="advanced-content">
+          <label class="switchline"><input type="checkbox" id="requireWork"> 計算問題は途中式を必須にする</label>
+          <label class="switchline"><input type="checkbox" id="requireUnits"> 理科・数学の数値問題は単位を必須にする</label>
+          <label class="switchline"><input type="checkbox" id="randomizeQuestions"> 問題の順序をランダムにする</label>
+          <label class="switchline"><input type="checkbox" id="randomizeChoices"> 選択肢の順序をランダムにする</label>
+          <label class="switchline"><input type="checkbox" id="includeRubric" checked> 記述問題に採点基準を付ける</label>
+          <p class="small muted">途中式・単位は出題条件として指示します。論述や作図の部分点は自動確定せず、手動確認に回します。</p>
+        </div>
+      </details>
+      <div class="notice good" id="settingsSavedNote">設定はこの端末のブラウザに保存されます。APIキーはこの設定保存の対象外です。</div>
+
       <div class="label">教科</div>
       <select id="subject"><option>自動判定</option><option>国語</option><option>数学</option><option>英語</option><option>理科</option><option>社会</option><option>その他</option></select>
       <div class="row">
@@ -308,8 +412,10 @@ body.test-mode{background:#edf0f4!important;color:#171717!important;color-scheme
       <label class="switchline"><input type="checkbox" id="verifyAnswers" checked> 計算・記述・曖昧な問題を別AIで重点検証（通常問題は端末内形式チェック）</label>
       <div class="notice warn" style="margin-top:6px">計算・記述・曖昧な問題と形式チェックで異常が見つかった問題だけ別AIで独立検証します。通常問題は選択肢・正答欄・配点・重複を端末内で確認し、独立検証対象外であることを表示します。Groq停止時はGeminiへ1回だけ代替します。</div>
       <button class="btn green full" id="generateBtn" type="button" disabled>解析した教材から模試を作成</button>
-      <div class="small muted" style="margin-top:8px">先に左側で教材を解析してください。</div>
+      <div class="small muted" style="margin-top:8px">先に教材を解析してください。詳細な指定はこの画面の上部にある「設定」ボタンからいつでも変更できます。</div>
+      <div class="actions"><button class="btn secondary full" id="settingsApplyBtn" type="button">設定を適用して閉じる</button></div>
     </section>
+    </div>
   </div>
 
   <section class="panel" id="usageHistoryPanel">
@@ -320,7 +426,7 @@ body.test-mode{background:#edf0f4!important;color:#171717!important;color-scheme
       <div><b id="apiCallCount">0</b><span>API呼び出し回数</span></div>
       <div><b id="historyTokenCount">0</b><span>累計トークン（取得分）</span></div>
     </div>
-    <div class="small muted" style="margin-top:12px">AI別の実績トークン（API応答のusage取得分）。Gemini 65%・Groq 35%は問題生成時の担当件数目標です。教材分析はGeminiに集約し、独立検証は重要問題のみ行います。</div><div id="providerUsageGrid" class="provider-usage-grid"></div>
+    <div class="small muted" style="margin-top:12px">AI別の実績トークン（API応答のusage取得分）。Gemini 65%・Groq 35%は問題生成時の担当件数目標です。教材分析はGeminiに集約し、設定変更だけなら解析結果を再利用します。独立検証は重要問題のみ行います。</div><div id="providerUsageGrid" class="provider-usage-grid"></div>
     <div id="historyList" class="history-list" style="margin-top:12px"></div>
     <div class="actions"><button class="btn ghost" type="button" id="clearHistoryBtn">この端末の履歴を消去</button></div>
   </section>
@@ -424,7 +530,15 @@ const SAMBANOVA_PROXY_TOKEN_STORAGE_KEY='examForge.sambanovaProxyToken.v1';
 const MODEL_STORAGE_KEY='examForge.model.v1';
 const GROQ_MODEL_STORAGE_KEY='examForge.groqModel.v2';
 const SAMBANOVA_MODEL_STORAGE_KEY='examForge.sambanovaModel.v1';
+const BUILDER_SETTINGS_STORAGE_KEY='examForge.builderSettings.v1';
+const ANALYSIS_CACHE_STORAGE_KEY='examForge.analysisCache.v1';
 
+const BUILDER_SETTING_IDS=['scopeNote','subject','grade','count','difficulty','minutes','mixTypes','strictScope','verifyAnswers','examStyle','focusTopics','excludeTopics','sourceOnly','avoidCopied','typeChoice','typeShort','typeCalculation','typeEssay','typeData','typeDrawing','typeBalance','difficultyBalance','explanationDepth','answerSpaceMode','enableFigures','enableDrawing','figureCount','figurePlane','figureSolid','figureGraph','figureChart','figureConstruction','requireWork','requireUnits','randomizeQuestions','randomizeChoices','includeRubric'];
+function saveBuilderSettings(){try{const data={};for(const id of BUILDER_SETTING_IDS){const el=$(id);if(!el)continue;data[id]=el.type==='checkbox'?el.checked:el.value;}localStorage.setItem(BUILDER_SETTINGS_STORAGE_KEY,JSON.stringify(data));const note=$('settingsSavedNote');if(note)note.textContent='設定をこの端末に保存しました。APIキーは保存対象外です。';}catch(e){const note=$('settingsSavedNote');if(note)note.textContent='Safariの保存領域を利用できないため、設定はこのページを開いている間だけ有効です。';}}
+function restoreBuilderSettings(){try{const raw=localStorage.getItem(BUILDER_SETTINGS_STORAGE_KEY);if(!raw)return;const data=JSON.parse(raw);if(!data||typeof data!=='object')return;for(const id of BUILDER_SETTING_IDS){if(!(id in data))continue;const el=$(id);if(!el)continue;if(el.type==='checkbox')el.checked=!!data[id];else if(el.tagName==='SELECT'){if([...el.options].some(o=>o.value===String(data[id])))el.value=String(data[id]);}else if('value' in el)el.value=String(data[id]);}}catch(e){}}
+function bindBuilderSettings(){restoreBuilderSettings();for(const id of BUILDER_SETTING_IDS){const el=$(id);if(!el)continue;el.addEventListener('change',saveBuilderSettings);if(el.tagName==='TEXTAREA'||el.type==='text')el.addEventListener('input',()=>{clearTimeout(el._saveTimer);el._saveTimer=setTimeout(saveBuilderSettings,350);});}}
+function openSettings(){const overlay=$('settingsOverlay');overlay.classList.add('open');overlay.setAttribute('aria-hidden','false');document.body.style.overflow='hidden';$('settingsCloseBtn').focus();}
+function closeSettings(){const overlay=$('settingsOverlay');overlay.classList.remove('open');overlay.setAttribute('aria-hidden','true');document.body.style.overflow='';$('openSettingsBtn').focus();saveBuilderSettings();}
 function renderProviderUsage(list=readHistory()){
  const root=$('providerUsageGrid');if(!root)return;
  const totals=Object.fromEntries(PROVIDERS.map(p=>[p,{calls:0,tokens:0}]));
@@ -564,6 +678,12 @@ async function setupLocalPersistence(){
 // The generated exam lives in its own white examination page, not inside the dark builder.
 $('testPaper').appendChild($('examSection'));
 setupLocalPersistence();
+bindBuilderSettings();
+$('openSettingsBtn').addEventListener('click',openSettings);
+$('settingsCloseBtn').addEventListener('click',closeSettings);
+$('settingsApplyBtn').addEventListener('click',closeSettings);
+$('settingsOverlay').addEventListener('click',e=>{if(e.target===$('settingsOverlay'))closeSettings();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('settingsOverlay').classList.contains('open'))closeSettings();});
 function openTestPage(){ $('builderPage').classList.add('hidden'); $('testPage').classList.add('active'); $('testPage').setAttribute('aria-hidden','false'); document.body.classList.add('test-mode'); window.scrollTo({top:0,behavior:'auto'}); }
 function returnToBuilder(){ $('testPage').classList.remove('active'); $('testPage').setAttribute('aria-hidden','true'); $('builderPage').classList.remove('hidden'); document.body.classList.remove('test-mode'); window.scrollTo({top:0,behavior:'auto'}); }
 $('backToBuilder').addEventListener('click',returnToBuilder);
@@ -716,7 +836,7 @@ const EXAM_RESPONSE_SCHEMA={type:'OBJECT',properties:{
  title:{type:'STRING'},subject:{type:'STRING'},grade:{type:'STRING'},scope:{type:'STRING'},
  questions:{type:'ARRAY',items:{type:'OBJECT',properties:{
   type:{type:'STRING'},prompt:{type:'STRING'},choices:{type:'ARRAY',items:{type:'STRING'}},answer:{type:'STRING'},acceptableAnswers:{type:'ARRAY',items:{type:'STRING'}},
-  markingGuide:{type:'STRING'},explanation:{type:'STRING'},difficulty:{type:'STRING'},sourcePage:{type:'STRING'},answerSpaceRows:{type:'INTEGER'},points:{type:'NUMBER'}
+  markingGuide:{type:'STRING'},explanation:{type:'STRING'},difficulty:{type:'STRING'},sourcePage:{type:'STRING'},answerSpaceRows:{type:'INTEGER'},points:{type:'NUMBER'},figureType:{type:'STRING'},figureData:{type:'STRING'},drawingRequired:{type:'BOOLEAN'}
  },required:['type','prompt','answer','markingGuide','explanation','points']}}
 },required:['title','subject','grade','scope','questions']};
 // Each generation batch only needs the questions array. Avoid repeating exam metadata in every provider response.
@@ -810,16 +930,16 @@ function compactSourceExcerpt(source,max=1050){
 }
 async function generateDistributedExam(basePrompt,settings,analysis,analysisPayload){
  const plan=weightedSchedule(settings.count),providersWithWork=PROVIDERS.filter(p=>plan.counts[p]>0);ensureProviderKeys(providersWithWork);
- const queues=Object.fromEntries(PROVIDERS.map(p=>[p,[]])),meta=[],actualCounts=Object.fromEntries(PROVIDERS.map(p=>[p,0]));const keyPointGroups=splitListByProvider(analysisPayload?.keyPoints||[]),patternGroups=splitListByProvider(analysisPayload?.problemPatterns||[]);const sharedText=compactSourceExcerpt(analysisPayload?.extractedText||'',700);
+ const queues=Object.fromEntries(PROVIDERS.map(p=>[p,[]])),meta=[],actualCounts=Object.fromEntries(PROVIDERS.map(p=>[p,0]));const keyPointGroups=splitListByProvider(analysisPayload?.keyPoints||[]),patternGroups=splitListByProvider(analysisPayload?.problemPatterns||[]);const sharedText=compactSourceExcerpt(analysisPayload?.extractedText||'',420);
  for(const provider of PROVIDERS){
   const count=plan.counts[provider];if(!count)continue;
   // Keep each JSON response manageable without imposing a tiny token ceiling.
   const batchCounts=splitIntoChunks(Array(count).fill(0),3).map(batch=>batch.length);
   let firstResult=null;
   for(let bi=0;bi<batchCounts.length;bi++){
-   const chunkCount=batchCounts[bi],alreadyMade=Object.values(queues).flat().map(q=>String(q.prompt||'').slice(0,55)).slice(-6);
+   const chunkCount=batchCounts[bi],alreadyMade=Object.values(queues).flat().map(q=>String(q.prompt||'').replace(/\s+/g,' ').slice(0,32)).slice(-3);
    state.currentOperation=`問題生成・${provider}（${queues[provider].length+chunkCount}/${count}問）`;
-   const providerMaterial={subject:analysisPayload?.subject||analysis?.subject||settings.subject,grade:analysisPayload?.grade||analysis?.grade||settings.grade,chapters:(analysisPayload?.chapters||[]).slice(0,3),keyPoints:(keyPointGroups[provider]||[]).slice(0,4),problemPatterns:(patternGroups[provider]||[]).slice(0,2),sharedText};
+   const providerMaterial={subject:analysisPayload?.subject||analysis?.subject||settings.subject,grade:analysisPayload?.grade||analysis?.grade||settings.grade,chapters:(analysisPayload?.chapters||[]).slice(0,3),keyPoints:(keyPointGroups[provider]||[]).slice(0,3),problemPatterns:(patternGroups[provider]||[]).slice(0,2),sharedText};
    const prompt=basePrompt.replaceAll(`${settings.count}問`,`${chunkCount}問`)+`\n\n担当教材要点：${JSON.stringify(providerMaterial)}\n全体${settings.count}問中、このAIの担当は${count}問。今回${bi+1}/${batchCounts.length}回目、必ず${chunkCount}問だけ作る。${alreadyMade.length?`重複禁止（既出）：${JSON.stringify(alreadyMade)}`:''}担当範囲内で重複を避け、問題文・解説・採点基準は簡潔に。結合後に全体100点へ再配分する。`;
    showStatus(`${provider}が担当問題を生成中...`,Math.min(80,18+Math.round((queues[provider].length+chunkCount)/settings.count*58)));
    // Provider weights control question ownership only. Budget scales with this batch's question count.
@@ -1035,41 +1155,93 @@ function parseJson(source){
   throw new Error(`AIの返答をJSONとして読み取れませんでした（${detail}）。返答が途中で切れた可能性があります。自動再試行は行いません。問題数を減らすか、担当モデルを確認して手動で再実行してください。`);
  }
 }
+async function makeAnalysisFingerprint(files,mode,pageLimit,scopeNote){
+ if(!window.crypto?.subtle||typeof TextEncoder==='undefined')return '';
+ const rows=[];
+ for(const file of files){
+  const bytes=await file.arrayBuffer();
+  const hash=await crypto.subtle.digest('SHA-256',bytes);
+  const hex=Array.from(new Uint8Array(hash),b=>b.toString(16).padStart(2,'0')).join('');
+  rows.push({name:file.name,size:file.size,lastModified:file.lastModified||0,sha256:hex});
+ }
+ const config=JSON.stringify({v:1,mode,pageLimit,scopeNote:String(scopeNote||''),model:mode==='ai'?($('model')?.value||''):'' ,files:rows});
+ const digest=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(config));
+ return Array.from(new Uint8Array(digest),b=>b.toString(16).padStart(2,'0')).join('');
+}
+async function readSavedAnalysisCache(fingerprint){
+ if(!fingerprint)return null;
+ try{const raw=await persistentGet(ANALYSIS_CACHE_STORAGE_KEY);if(!raw)return null;const entry=JSON.parse(raw);return entry?.fingerprint===fingerprint&&entry?.result&&typeof entry.result==='object'?entry.result:null;}catch{return null;}
+}
+async function writeSavedAnalysisCache(fingerprint,result){
+ if(!fingerprint||!result||typeof result!=='object')return false;
+ try{await persistentSet(ANALYSIS_CACHE_STORAGE_KEY,JSON.stringify({fingerprint,savedAt:Date.now(),result}));return true;}catch(e){console.warn('教材解析キャッシュを保存できませんでした',e);return false;}
+}
+$('clearAnalysisCacheBtn').addEventListener('click',async()=>{
+ try{await persistentRemove(ANALYSIS_CACHE_STORAGE_KEY);showStatus('保存済みの教材解析を削除しました。次回の解析ではAI通信を行います。',100);}
+ catch(e){showStatus('教材解析キャッシュを削除できませんでした：'+String(e.message||e),0);}
+});
 $('analyzeBtn').addEventListener('click',async()=>{
  if(!state.files.length)return;setBusy(true);const oldOperation=state.currentOperation;state.currentOperation='教材解析';
  try{
-  const mode=document.querySelector('input[name="mode"]:checked').value;let result;
-  if(mode==='ai'){
-   const pageLimit=Number($('pageLimit').value)||15;
+  const mode=document.querySelector('input[name="mode"]:checked').value;let result,usedCache=false;
+  const pageLimit=Number($('pageLimit').value)||15,scopeNote=$('scopeNote').value||'なし';
+  const sourceWasEdited=!!state.analysis&&$('sourceText').value.trim()!==String(state.analysis.extractedText||'').trim();
+  let fingerprint='';
+  try{showStatus('教材が前回と同じか端末内で確認中...（AI通信なし）',3);fingerprint=await makeAnalysisFingerprint(state.files,mode,pageLimit,scopeNote);}catch(e){console.warn('教材 fingerprint の計算を省略します',e);}
+  if(fingerprint&&!sourceWasEdited){result=await readSavedAnalysisCache(fingerprint);usedCache=!!result;}
+  if(usedCache){
+   showStatus('保存済みのOCR・教材分析を再利用しています（API通信なし）',75);
+   recordActivity('analysis_cache','保存済み教材分析を再利用','同じ教材・設定のためOCRと教材分析のAPI通信を省略しました。');
+  }else if(mode==='ai'){
    showStatus(`複数ページを整理中...（上限 ${pageLimit} ページ）`,5);
    const prepared=await prepareGeminiMaterials(state.files,pageLimit);state.materialMeta=prepared.note;
    showStatus(`画像ページはGeminiだけが読み取り、教材全体の分析もGeminiに集約します...（${prepared.note.pagesUsed}ページ）`,8);
-   result=await analyzeMaterialsDistributed(prepared,$('scopeNote').value||'なし');
+   result=await analyzeMaterialsDistributed(prepared,scopeNote);
+   await writeSavedAnalysisCache(fingerprint,result);
   }else{
    const text=await extractLocal();if(!text||text.replace(/\s/g,'').length<20)throw new Error('文字をほとんど読み取れませんでした。写真を鮮明にするか、テキストを含むPDFをお試しください。');
    result={subject:'自動判定（ローカル）',grade:'教材から推定できません',chapters:[],keyPoints:[],problemPatterns:[],extractedText:text,warnings:['AIなしモードでは、意味・解法の理解は行いません。OCR誤認識がないか本文を確認してください。']};
+   await writeSavedAnalysisCache(fingerprint,result);
   }
   if(!result||typeof result!=='object')throw new Error('教材分析結果が空でした。');
   state.analysis=result;$('sourceText').value=result.extractedText||'';renderSummary(result);$('summary').classList.add('show');$('generateBtn').disabled=false;
-  const m=result.materialMeta||{};recordActivity('analysis','教材解析が完了',`${mode==='ai'?'Gemini画像OCR・教材全体分析':'端末内'} / ${m.pagesUsed||state.files.length}ページ処理・${m.pagesSkipped||0}ページ省略・${m.duplicates||0}重複除外`);
+  const m=result.materialMeta||{};recordActivity('analysis','教材解析が完了',`${usedCache?'保存済み解析の再利用（API通信なし）':mode==='ai'?'Gemini画像OCR・教材全体分析':'端末内'} / ${m.pagesUsed||state.files.length}ページ処理・${m.pagesSkipped||0}ページ省略・${m.duplicates||0}重複除外`);
   showStatus('解析が完了しました。内容を確認して模試を作成できます。',100);setTimeout(hideStatus,2400);
  }catch(e){console.error(e);recordActivity('error','教材解析に失敗',String(e.message||e).slice(0,220));showStatus('エラー：'+e.message,0);$('status').classList.add('show');}
  finally{state.currentOperation=oldOperation;setBusy(false);$('generateBtn').disabled=!state.analysis;}
 });
 function renderSummary(a){const tags=[...(a.chapters||[]),...(a.keyPoints||[])].slice(0,12);$('summaryBody').innerHTML=`<div><b>教科：</b>${escapeHtml(a.subject||'未判定')}　<b>レベル：</b>${escapeHtml(a.grade||'未判定')}</div><div class="tags">${tags.map(t=>`<span class="tag">${escapeHtml(t)}</span>`).join('')||'<span class="muted">単元・重要事項のタグなし</span>'}</div><div><b>問題パターン：</b>${(a.problemPatterns||[]).length}種類</div>${a.materialMeta?`<div class="small muted">解析ページ ${a.materialMeta.pagesUsed||0} / 省略 ${a.materialMeta.pagesSkipped||0} / 重複除外 ${a.materialMeta.duplicates||0} / 本文 ${a.materialMeta.textChars||0}文字 / 画像 ${Math.round((a.materialMeta.imageBytes||0)/1024)}KB</div>${a.materialMeta.analysisInputChars?`<div class="small muted">教材全体分析：Gemini 1回・入力 ${a.materialMeta.analysisInputChars.toLocaleString()}文字${a.materialMeta.analysisCompacted?'（ページごとの抜粋を使用。全文は下の教材本文に保持）':''}</div>`:''}`:''}${(a.warnings||[]).length?`<div class="notice warn">${(a.warnings||[]).map(escapeHtml).join('<br>')}</div>`:''}`;}
-function getSettings(){return{subject:$('subject').value,grade:$('grade').value,count:Number($('count').value),difficulty:$('difficulty').value,minutes:$('minutes').value,mix:$('mixTypes').checked,strict:$('strictScope').checked,scopeNote:$('scopeNote').value};}
-$('generateBtn').addEventListener('click',async()=>{if(!state.analysis)return;setBusy(true);const oldOperation=state.currentOperation;state.currentOperation='問題生成';try{const mode=document.querySelector('input[name="mode"]:checked').value;const s=getSettings();let exam;if(mode==='ai'){showStatus('類題・選択肢・解答・解説を生成中...',15);const a={subject:state.analysis.subject||s.subject,grade:state.analysis.grade||s.grade,chapters:(state.analysis.chapters||[]).slice(0,8),keyPoints:(state.analysis.keyPoints||[]).slice(0,10),problemPatterns:(state.analysis.problemPatterns||[]).slice(0,7).map(p=>({type:String(p.type||'').slice(0,50),pattern:String(p.pattern||'').slice(0,180),difficulty:String(p.difficulty||'').slice(0,30),method:String(p.method||'').slice(0,180),exampleSummary:String(p.exampleSummary||'').slice(0,120),sourcePage:String(p.sourcePage||'').slice(0,50)})),extractedText:$('sourceText').value.trim().slice(0,3200),warnings:(state.analysis.warnings||[]).slice(0,2)};const prompt=`高校定期考査レベルの新作類題を教材分析だけを根拠に${s.count}問作成。元問題の文面は転載せず、条件・数値・表現を変える。
-設定：教科=${s.subject}、学年=${s.grade}、難易度=${s.difficulty}、時間=${s.minutes}分、形式混合=${s.mix}、教材外知識を避ける=${s.strict}、補足=${s.scopeNote||'なし'}。共通教科=${a.subject}、学年=${a.grade}。
-JSONスキーマ厳守。各問に正答・短い採点基準・解説を付け、選択式は選択肢4つ・answerは本文と完全一致。解説45文字以内、採点基準35文字以内を目安に簡潔に。数値は内部で再計算し、条件・正答・選択肢に矛盾がないか確認。曖昧な設問・教材外知識は避ける。sourcePageは確実な場合のみ、answerSpaceRowsは1〜7。教科特性（数学の途中式、英語の綴り・文法、国語の根拠、理科の単位・実験、社会の年代・資料）を守る。JSON以外は禁止。`;exam=await generateDistributedExam(prompt,s,state.analysis,a);
+function getSettings(){
+ const checked=id=>!!$(id)?.checked;
+ const questionTypes=[];for(const [id,label] of [['typeChoice','選択式'],['typeShort','短答・穴埋め'],['typeCalculation','計算'],['typeEssay','記述・論述'],['typeData','資料読み取り'],['typeDrawing','作図・描画']])if(checked(id))questionTypes.push(label);
+ return{subject:$('subject').value,grade:$('grade').value,count:Number($('count').value),difficulty:$('difficulty').value,minutes:$('minutes').value,mix:$('mixTypes').checked,strict:$('strictScope').checked,scopeNote:$('scopeNote').value,examStyle:$('examStyle').value,focusTopics:$('focusTopics').value.trim(),excludeTopics:$('excludeTopics').value.trim(),sourceOnly:checked('sourceOnly'),avoidCopied:checked('avoidCopied'),questionTypes, typeBalance:$('typeBalance').value,difficultyBalance:$('difficultyBalance').value,explanationDepth:$('explanationDepth').value,answerSpaceMode:$('answerSpaceMode').value,enableFigures:checked('enableFigures'),enableDrawing:checked('enableDrawing')&&checked('typeDrawing'),figureCount:$('figureCount').value,figureKinds:[['figurePlane','平面図形'],['figureSolid','立体図形'],['figureGraph','グラフ・座標'],['figureChart','表・統計図'],['figureConstruction','コンパス作図']].filter(([id])=>checked(id)).map(([,name])=>name),requireWork:checked('requireWork'),requireUnits:checked('requireUnits'),randomizeQuestions:checked('randomizeQuestions'),randomizeChoices:checked('randomizeChoices'),includeRubric:checked('includeRubric')};
+}
+function buildAdvancedPromptSettings(s){
+ const typeText=s.questionTypes.length?s.questionTypes.join('、'):'教材に最も適した形式をAIが選ぶ';
+ const drawingRule=s.enableDrawing?'type=drawingを使用し、生徒が画面上で作図する解答欄を付ける。':'type=drawingは禁止。図形は問題文の図として示し、解答はshort/calculation/essayのいずれかにする。';
+ const figureText=s.enableFigures?`図表=${s.figureKinds.length?s.figureKinds.join('、'):'教材に最適な図'}、図表問題数=${s.figureCount==='auto'?'自動':s.figureCount+'問'}。${drawingRule}`:'図表・figureType・figureDataは出力しない。'+drawingRule;
+ return `追加出題設定：目的=${s.examStyle}。重点単元=${s.focusTopics||'指定なし'}。除外=${s.excludeTopics||'指定なし'}。許可形式=${typeText}。形式配分=${s.typeBalance}。難易度配分=${s.difficultyBalance}。解説=${s.explanationDepth}。解答欄=${s.answerSpaceMode}。${figureText}。途中式必須=${s.requireWork?'はい':'いいえ'}。単位必須=${s.requireUnits?'はい':'いいえ'}。採点基準=${s.includeRubric?'付ける':'簡潔に省略'}。教材根拠優先=${s.sourceOnly?'はい':'いいえ'}。元問題の転載回避=${s.avoidCopied?'はい':'いいえ'}。`;}
+
+$('generateBtn').addEventListener('click',async()=>{if(!state.analysis)return;if($('settingsOverlay')?.classList.contains('open'))closeSettings();setBusy(true);const oldOperation=state.currentOperation;state.currentOperation='問題生成';try{const mode=document.querySelector('input[name="mode"]:checked').value;const s=getSettings();let exam;if(mode==='ai'){showStatus('類題・選択肢・解答・解説を生成中...',15);const a={subject:state.analysis.subject||s.subject,grade:state.analysis.grade||s.grade,chapters:(state.analysis.chapters||[]).slice(0,8),keyPoints:(state.analysis.keyPoints||[]).slice(0,10),problemPatterns:(state.analysis.problemPatterns||[]).slice(0,7).map(p=>({type:String(p.type||'').slice(0,50),pattern:String(p.pattern||'').slice(0,180),difficulty:String(p.difficulty||'').slice(0,30),method:String(p.method||'').slice(0,180),exampleSummary:String(p.exampleSummary||'').slice(0,120),sourcePage:String(p.sourcePage||'').slice(0,50)})),extractedText:$('sourceText').value.trim().slice(0,3200),warnings:(state.analysis.warnings||[]).slice(0,2)};const prompt=`高校定期考査・受験対策レベルの新作類題を教材分析と指定条件に基づき${s.count}問作成。元問題の文面は転載せず、条件・数値・表現を変える。
+基本設定：教科=${s.subject}、学年=${s.grade}、難易度=${s.difficulty}、時間=${s.minutes}分、形式混合=${s.mix}、教材外知識を避ける=${s.strict}、補足=${s.scopeNote||'なし'}。共通教科=${a.subject}、学年=${a.grade}。
+${buildAdvancedPromptSettings(s)}
+JSONスキーマ厳守。typeはchoice/short/calculation/essay/drawingのいずれか。選択式は単一選択。各問に正答・短い採点基準・解説を付ける。選択式は選択肢4つ、正答は選択肢本文と完全一致。解説は指定された詳しさに従う。数値・条件・正答の矛盾を確認し、曖昧な設問は避ける。answerSpaceRowsは1〜7。
+図が必要な場合だけfigureTypeとfigureDataを設定する。figureDataはJSON文字列で、形式は {\"points\":[{\"x\":50,\"y\":150,\"label\":\"A\"}],\"segments\":[[0,1]],\"circles\":[{\"x\":160,\"y\":100,\"r\":40}],\"texts\":[{\"x\":160,\"y\":20,\"text\":\"O\"}],\"bars\":[{\"x\":80,\"y\":180,\"w\":24,\"h\":60,\"label\":\"A\"}],\"series\":[[{\"x\":40,\"y\":150},{\"x\":280,\"y\":50}]]} の形。座標はx=0〜320、y=0〜210。figureTypeはtriangle/polygon/circle/coordinate/graph/chart/cube/diagramなど。自由形式のSVGやHTMLは返さない。作図回答が必要な問題はtype=drawing、drawingRequired=trueにする。図形が不要なら空文字にする。教科特性（数学の途中式、英語の綴り・文法、国語の根拠、理科の単位・実験、社会の年代・資料）を守る。JSON以外は禁止。`;exam=await generateDistributedExam(prompt,s,state.analysis,a);
  }else{const text=$('sourceText').value.trim();if(!text)throw new Error('読み取った教材本文がありません。');exam=makeLocalExam(text,s,state.analysis);}
- if(!Array.isArray(exam.questions)||!exam.questions.length)throw new Error('問題が生成されませんでした。設定を変えて再実行してください。');state.questions=exam.questions.slice(0,s.count).map((q,i)=>{const type=['choice','short','calculation','essay'].includes(q.type)?q.type:(Array.isArray(q.choices)&&q.choices.length?'choice':'short');return({...q,id:i+1,type,points:Number(q.points)||10,choices:Array.isArray(q.choices)?q.choices:[],acceptableAnswers:Array.isArray(q.acceptableAnswers)?q.acceptableAnswers:[],_answerStatus:mode==='local'?'verified':'unverified',answerSpaceRows:Math.max(1,Math.min(7,Number(q.answerSpaceRows)||(['essay'].includes(type)?6:['calculation'].includes(type)?4:type==='short'?2:1)))});});
- state.questions.forEach(q=>{if(q.type==='choice'){const idx=choiceIndex(q.answer,q);if(idx>=0)q.answer=q.choices[idx];}});
+ if(!Array.isArray(exam.questions)||!exam.questions.length)throw new Error('問題が生成されませんでした。設定を変えて再実行してください。');state.questions=exam.questions.slice(0,s.count).map((q,i)=>{const rawType=String(q.type||'').toLowerCase();const type=(['drawing','construction','draw','作図'].includes(rawType)||q.drawingRequired===true)?'drawing':['choice','short','calculation','essay'].includes(rawType)?rawType:['proof','論述','記述'].includes(rawType)?'essay':Array.isArray(q.choices)&&q.choices.length?'choice':'short';return({...q,id:i+1,type,points:Number(q.points)||10,choices:Array.isArray(q.choices)?q.choices:[],acceptableAnswers:Array.isArray(q.acceptableAnswers)?q.acceptableAnswers:[],figureType:String(q.figureType||''),figureData:String(q.figureData||''),_answerStatus:mode==='local'?'verified':'unverified',answerSpaceRows:Math.max(1,Math.min(7,Number(q.answerSpaceRows)||(['essay','drawing'].includes(type)?6:['calculation'].includes(type)?4:type==='short'?2:1)))});});
+ state.questions.forEach(q=>{if(q.type==='choice'){const idx=choiceIndex(q.answer,q);if(idx>=0)q.answer=q.choices[idx];}if(s.answerSpaceMode==='広め'&&!['choice','drawing'].includes(q.type))q.answerSpaceRows=Math.min(7,q.answerSpaceRows+2);if(s.answerSpaceMode==='最小限'&&!['choice','drawing'].includes(q.type))q.answerSpaceRows=Math.min(3,q.answerSpaceRows);});
  if(mode==='ai'&&$('verifyAnswers').checked){
   showStatus('計算・記述・曖昧な問題を重点検証中...',82);state.currentOperation='重点正答検証';
   try{exam._answerAudit=await verifyGeneratedAnswers(state.questions,s,state.analysis);}
   catch(auditError){recordActivity('error','マルチAI検証で停止',String(auditError.message||auditError).slice(0,220));throw new Error('正答検証を完了できないため、模試ページへの移行を停止しました。'+String(auditError.message||auditError));}
  }else if(mode==='ai'){
   state.questions.forEach(q=>{q._answerStatus='unverified';q._answerAuditReason='重点独立検証をOFFにしたため、正答は未確認です。';});exam._answerAudit={confirmed:0,corrected:0,review:state.questions.length};exam._answerAuditWarning='重点独立検証をOFFにしたため、AI生成の正答は未確認です。誤採点を避けるため自動採点を保留します。';
+ }
+ if(mode==='ai'){
+  const shuffle=list=>{for(let i=list.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[list[i],list[j]]=[list[j],list[i]];}return list;};
+  if(s.randomizeChoices)state.questions.forEach(q=>{if(q.type==='choice'&&Array.isArray(q.choices))shuffle(q.choices);});
+  if(s.randomizeQuestions)shuffle(state.questions);
+  state.questions.forEach((q,i)=>q.id=i+1);
  }
  state.answers={};state.graded=false;state.examMode=mode;state.examMeta={...exam,settings:s};state.grading=null;renderExam(exam,mode,s);$('examSection').classList.add('show');$('testNavTitle').textContent=exam.title||'模試';openTestPage();hideStatus();
   const audit=exam._answerAudit||{confirmed:0,corrected:0,review:0};recordActivity('exam','模試を作成',`${exam.subject||s.subject} / ${state.questions.length}問 / 正答確認 ${audit.confirmed||0}・修正 ${audit.corrected||0}・保留 ${audit.review||0}`);
@@ -1092,7 +1264,7 @@ function classifyQuestionRisk(q,issues=[]){
  const text=String(q?.prompt||'').normalize('NFKC');
  const answer=String(q?.answer||'').normalize('NFKC');
  const calculation=q?.type==='calculation'||/(計算しなさい|求めなさい|式の値|途中式|有効数字|単位を付け|何cm|何m|何g|何mol|何％|何人|何円|\d\s*[+＋\-−×＊*÷／/＝=])/i.test(text);
- const written=q?.type==='essay'||/(理由を|なぜ|どうして|説明しなさい|説明せよ|述べなさい|論じ|考察|比較し|根拠を|具体的に記述|要約し|どのように)/.test(text);
+ const written=q?.type==='essay'||q?.type==='drawing'||q?.drawingRequired===true||/(理由を|なぜ|どうして|説明しなさい|説明せよ|述べなさい|論じ|考察|比較し|根拠を|具体的に記述|要約し|どのように|作図しなさい|図を描きなさい)/.test(text);
  const ambiguous=/(最も適切|最も妥当|場合に応じ|条件に応じ|複数の|一概に|解釈|判断しなさい|適切か|妥当性|曖昧|例を挙げて)/.test(text);
  const structural=Array.isArray(issues)&&issues.length>0;
  const emptyOrLongAnswer=!answer.trim()||answer.length>180;
@@ -1105,7 +1277,7 @@ function allocateVerifiers(questions){
  const counts=Object.fromEntries(PROVIDERS.map(p=>[p,groups[p].length]));return{groups,counts};
 }
 function makeAuditPrompt(items,provider,reference){
- const compact=items.map(q=>({id:q.id,type:q.type,q:String(q.prompt||'').slice(0,600),c:(q.choices||[]).slice(0,4),a:String(q.answer||'').slice(0,90),e:String(q.explanation||'').slice(0,35)}));
+ const compact=items.map(q=>({id:q.id,type:q.type,q:String(q.prompt||'').slice(0,420),c:(q.choices||[]).slice(0,4),a:String(q.answer||'').slice(0,70),e:String(q.explanation||'').slice(0,28),f:q.figureType||'',d:String(q.figureData||'').slice(0,220)}));
  return `別AIの独立検証。問題を解き直し、計算・記述・条件の曖昧さ・教材範囲・正答と解説の整合を確認。教科=${reference.subject}。単元=${JSON.stringify(reference.topics)}。要点=${JSON.stringify(reference.keyPoints)}。根拠=${reference.source}。問題=${JSON.stringify(compact)}。不確実ならREVIEW。CONFIRMEDは独立解答と正答が一致し、solutionCheck/explanationConsistent/sourceSupported/choiceUnique=true、confidence>=0.92。CORRECTEDは誤答が明確で正答が一意の場合のみ。選択式verifiedAnswerは選択肢本文と一致。REVIEWのverifiedAnswer/independentAnswerは空文字。reasonは25文字以内。全IDを1回ずつ含むJSONのみ。`;
 }
 async function requestAuditGroup(provider,items,reference){
@@ -1220,21 +1392,53 @@ function printHeadMarkup(kind='question'){
  return `<div class="print-school-line"><span>令和　　　年度</span><span>${escapeHtml(t.label)}　${escapeHtml(label)}</span><span>${kind==='key'?'教員用':'実施日：　　　年　　月　　日'}</span></div><h1>${escapeHtml(meta.title||'実力確認テスト')}</h1><div class="print-meta"><span>教科：${escapeHtml(meta.subject||set.subject||'')}</span><span>学年：${escapeHtml(meta.grade||set.grade||'')}</span><span>試験時間：${escapeHtml(set.minutes==='時間制限なし'?'指定なし':(set.minutes||'50')+'分')}</span><span>満点：${total}点</span></div>${kind==='key'?'':'<div class="print-student-fields"><div>年　　　組</div><div>出席番号</div><div>氏名</div></div>'}<div class="print-instructions">${escapeHtml(kind==='key'?'採点基準・解説を含む教員用資料です。':t.instructions)}</div>`;
 }
 function writingLines(rows){return `<div class="print-writing-space">${Array.from({length:rows},()=>'<div class="print-line"></div>').join('')}</div>`;}
+function safeFigureData(raw){try{const v=typeof raw==='string'?JSON.parse(raw):raw;return v&&typeof v==='object'?v:null;}catch{return null;}}
+function renderQuestionFigure(q){
+ if(!q.figureType&&!q.figureData)return '';
+ const d=safeFigureData(q.figureData)||{},kind=String(q.figureType||'diagram').toLowerCase();
+ const n=v=>Number.isFinite(Number(v))?Math.max(0,Math.min(320,Number(v))):0;
+ const y=v=>Number.isFinite(Number(v))?Math.max(0,Math.min(210,Number(v))):0;
+ const grid=['coordinate','graph','chart'].includes(kind)?'<g stroke="#e6ebf1" stroke-width=".7">'+Array.from({length:15},(_,i)=>`<path d="M${i*22+8} 8V202"/>`).join('')+Array.from({length:9},(_,i)=>`<path d="M8 ${i*23+8}H312"/>`).join('')+'</g><path d="M12 190V12 M8 186H310" stroke="#536174" stroke-width="1.4" fill="none"/>':'';
+ const pts=Array.isArray(d.points)?d.points.filter(pt=>pt&&typeof pt==='object').slice(0,30):[];
+ const segments=Array.isArray(d.segments)?d.segments.slice(0,50):[];
+ let svg=grid;
+ for(const seg of segments){if(!Array.isArray(seg)||seg.length<2)continue;const a=pts[Number(seg[0])],b=pts[Number(seg[1])];if(!a||!b)continue;svg+=`<line x1="${n(a.x)}" y1="${y(a.y)}" x2="${n(b.x)}" y2="${y(b.y)}" stroke="#2764aa" stroke-width="2"/>`;}
+ if(!segments.length&&pts.length>=2&&['triangle','polygon','quadrilateral'].includes(kind)){svg+=`<polygon points="${pts.map(pt=>`${n(pt.x)},${y(pt.y)}`).join(' ')}" fill="#3987ff" fill-opacity=".08" stroke="#2764aa" stroke-width="2"/>`;}
+ for(const c of (Array.isArray(d.circles)?d.circles.filter(v=>v&&typeof v==='object').slice(0,16):[])){const cx=n(c.x??c.cx),cy=y(c.y??c.cy),r=Math.max(1,Math.min(150,Number(c.r)||1));svg+=`<circle cx="${cx}" cy="${cy}" r="${r}" stroke="#2764aa" stroke-width="2" fill="none"/>`;if(c.label)svg+=`<text x="${cx+4}" y="${cy-r-4}" font-size="11" fill="#263447">${escapeHtml(String(c.label).slice(0,20))}</text>`;}
+ for(const series of (Array.isArray(d.series)?d.series.slice(0,8):[])){if(!Array.isArray(series))continue;const graphPoints=series.filter(pt=>pt&&typeof pt==='object').slice(0,80);if(graphPoints.length<2)continue;svg+=`<polyline points="${graphPoints.map(pt=>`${n(pt.x)},${y(pt.y)}`).join(' ')}" fill="none" stroke="#d04f55" stroke-width="2.2"/>`;}
+ for(const bar of (Array.isArray(d.bars)?d.bars.filter(v=>v&&typeof v==='object').slice(0,24):[])){const bx=n(bar.x),by=y(bar.y),bw=Math.max(1,Math.min(80,Number(bar.w)||18)),bh=Math.max(1,Math.min(180,Number(bar.h)||1));svg+=`<rect x="${bx}" y="${Math.max(0,by-bh)}" width="${bw}" height="${bh}" fill="#78a7e8" stroke="#2764aa"/>`;if(bar.label)svg+=`<text x="${bx}" y="${Math.min(205,by+13)}" font-size="10" fill="#263447">${escapeHtml(String(bar.label).slice(0,14))}</text>`;}
+ for(const [i,pt] of pts.entries()){svg+=`<circle cx="${n(pt.x)}" cy="${y(pt.y)}" r="3.3" fill="#d04f55"/>`;if(pt.label)svg+=`<text x="${n(pt.x)+6}" y="${y(pt.y)-7}" font-size="11" fill="#202b3a">${escapeHtml(String(pt.label).slice(0,16))}</text>`;}
+ for(const t of (Array.isArray(d.texts)?d.texts.filter(v=>v&&typeof v==='object').slice(0,24):[])){svg+=`<text x="${n(t.x)}" y="${y(t.y)}" font-size="${Math.max(8,Math.min(16,Number(t.size)||11))}" fill="#263447">${escapeHtml(String(t.text||'').slice(0,30))}</text>`;}
+ if(!svg) return '';
+ return `<figure class="diagram-wrap"><svg class="diagram-svg" viewBox="0 0 320 210" role="img" aria-label="${escapeHtml(kind)}の図" xmlns="http://www.w3.org/2000/svg">${svg}</svg></figure>`;
+}
+function drawingAnswerMarkup(q){return `<div class="drawing-box"><div class="math-work-label">作図・描画エリア（指・Apple Pencil対応）</div><div class="drawing-tools"><label class="small" style="color:#334155">道具 <select class="input" style="width:auto;display:inline-block;padding:5px 8px;background:#fff;color:#172b46" data-drawing-tool="${q.id}"><option value="pen">フリーハンド</option><option value="line">直線</option><option value="circle">円</option><option value="eraser">消しゴム</option></select></label><button class="btn ghost" type="button" data-clear-drawing="${q.id}">全消去</button></div><canvas class="answer-drawing" width="640" height="420" data-drawing="${q.id}" aria-label="作図解答欄"></canvas><div class="drawing-tools"><small>作図問題は自動採点せず、提出後に図の条件・構成を確認します。</small></div></div>`;}
+function bindDrawingCanvases(){
+ document.querySelectorAll('#questionList canvas.answer-drawing').forEach(canvas=>{const ctx=canvas.getContext('2d');if(!ctx)return;ctx.lineWidth=3;ctx.lineCap='round';ctx.lineJoin='round';ctx.strokeStyle='#172b46';let active=false,start=null,snapshot=null,tool='pen';
+  const point=e=>{const r=canvas.getBoundingClientRect();return{x:(e.clientX-r.left)*canvas.width/r.width,y:(e.clientY-r.top)*canvas.height/r.height};};
+  const drawShape=(p)=>{if(!start)return;if(snapshot)ctx.putImageData(snapshot,0,0);ctx.beginPath();if(tool==='line'){ctx.moveTo(start.x,start.y);ctx.lineTo(p.x,p.y);}else{const radius=Math.hypot(p.x-start.x,p.y-start.y);ctx.arc(start.x,start.y,radius,0,Math.PI*2);}ctx.stroke();};
+  canvas.addEventListener('pointerdown',e=>{e.preventDefault();active=true;canvas.setPointerCapture?.(e.pointerId);const selector=document.querySelector(`[data-drawing-tool="${canvas.dataset.drawing}"]`);tool=selector?.value||'pen';start=point(e);snapshot=(tool==='line'||tool==='circle')?ctx.getImageData(0,0,canvas.width,canvas.height):null;ctx.beginPath();ctx.moveTo(start.x,start.y);if(tool==='eraser'){ctx.globalCompositeOperation='destination-out';ctx.lineWidth=22;}else{ctx.globalCompositeOperation='source-over';ctx.lineWidth=3;}canvas.dataset.hasInk='1';state.answers[canvas.dataset.drawing]='作図回答あり';if(tool==='pen'||tool==='eraser')ctx.lineTo(start.x+0.1,start.y+0.1);ctx.stroke();});
+  canvas.addEventListener('pointermove',e=>{if(!active)return;e.preventDefault();const p=point(e);if(tool==='line'||tool==='circle'){drawShape(p);return;}ctx.lineTo(p.x,p.y);ctx.stroke();});
+  const end=e=>{if(active&&(tool==='line'||tool==='circle')&&e){drawShape(point(e));}active=false;start=null;snapshot=null;ctx.globalCompositeOperation='source-over';ctx.lineWidth=3;};canvas.addEventListener('pointerup',end);canvas.addEventListener('pointercancel',()=>end(null));canvas.addEventListener('lostpointercapture',()=>end(null));
+ });
+}
 function renderExam(exam,mode,s){
  const total=state.questions.reduce((n,q)=>n+q.points,0),template=subjectTemplate(exam.subject||s.subject);$('examSection').dataset.subject=template.key;$('testPaper').dataset.subject=template.key;
- $('examTitle').textContent=exam.title||'オリジナル模試';$('examMeta').textContent=`${template.label} · ${exam.subject||s.subject} · ${exam.grade||s.grade} · ${exam.scope||'教材範囲'}`;$('examMode').textContent=mode==='ai'?'Gemini主担当・Groq分担AI生成':'端末内・簡易生成';$('qCount').textContent=state.questions.length;$('totalPoints').textContent=total;$('timeLimit').textContent=s.minutes==='時間制限なし'?'なし':s.minutes+'分';const audit=exam._answerAudit;const auditText=audit?` 重点独立検証：確認 ${audit.confirmed}問・修正 ${audit.corrected}問・要確認 ${audit.review}問。通常問題 ${audit.localChecked||0}問は端末内形式チェックのみで、別AIの独立検証対象外です。`:'';$('examNotice').textContent='採点は端末内で実行（AIへの採点送信なし）。記述・計算過程の部分点は手動確認になります。'+auditText+(exam._answerAuditWarning?` 検証上の注意：${exam._answerAuditWarning}`:'')+(exam._jsonRecovered?` 注意：AIの返答が途中で切れたため、完全に読み取れた${state.questions.length}問だけを採用しました。問題数を減らすと安定します。`:exam._geminiFinishReason==='MAX_TOKENS'?' 注意：AIの出力上限に達しました。問題数を減らして再作成してください。':Array.isArray(exam.questions)&&exam.questions.length<(s.count||0)?` 注意：指定${s.count}問に対して${exam.questions.length}問だけ生成されました。必要なら問題数を減らして再作成してください。`:'');
+ $('examTitle').textContent=exam.title||'オリジナル模試';$('examMeta').textContent=`${template.label} · ${exam.subject||s.subject} · ${exam.grade||s.grade} · ${exam.scope||'教材範囲'}`;$('examMode').textContent=mode==='ai'?'Gemini主担当・Groq分担AI生成':'端末内・簡易生成';$('qCount').textContent=state.questions.length;$('totalPoints').textContent=total;$('timeLimit').textContent=s.minutes==='時間制限なし'?'なし':s.minutes+'分';const audit=exam._answerAudit;const auditText=audit?` 重点独立検証：確認 ${audit.confirmed}問・修正 ${audit.corrected}問・要確認 ${audit.review}問。通常問題 ${audit.localChecked||0}問は端末内形式チェックのみで、別AIの独立検証対象外です。`:'';$('examNotice').textContent='採点は端末内で実行（AIへの採点送信なし）。記述・計算過程・作図の部分点は手動確認になります。'+auditText+(exam._answerAuditWarning?` 検証上の注意：${exam._answerAuditWarning}`:'')+(exam._jsonRecovered?` 注意：AIの返答が途中で切れたため、完全に読み取れた${state.questions.length}問だけを採用しました。問題数を減らすと安定します。`:exam._geminiFinishReason==='MAX_TOKENS'?' 注意：AIの出力上限に達しました。問題数を減らして再作成してください。':Array.isArray(exam.questions)&&exam.questions.length<(s.count||0)?` 注意：指定${s.count}問に対して${exam.questions.length}問だけ生成されました。必要なら問題数を減らして再作成してください。`:'');
  $('questionPrintHead').innerHTML=printHeadMarkup('question');
  const timeLabel=s.minutes==='時間制限なし'?'時間制限なし':`試験時間 ${escapeHtml(s.minutes)} 分`;const topNote=`<div class="subject-paper-note"><div>${escapeHtml(template.note)}</div><div class="paper-meta-strip"><span>${escapeHtml(timeLabel)}</span><span>満点 ${total} 点</span><span>${state.questions.length} 問</span></div></div>`;
- $('questionList').innerHTML=topNote+state.questions.map((q,i)=>{const kind=q.type==='choice'?'選択':q.type==='essay'?'論述':q.type==='calculation'?'計算・過程':'短答';const section=subjectSectionLabel(exam.subject||s.subject,q,i);
-  const answerControl=q.type==='choice'&&q.choices.length?`<div class="choice-list">${q.choices.map((c,j)=>`<label class="choice" data-choice-index="${j}"><input type="radio" name="q${q.id}" value="${escapeHtml(c)}"><span class="choice-letter">${String.fromCharCode(65+j)}</span><span>${escapeHtml(c)}</span></label>`).join('')}</div><div class="print-choice-answer">解答欄（記号）：（　　　　　　）</div>`:q.type==='essay'||q.type==='calculation'?`<textarea class="answerbox answerarea" rows="${Math.min(8,Math.max(3,q.answerSpaceRows))}" data-answer="${q.id}" placeholder="解答・途中式を入力してください"></textarea>`:`<input class="answerbox" type="text" inputmode="text" autocomplete="off" data-answer="${q.id}" placeholder="解答を入力してください">`;
-  const rows=q.type==='choice'?0:q.answerSpaceRows;
-  return `<article class="qcard" data-q="${q.id}">${section?`<div class="subject-section-label">${escapeHtml(section)}</div>`:''}<div class="qtop"><span><span class="q-number">問 ${String(i+1).padStart(2,'0')}</span><span class="question-kind">${kind}</span> <span class="small">${escapeHtml(q.difficulty||'')}</span></span><span>〔 ${q.points} 点 〕</span></div><h3>${promptMarkup(q.prompt,exam.subject||s.subject)}</h3>${answerControl}${rows?writingLines(rows):''}<div class="small muted source-note" style="margin-top:8px">${q.sourcePage?'出題範囲参照：'+escapeHtml(q.sourcePage):''}</div></article>`;
+ $('questionList').innerHTML=topNote+state.questions.map((q,i)=>{const kind=q.type==='choice'?'選択':q.type==='essay'?'論述':q.type==='calculation'?'計算・過程':q.type==='drawing'?'作図':'短答';const section=subjectSectionLabel(exam.subject||s.subject,q,i);
+  const answerControl=q.type==='drawing'?drawingAnswerMarkup(q):q.type==='choice'&&q.choices.length?`<div class="choice-list">${q.choices.map((c,j)=>`<label class="choice" data-choice-index="${j}"><input type="radio" name="q${q.id}" value="${escapeHtml(c)}"><span class="choice-letter">${String.fromCharCode(65+j)}</span><span>${escapeHtml(c)}</span></label>`).join('')}</div><div class="print-choice-answer">解答欄（記号）：（　　　　　　）</div>`:q.type==='essay'||q.type==='calculation'?`<textarea class="answerbox answerarea" rows="${Math.min(8,Math.max(3,q.answerSpaceRows))}" data-answer="${q.id}" placeholder="解答・途中式を入力してください"></textarea>`:`<input class="answerbox" type="text" inputmode="text" autocomplete="off" data-answer="${q.id}" placeholder="解答を入力してください">`;
+  const rows=['choice','drawing'].includes(q.type)?0:q.answerSpaceRows;
+  return `<article class="qcard" data-q="${q.id}">${section?`<div class="subject-section-label">${escapeHtml(section)}</div>`:''}<div class="qtop"><span><span class="q-number">問 ${String(i+1).padStart(2,'0')}</span><span class="question-kind">${kind}</span> <span class="small">${escapeHtml(q.difficulty||'')}</span></span><span>〔 ${q.points} 点 〕</span></div>${renderQuestionFigure(q)}<h3>${promptMarkup(q.prompt,exam.subject||s.subject)}</h3>${answerControl}${rows?writingLines(rows):''}<div class="small muted source-note" style="margin-top:8px">${q.sourcePage?'出題範囲参照：'+escapeHtml(q.sourcePage):''}</div></article>`;
  }).join('');
- $('answerSheetPrint').innerHTML=printHeadMarkup('answer-sheet')+`<h2 class="print-section-title">解答欄</h2><table class="answer-sheet-table"><thead><tr><th>問題</th><th>解答欄</th><th>配点</th></tr></thead><tbody>${state.questions.map(q=>`<tr><th>問${q.id}</th><td>${q.type==='choice'?'選択肢の記号を記入（　　　　　）':q.type==='essay'||q.type==='calculation'?'<div style="height:72px"></div>':'<div style="height:35px"></div>'}</td><td>${q.points}点</td></tr>`).join('')}</tbody></table>`;
+ bindDrawingCanvases();
+ $('answerSheetPrint').innerHTML=printHeadMarkup('answer-sheet')+`<h2 class="print-section-title">解答欄</h2><table class="answer-sheet-table"><thead><tr><th>問題</th><th>解答欄</th><th>配点</th></tr></thead><tbody>${state.questions.map(q=>`<tr><th>問${q.id}</th><td>${q.type==='choice'?'選択肢の記号を記入（　　　　　）':q.type==='drawing'?'<div style="height:130px;border:1px dashed #888;background-image:linear-gradient(#ddd 1px,transparent 1px),linear-gradient(90deg,#ddd 1px,transparent 1px);background-size:18px 18px"></div>':q.type==='essay'||q.type==='calculation'?'<div style="height:72px"></div>':'<div style="height:35px"></div>'}</td><td>${q.points}点</td></tr>`).join('')}</tbody></table>`;
  $('answerKeyPrint').innerHTML=printHeadMarkup('key')+`<h2 class="print-section-title">模範解答・解説・採点基準</h2><table class="key-table"><thead><tr><th>問題</th><th>模範解答</th><th>採点基準・解説</th><th>配点</th></tr></thead><tbody>${state.questions.map(q=>`<tr><th>問${q.id}</th><td>${q._answerStatus==='verified'?escapeHtml(q.answer||'要確認'):q._answerStatus==='local_checked'?escapeHtml(q.answer||'要確認')+'（形式確認のみ・独立検証対象外）':'独立検証未完了・採点保留'}</td><td>${escapeHtml(q._answerAuditReason||'')}${q._answerAuditReason?'<hr>':''}${escapeHtml(q.markingGuide||'')}${q.markingGuide&&q.explanation?'<hr>':''}${escapeHtml(q.explanation||'')}</td><td>${q.points}点</td></tr>`).join('')}</tbody></table>`;
  $('resultBox').classList.remove('show');$('gradeBtn').textContent='答案を採点する（端末内）';$('submitExamBtn').textContent='答案を提出・採点';
 }
 $('questionList').addEventListener('input',e=>{const el=e.target;if(el.matches('[data-answer]'))state.answers[el.dataset.answer]=el.value;if(el.matches('input[type=radio]'))state.answers[el.name.slice(1)]=el.value;});
+$('questionList').addEventListener('click',e=>{const button=e.target.closest('[data-clear-drawing]');if(!button)return;const id=button.dataset.clearDrawing,canvas=document.querySelector(`#questionList canvas[data-drawing="${id}"]`);if(!canvas)return;canvas.getContext('2d')?.clearRect(0,0,canvas.width,canvas.height);canvas.dataset.hasInk='0';state.answers[id]='';});
 function norm(s){
  return String(s??'').normalize('NFKC').toLowerCase().replace(/[\s　]+/g,'').replace(/[、。「」『』]/g,'').replace(/，/g,',');
 }
@@ -1303,7 +1507,7 @@ function applyTeacherMarks(results){
 function showGradeResults(results,overallFeedback='',weakAreas=[]){
  const total=state.questions.reduce((n,q)=>n+q.points,0),score=results.reduce((n,r)=>n+Math.max(0,Math.min(Number(r.maxPoints)||0,Number(r.score)||0)),0),pct=total?Math.round(score/total*100):0;
  const reviewCount=results.filter(r=>r.needsReview).length;const provisional=reviewCount>0||state.questions.some(q=>q._answerStatus==='local_checked');const localOnlyCount=state.questions.filter(q=>q._answerStatus==='local_checked').length;
- $('resultBox').innerHTML=`<div class="grade-score">${provisional?'仮得点':'得点'}　${score} / ${total} 点</div><div><b>得点率 ${pct}%</b></div><div class="grading-note">端末内の自動採点です。Geminiへの採点リクエストは送信していません。${reviewCount?` ${reviewCount}問は途中式・記述の確認待ちです。`:''}${localOnlyCount?` 通常問題${localOnlyCount}問は別AIの独立検証対象外のため、得点は暫定です。`:''}</div><div class="grade-detail"><h4>総合結果</h4><div>${escapeHtml(overallFeedback||'採点が完了しました。')}</div>${weakAreas.length?`<p><b>復習したい分野：</b>${weakAreas.map(escapeHtml).join('、')}</p>`:''}</div>${results.map(r=>{const q=state.questions.find(x=>x.id===Number(r.id));if(!q)return '';const sc=Math.max(0,Math.min(q.points,Number(r.score)||0));const status=r.status|| (r.needsReview?'review':sc>=q.points?'correct':'incorrect');return `<div class="grade-detail"><h4>第${q.id}問　${sc}/${q.points}点　${status==='correct'?'○ 正解':status==='review'?'△ 要確認':'× 不正解'}</h4><div><b>あなたの解答：</b>${escapeHtml(state.answers[q.id]||'未回答')}</div><div><b>正答：</b>${q._answerStatus==='verified'?escapeHtml(q.answer||'要手動確認'):q._answerStatus==='local_checked'?escapeHtml(q.answer||'要確認')+'（独立検証対象外）':'独立検証未完了・採点保留'}</div><div><b>解説：</b>${escapeHtml(q.explanation||r.reason||'解説はありません。')}</div>${r.needsReview?'<div class="grading-note">記述・途中式を見て部分点を判断してください。</div>':''}</div>`;}).join('')}`;
+ $('resultBox').innerHTML=`<div class="grade-score">${provisional?'仮得点':'得点'}　${score} / ${total} 点</div><div><b>得点率 ${pct}%</b></div><div class="grading-note">端末内の自動採点です。Geminiへの採点リクエストは送信していません。${reviewCount?` ${reviewCount}問は途中式・記述・作図の確認待ちです。`:''}${localOnlyCount?` 通常問題${localOnlyCount}問は別AIの独立検証対象外のため、得点は暫定です。`:''}</div><div class="grade-detail"><h4>総合結果</h4><div>${escapeHtml(overallFeedback||'採点が完了しました。')}</div>${weakAreas.length?`<p><b>復習したい分野：</b>${weakAreas.map(escapeHtml).join('、')}</p>`:''}</div>${results.map(r=>{const q=state.questions.find(x=>x.id===Number(r.id));if(!q)return '';const sc=Math.max(0,Math.min(q.points,Number(r.score)||0));const status=r.status|| (r.needsReview?'review':sc>=q.points?'correct':'incorrect');return `<div class="grade-detail"><h4>第${q.id}問　${sc}/${q.points}点　${status==='correct'?'○ 正解':status==='review'?'△ 要確認':'× 不正解'}</h4><div><b>あなたの解答：</b>${escapeHtml(state.answers[q.id]||'未回答')}</div><div><b>正答：</b>${q._answerStatus==='verified'?escapeHtml(q.answer||'要手動確認'):q._answerStatus==='local_checked'?escapeHtml(q.answer||'要確認')+'（独立検証対象外）':'独立検証未完了・採点保留'}</div><div><b>解説：</b>${escapeHtml(q.explanation||r.reason||'解説はありません。')}</div>${r.needsReview?'<div class="grading-note">記述・途中式を見て部分点を判断してください。</div>':''}</div>`;}).join('')}`;
  $('resultBox').classList.add('show');
  applyTeacherMarks(results);
  $('resultBox').scrollIntoView({behavior:'smooth',block:'nearest'});
@@ -1314,6 +1518,9 @@ function collectAnswers(){
   if(q.type==='choice'){
    const selected=document.querySelector(`#questionList input[name="q${q.id}"]:checked`);
    if(selected)state.answers[q.id]=selected.value;
+  }else if(q.type==='drawing'){
+   const canvas=document.querySelector(`#questionList canvas[data-drawing="${q.id}"]`);
+   state.answers[q.id]=canvas?.dataset.hasInk==='1'?'作図回答あり':'';
   }else{
    const field=document.querySelector(`#questionList [data-answer="${q.id}"]`);
    if(field)state.answers[q.id]=field.value;
@@ -1326,7 +1533,9 @@ function gradeLocally(){
   const given=String(state.answers[q.id]??'').trim(),correct=answerMatches(q,given),hasAnswer=!!given;
   let status='incorrect',score=0,reason='';
   if(!hasAnswer){reason='未回答のため0点です。';}
-  else if(!['verified','local_checked'].includes(q._answerStatus)){
+  else if(q.type==='drawing'){
+   status='review';reason='作図は線の位置・条件・構成を確認する必要があるため、自動採点せず手動確認に回しました。';
+  }else if(!['verified','local_checked'].includes(q._answerStatus)){
    status='review';reason='重要問題の独立検証が未完了です。誤った正答で採点しないため、この問題は採点保留にしています。';
   }else if(q._answerStatus==='local_checked'&&!correct){
    status='review';reason='端末内の形式チェックのみで、別AIの独立検証対象外です。誤答とは確定せず手動確認に回します。';
