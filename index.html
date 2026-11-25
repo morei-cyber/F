@@ -204,7 +204,7 @@ body.test-mode{background:#edf0f4!important;color:#171717!important;color-scheme
         <div><label class="label" for="pageLimit">複数ページの解析上限</label><select class="input" id="pageLimit"><option value="5">5ページ</option><option value="10" selected>10ページ（節約）</option><option value="15">15ページ</option><option value="20">20ページ</option><option value="30">30ページ</option></select></div>
         <div class="small muted" style="padding-bottom:8px">文字PDFはテキスト抽出を優先し、スキャンページ・写真だけを圧縮画像で送信します。</div>
       </div>
-      <div class="notice">📌 AIありモードでは画像・スキャン教材の読み取りをGeminiだけが担当します。読み取り後の教材分析・問題作成・正答/解説作成・独立検証は、主担当Gemini 65%／Groq 35%で分担します。画像データはGroqへ送信しません。個人情報や公開できない教材は送信しないでください。</div>
+      <div class="notice">📌 画像OCR・教材全体の分析はGeminiが担当。問題作成はGemini 65%／Groq 35%を目安に分担し、Groq停止時はGeminiへ自動代替します。計算・記述・曖昧な問題だけ別AIで重点検証し、通常問題は端末内で形式を確認します。画像データはGroqへ送信しません。</div>
       <div class="label">出題対象の補足（任意）</div>
       <textarea id="scopeNote" rows="2" placeholder="例：このプリントの問1〜問8。二次関数の最大・最小を中心に。"></textarea>
       <div class="actions"><button class="btn full" id="analyzeBtn" type="button" disabled>教材を解析する</button></div>
@@ -245,31 +245,31 @@ body.test-mode{background:#edf0f4!important;color:#171717!important;color-scheme
           <div style="flex:0 0 auto;align-self:end"><a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener">APIキー取得 ↗</a></div>
         </div>
         <div class="small muted" style="margin-top:7px">モデルはここで手動選択します。選択したモデルに1回だけ送信し、混雑・エラー時に別モデルへ自動切替や自動再試行はしません。モデルの利用可否・無料枠はGoogle側のアカウント条件に従います。</div>
-        <div id="tokenUsageNote">画像解析・文字起こしはGeminiのみ。Geminiが主担当（65%）、Groqが問題作成・正答/解説作成・独立検証を含む35%を担当します。Groqはテキスト専用GPT-OSSを標準使用。通常採点は端末内で行い、採点時にAPI通信しません。自動再試行・他社への代替なし。</div>
+        <div id="tokenUsageNote">画像OCR・教材分析はGeminiに集約。問題作成はGemini 65%／Groq 35%を目安に分担。計算・記述・曖昧な問題のみ独立検証し、通常問題は端末内で形式チェック。Groq停止時はGeminiへ自動代替します。</div>
       </div>
       <section class="panel" style="margin:12px 0 0;padding:13px;background:#101b2b;border-color:#3b5271">
         <div class="section-head"><h3 style="margin:0;font-size:14px">マルチAI設定</h3><span class="tag">役割別分配</span></div>
-        <p class="small muted" style="margin:6px 0 10px">Geminiを主担当にし、Groqも教材分析・問題作成・正答/解説作成・独立検証を担当します。生成元とは別のAIで検証します。SambaNovaは402エラーが解決するまで処理対象から外しています。</p>
+        <p class="small muted" style="margin:6px 0 10px">教材OCR・全体分析はGeminiに集約。Geminiを主担当に、Groqは問題作成と重要問題の独立検証を担当します。Groqの利用上限・通信障害時はGeminiへ1回だけ自動代替。Groqキーは任意です。SambaNovaは一時停止中です。</p>
         <div class="allocation-strip" aria-label="AI処理配分">
-          <div class="allocation-item gemini"><strong>Gemini · 65%</strong><span>主担当・画像解析・生成・検証</span></div>
-          <div class="allocation-item groq"><strong>Groq · 35%</strong><span>問題作成・正答/解説・独立検証</span></div>
+          <div class="allocation-item gemini"><strong>Gemini · 65%</strong><span>画像OCR・教材分析・問題生成の主担当</span></div>
+          <div class="allocation-item groq"><strong>Groq · 35%</strong><span>問題生成・重要問題の独立検証</span></div>
         </div>
         <div class="provider-grid">
           <section class="provider-card" style="border-top:3px solid #4285f4">
-            <div class="provider-title"><div class="provider-mark">✦</div><div><strong>Gemini · 65%（メイン）</strong><small>全画像ページの読み取り＋主担当の分析・生成・検証</small></div></div>
+            <div class="provider-title"><div class="provider-mark">✦</div><div><strong>Gemini · 65%（メイン）</strong><small>全画像ページのOCR・教材全体分析・問題生成</small></div></div>
             <div class="provider-description">上のGemini APIキー・モデル設定を使用。画像・スキャンページは最初にGeminiが文字起こしし、他社には文字データだけを渡します。</div>
           </section>
           <section class="provider-card groq">
-            <div class="provider-title"><div class="provider-mark">G</div><div><strong>Groq · 35%</strong><small>テキスト教材分析・問題/正答/解説作成・独立検証</small></div></div>
-            <label class="label" for="groqApiKey">APIキー</label>
+            <div class="provider-title"><div class="provider-mark">G</div><div><strong>Groq · 35%</strong><small>問題作成・正答/解説作成・重要問題の独立検証</small></div></div>
+            <label class="label" for="groqApiKey">APIキー（任意）</label>
             <input class="input" id="groqApiKey" type="password" autocomplete="off" placeholder="gsk_...">
-            <div class="small" style="margin-top:5px"><a href="https://console.groq.com/keys" target="_blank" rel="noopener">Groq APIキー管理 ↗</a></div>
+            <div class="small" style="margin-top:5px"><a href="https://console.groq.com/keys" target="_blank" rel="noopener">Groq APIキー（任意）管理 ↗</a></div>
             <label class="label" for="groqModel">使用モデル（テキスト生成・解答確認用）</label>
             <select class="input" id="groqModel">
               <option value="openai/gpt-oss-120b" selected>GPT-OSS 120B · 標準・高精度</option>
               <option value="openai/gpt-oss-20b">GPT-OSS 20B · 軽量・高速</option>
             </select>
-            <div class="provider-description">画像・スキャンの読み取りはGeminiだけで行います。Groqは読み取り後のテキストを使って、問題・正答・解説の作成と独立検証を担当します。選択モデルをそのまま使用し、別モデルへ自動切替はしません。</div>
+            <div class="provider-description">画像・スキャンの読み取りはGemini専用。Groqはテキストだけで問題・正答・解説・検証を担当します。未入力または429・通信障害時はGeminiへ1回だけ自動代替します。</div>
           </section>
           <section class="provider-card sambanova" style="display:none" aria-hidden="true">
             <div class="provider-title"><div class="provider-mark">S</div><div><strong>SambaNova · 停止中</strong><small>402課金エラー確認のため一時停止</small></div></div>
@@ -287,9 +287,9 @@ body.test-mode{background:#edf0f4!important;color:#171717!important;color-scheme
             <div class="provider-description">画像文字起こしはGeminiが担当するため、SambaNovaはテキスト専用のGPT-OSS 120Bを標準にしています。Gemma 4も手動選択できますが、402が出る場合はGPT-OSSへ切り替えてください。モデルの自動切替はしません。公式Free Tier掲載モデルですが、両モデルともPreview扱いです。</div>
           </section>
         </div>
-        <div class="notice warn" style="margin-top:10px">無料枠・上限の注意：GroqのRPM・RPD・TPM・ITPM/OTPMは組織全体で共有され、アプリから上限を変更できません。Groqの出力にアプリ独自の小さな固定上限は設けず、処理ごとの出力予算をAPIへ渡します。Geminiの無料枠はプロジェクト・モデルごとに異なり、Google AI StudioのRate Limitsが優先です。上限超過時はAPIのエラーを表示して停止し、有料化・自動再試行・他社への自動切替はしません。SambaNovaは402エラー確認のため一時停止しています。</div>
+        <div class="notice warn" style="margin-top:10px">無料枠・上限の注意：GroqのRPM・RPD・TPM・ITPM/OTPMは組織全体で共有されます。429・通信障害・5xx時は同じ工程をGeminiへ1回だけ代替し、Groqへの再試行はしません。Gemini側も上限に達した場合は停止します。有料化は行いません。SambaNovaは一時停止中です。</div>
         <div class="notice warn" style="margin-top:10px">接続方式：GeminiとGroqはこの端末から直接通信します。APIキーはブラウザ内で完全には秘匿できないため、共有端末では保存しないでください。SambaNovaのWorker設定は保存したままですが、現在の生成処理では呼び出しません。</div>
-        <div class="small muted" id="multiApiStatus" style="margin-top:7px">AIありモードではGemini・GroqのAPIキーが必要です。Gemini 65%が主担当、Groq 35%が問題・正答・解説作成と独立検証を担当します。画像はGeminiだけで読み取り、Groqにはテキストだけ送ります。SambaNovaは一時停止中です。</div>
+        <div class="small muted" id="multiApiStatus" style="margin-top:7px">AIありモードではGemini APIキーが必須です。画像OCR・教材全体分析はGeminiのみ。問題作成はGemini 65%／Groq 35%を目安に分担し、計算・記述・曖昧な問題を別AIで重点検証します。Groqキーは任意で、未入力・利用上限時はGeminiが代替します。</div>
         <div class="notice" id="apiQuotaStatus" role="status" aria-live="polite" style="margin-top:8px">API利用枠：最初の通信後、各社が返す残りリクエスト数・トークン枠を取得できた場合にここへ表示します。</div>
       </section>
       <div id="localInfo" class="notice warn hidden">AIなしモードは端末内処理です。写真OCRは初回に日本語辞書（数MB〜）をダウンロードするため、通信環境によっては数分かかる場合があります。120秒で進まない場合はエラー表示します。自由な類題生成はできません。</div>
@@ -305,8 +305,8 @@ body.test-mode{background:#edf0f4!important;color:#171717!important;color-scheme
       </div>
       <label class="switchline"><input type="checkbox" id="mixTypes" checked> 教材に合わせて問題形式を混ぜる</label>
       <label class="switchline"><input type="checkbox" id="strictScope" checked> 教材にない知識をなるべく出題しない</label>
-      <label class="switchline"><input type="checkbox" id="verifyAnswers" checked> 生成後に生成元以外のAIで全問を独立検証（不確かな解答は要確認）</label>
-      <div class="notice warn" style="margin-top:6px">生成元とは別のAIが各問題を独立検証します。記述・複雑問題・判定が不確かな問題は残りのAIも追加検証します。APIエラー時は自動切替せず停止し、未確認問題は採点保留にします。</div>
+      <label class="switchline"><input type="checkbox" id="verifyAnswers" checked> 計算・記述・曖昧な問題を別AIで重点検証（通常問題は端末内形式チェック）</label>
+      <div class="notice warn" style="margin-top:6px">計算・記述・曖昧な問題と形式チェックで異常が見つかった問題だけ別AIで独立検証します。通常問題は選択肢・正答欄・配点・重複を端末内で確認し、独立検証対象外であることを表示します。Groq停止時はGeminiへ1回だけ代替します。</div>
       <button class="btn green full" id="generateBtn" type="button" disabled>解析した教材から模試を作成</button>
       <div class="small muted" style="margin-top:8px">先に左側で教材を解析してください。</div>
     </section>
@@ -320,7 +320,7 @@ body.test-mode{background:#edf0f4!important;color:#171717!important;color-scheme
       <div><b id="apiCallCount">0</b><span>API呼び出し回数</span></div>
       <div><b id="historyTokenCount">0</b><span>累計トークン（取得分）</span></div>
     </div>
-    <div class="small muted" style="margin-top:12px">AI別の実績トークン（API応答のusage取得分）。Gemini 65%・Groq 35%は各工程の担当件数目標で、トークン量・料金の実績比率とは異なります。</div><div id="providerUsageGrid" class="provider-usage-grid"></div>
+    <div class="small muted" style="margin-top:12px">AI別の実績トークン（API応答のusage取得分）。Gemini 65%・Groq 35%は問題生成時の担当件数目標です。教材分析はGeminiに集約し、独立検証は重要問題のみ行います。</div><div id="providerUsageGrid" class="provider-usage-grid"></div>
     <div id="historyList" class="history-list" style="margin-top:12px"></div>
     <div class="actions"><button class="btn ghost" type="button" id="clearHistoryBtn">この端末の履歴を消去</button></div>
   </section>
@@ -355,10 +355,12 @@ body.test-mode{background:#edf0f4!important;color:#171717!important;color-scheme
 const $ = id => document.getElementById(id);
 const PROVIDERS=['Gemini','Groq'];
 const PROVIDER_WEIGHTS={Gemini:65,Groq:35};
-// Gemini is the primary model. Groq handles text-only question generation and independent answer checks.
-// Output budgets are task-specific API request budgets; Groq has no app-side 600-token clamp.
+// Gemini is the primary provider. Groq is used when available; quota/network failures fall back to Gemini once.
+// A failed Groq request is never retried at Groq. Fallback availability is remembered until page reload.
 const GEMINI_OUTPUT_CAP=6500;
 const GROQ_GPTOSS_OUTPUT_CAP=6000;
+let groqUnavailableThisSession=false;
+let groqUnavailableReason='';
 const SAMBANOVA_OUTPUT_CAP=5000;
 const SAMBANOVA_DAILY_LIMIT=18; // Keep two requests of headroom below the published 20/day Free Tier limit.
 const SAMBANOVA_DAILY_WINDOW=24*60*60*1000;
@@ -402,7 +404,7 @@ function providerErrorHint(provider,status,message,response){
  if(status===422)return '入力内容またはモデルの処理条件が意味的に受け付けられませんでした。教材の範囲や選択モデルを確認してください。';
  if(status===429){
   const requested=msg.match(/requested\s+(\d[\d,]*)/i),limit=msg.match(/limit\s+(\d[\d,]*)/i);
-  if(provider==='Groq'&&/output tokens per minute|otpm/.test(low))return `Groq組織全体の出力トークン毎分上限（OTPM）です。今回の要求 ${requested?.[1]||'不明'} / 上限 ${limit?.[1]||'不明'}。アプリ独自の600トークン制限は撤去済みですが、Groq側の組織上限は変更できません。他端末・他アプリの使用分も合算されます。`+(retry?` 再開の目安：${retry}秒後。`:'');
+  if(provider==='Groq'&&/output tokens per minute|otpm/.test(low))return `Groq組織全体の出力トークン毎分上限（OTPM）です。今回の要求 ${requested?.[1]||'不明'} / 上限 ${limit?.[1]||'不明'}。Groq側の組織上限は変更できません。他端末・他アプリの使用分も合算されます。この工程はGeminiへ代替します。`+(retry?` 再開の目安：${retry}秒後。`:'');
   if(requested&&limit)return `1回の出力要求 ${requested[1]} トークンが上限 ${limit[1]} を超えています。該当モデルのリクエスト出力上限を下げる必要があります。`+(retry?` 再開の目安：${retry}秒後。`:'');
   if(/per day|daily|requests per day|tokens per day|rpd|tpd|per.?day/.test(low))return '日次のリクエスト数またはトークン上限に達しています。日次リセットまで待つ必要があります。'+(retry?` 再開の目安：${retry}秒後。`:'');
   if(/per minute|requests per minute|tokens per minute|rpm|tpm|itpm/.test(low))return '毎分のリクエスト数または入力/出力トークン上限に達しています。利用枠の回復まで待ってから手動で再実行してください。'+(retry?` 再開の目安：${retry}秒後。`:'');
@@ -428,7 +430,7 @@ function renderProviderUsage(list=readHistory()){
  const totals=Object.fromEntries(PROVIDERS.map(p=>[p,{calls:0,tokens:0}]));
  for(const item of list){if(item.kind!=='api')continue;const provider=item.provider||(item.title||'').split(' ')[0];if(!totals[provider])continue;totals[provider].calls++;totals[provider].tokens+=Number(item.totalTokens)||0;}
  const allTokens=Object.values(totals).reduce((sum,item)=>sum+item.tokens,0);
- root.innerHTML=PROVIDERS.map(p=>{const actual=allTokens?Math.round(totals[p].tokens/allTokens*100):0;return `<div class="provider-usage"><b>${p} · 目標 ${PROVIDER_WEIGHTS[p]}%</b><span>${totals[p].tokens.toLocaleString()} tokens</span><br><small>実績トークン比 ${actual}% · ${totals[p].calls} calls</small></div>`;}).join('');
+ root.innerHTML=PROVIDERS.map(p=>{const actual=allTokens?Math.round(totals[p].tokens/allTokens*100):0;return `<div class="provider-usage"><b>${p} · 問題生成目標 ${PROVIDER_WEIGHTS[p]}%</b><span>${totals[p].tokens.toLocaleString()} tokens</span><br><small>実績トークン比 ${actual}% · ${totals[p].calls} calls</small></div>`;}).join('');
 }
 function weightedCounts(total){
  const names=PROVIDERS,raw=names.map(p=>total*PROVIDER_WEIGHTS[p]/100),counts=raw.map(Math.floor);let left=total-counts.reduce((a,b)=>a+b,0);
@@ -442,13 +444,54 @@ function weightedSchedule(total){
  return {schedule:out,counts};
 }
 function providerKeyField(provider){return provider==='Gemini'?'apiKey':'groqApiKey';}
-function ensureProviderKeys(providers){const missing=[];for(const p of new Set(providers)){if(p==='SambaNova'){if(!$('sambanovaProxyUrl')?.value.trim()||!$('sambanovaProxyToken')?.value.trim())missing.push('SambaNova Worker URL・中継アクセスキー');}else if(!$(providerKeyField(p))?.value.trim())missing.push(p+' APIキー');}if(missing.length)throw new Error(`${missing.join('・')}を設定してください。この処理では担当会社を固定し、未設定の会社を別会社で代替しません。`);}
+function ensureProviderKeys(providers){
+ const list=[...new Set(providers||[])];
+ // Gemini is also the fallback, so it is the only required key. Groq may be unavailable or omitted.
+ if(list.length&&!$('apiKey')?.value.trim())throw new Error('Gemini APIキーを入力してください。Groqが利用できない場合の代替にもGeminiを使用します。');
+ if(list.includes('Groq')&&!$('groqApiKey')?.value.trim()){
+  groqUnavailableThisSession=true;groqUnavailableReason='Groq APIキー未入力';
+ }
+}
 function uniqueStrings(values,max=20){const out=[],seen=new Set();for(const value of values||[]){const text=String(value||'').trim();const key=text.normalize('NFKC').replace(/\s+/g,' ');if(text&&!seen.has(key)){seen.add(key);out.push(text);if(out.length>=max)break;}}return out;}
 function splitUnitsByProvider(units){const plan=weightedSchedule(units.length),groups=Object.fromEntries(PROVIDERS.map(p=>[p,[]]));units.forEach((unit,i)=>groups[plan.schedule[i]].push(unit));return{groups,counts:plan.counts,schedule:plan.schedule};}
 function splitListByProvider(items){const values=Array.isArray(items)?items:[],plan=weightedSchedule(values.length),groups=Object.fromEntries(PROVIDERS.map(p=>[p,[]]));values.forEach((item,i)=>groups[plan.schedule[i]].push(item));return groups;}
-async function callProvider(provider,prompt,outputTokens,schema,parts=[]){
- if(provider==='Gemini')return callGemini(parts,prompt,outputTokens,schema);
- if(provider==='Groq')return callGroqCompatible('Groq',prompt,outputTokens,schema,parts);
+function tagProviderResult(result,actualProvider,fallbackFrom=''){
+ if(result&&typeof result==='object'){
+  Object.defineProperty(result,'_actualProvider',{value:actualProvider,writable:true,configurable:true,enumerable:false});
+  if(fallbackFrom)Object.defineProperty(result,'_fallbackFrom',{value:fallbackFrom,writable:true,configurable:true,enumerable:false});
+ }
+ return result;
+}
+function groqFallbackAllowed(error){
+ if(!error||error.provider!=='Groq')return false;
+ if(error.fallbackEligible===true)return true;
+ const status=Number(error.status)||0;
+ return status===408||status===429||status===498||status>=500||/rate.?limit|quota|otpm|tokens per minute|failed to fetch|load failed|networkerror|timeout|aborted/i.test(String(error.message||''));
+}
+async function fallbackGroqTaskToGemini(prompt,outputTokens,schema,parts,reason){
+ groqUnavailableThisSession=true;groqUnavailableReason=String(reason||'Groq利用不可').slice(0,180);
+ const operation=state.currentOperation||'AI処理';
+ const adaptedPrompt=String(prompt||'').replaceAll('Groq','Gemini');
+ recordActivity('distribution','Groq停止→Geminiへ代替',`${operation}：${groqUnavailableReason}。同じGroq要求の再送は行わず、Geminiへ1回だけ引き継ぎました。`);
+ showStatus(`Groqが利用できないため、Geminiが代わりに処理中...（${operation}）`,0);
+ const result=await callGemini(parts,adaptedPrompt,Math.min(GEMINI_OUTPUT_CAP,Math.max(512,Number(outputTokens)||2400)),schema);
+ return tagProviderResult(result,'Gemini','Groq');
+}
+async function callProvider(provider,prompt,outputTokens,schema,parts=[],options={}){
+ if(provider==='Gemini')return tagProviderResult(await callGemini(parts,prompt,outputTokens,schema),'Gemini');
+ if(provider==='Groq'){
+  if(groqUnavailableThisSession||!$('groqApiKey')?.value.trim()){
+   if(options.allowFallback===false){const err=new Error(groqUnavailableReason||'Groqは利用できません。Gemini作成問題の独立検証には同一AIを使えません。');err.provider='Groq';err.status=429;err.fallbackEligible=true;throw err;}
+   return fallbackGroqTaskToGemini(prompt,outputTokens,schema,parts,groqUnavailableReason||'Groq APIキー未入力');
+  }
+  try{return tagProviderResult(await callGroqCompatible('Groq',prompt,outputTokens,schema,parts),'Groq');}
+  catch(error){
+   if(!groqFallbackAllowed(error))throw error;
+   groqUnavailableThisSession=true;groqUnavailableReason=String(error.message||'Groq利用上限または通信障害').slice(0,180);
+   if(options.allowFallback===false)throw error;
+   return fallbackGroqTaskToGemini(prompt,outputTokens,schema,parts,error.message||'Groqの利用上限または通信障害');
+  }
+ }
  if(provider==='SambaNova')return callGroqCompatible('SambaNova',prompt,outputTokens,schema,parts);
  throw new Error(`未対応のAIプロバイダーです：${provider}`);
 }
@@ -667,8 +710,8 @@ const OCR_RESPONSE_SCHEMA={type:'OBJECT',properties:{
 const ANALYSIS_RESPONSE_SCHEMA={type:'OBJECT',properties:{
  subject:{type:'STRING'},grade:{type:'STRING'},chapters:{type:'ARRAY',items:{type:'STRING'}},keyPoints:{type:'ARRAY',items:{type:'STRING'}},
  problemPatterns:{type:'ARRAY',items:{type:'OBJECT',properties:{type:{type:'STRING'},pattern:{type:'STRING'},difficulty:{type:'STRING'},method:{type:'STRING'},exampleSummary:{type:'STRING'},sourcePage:{type:'STRING'}},required:['type','pattern','difficulty','method','exampleSummary','sourcePage']}},
- extractedText:{type:'STRING'},warnings:{type:'ARRAY',items:{type:'STRING'}}
-},required:['subject','grade','chapters','keyPoints','problemPatterns','extractedText','warnings']};
+ warnings:{type:'ARRAY',items:{type:'STRING'}}
+},required:['subject','grade','chapters','keyPoints','problemPatterns','warnings']};
 const EXAM_RESPONSE_SCHEMA={type:'OBJECT',properties:{
  title:{type:'STRING'},subject:{type:'STRING'},grade:{type:'STRING'},scope:{type:'STRING'},
  questions:{type:'ARRAY',items:{type:'OBJECT',properties:{
@@ -676,21 +719,24 @@ const EXAM_RESPONSE_SCHEMA={type:'OBJECT',properties:{
   markingGuide:{type:'STRING'},explanation:{type:'STRING'},difficulty:{type:'STRING'},sourcePage:{type:'STRING'},answerSpaceRows:{type:'INTEGER'},points:{type:'NUMBER'}
  },required:['type','prompt','answer','markingGuide','explanation','points']}}
 },required:['title','subject','grade','scope','questions']};
+// Each generation batch only needs the questions array. Avoid repeating exam metadata in every provider response.
+const EXAM_BATCH_RESPONSE_SCHEMA={type:'OBJECT',properties:{questions:EXAM_RESPONSE_SCHEMA.properties.questions},required:['questions']};
 const ANSWER_AUDIT_SCHEMA={type:'OBJECT',properties:{
  checks:{type:'ARRAY',items:{type:'OBJECT',properties:{
   id:{type:'INTEGER'},verdict:{type:'STRING'},verifiedAnswer:{type:'STRING'},independentAnswer:{type:'STRING'},acceptableAnswers:{type:'ARRAY',items:{type:'STRING'}},
   solutionCheck:{type:'BOOLEAN'},choiceUnique:{type:'BOOLEAN'},explanationConsistent:{type:'BOOLEAN'},sourceSupported:{type:'BOOLEAN'},confidence:{type:'NUMBER'},
   reason:{type:'STRING'},verifiedExplanation:{type:'STRING'}
- },required:['id','verdict','verifiedAnswer','independentAnswer','acceptableAnswers','solutionCheck','choiceUnique','explanationConsistent','sourceSupported','confidence','reason','verifiedExplanation']}}
+ },required:['id','verdict','verifiedAnswer','independentAnswer','solutionCheck','choiceUnique','explanationConsistent','sourceSupported','confidence','reason']}}
 },required:['checks']};
 function mergeAnalysisResults(results,materialMeta){
  const values=results.map(x=>x.result||{}),first=values.find(x=>x.subject||x.grade)||{};
  const patterns=[];const seenPatterns=new Set();
  for(const result of values){for(const item of result.problemPatterns||[]){const key=`${String(item.type||'').trim()}|${String(item.pattern||'').trim()}`.normalize('NFKC');if(!seenPatterns.has(key)&&item.pattern){seenPatterns.add(key);patterns.push(item);}}}
  const textParts=values.map(x=>String(x.extractedText||'').trim()).filter(Boolean);
- const extractedText=uniqueStrings(textParts,12).join('\n\n').slice(0,9000);
+ // Original text/OCR is already retained in the page units. Reuse it instead of paying every analysis model to echo it.
+ const source=results.flatMap(x=>(x.units||[]).flat()).filter(x=>x&&typeof x.text==='string').map(x=>x.text.trim()).filter(Boolean).join('\n\n');
+ const extractedText=(source||uniqueStrings(textParts,12).join('\n\n')).slice(0,9000);
  const output={subject:first.subject||'自動判定',grade:first.grade||'教材から推定',chapters:uniqueStrings(values.flatMap(x=>x.chapters||[]),12),keyPoints:uniqueStrings(values.flatMap(x=>x.keyPoints||[]),18),problemPatterns:patterns.slice(0,14),extractedText,warnings:uniqueStrings(values.flatMap(x=>x.warnings||[]),20),materialMeta:{...materialMeta,analysisProviders:results.map(x=>({provider:x.provider,pages:x.pages}))}};
- if(!output.extractedText){const source=results.flatMap(x=>(x.units||[]).flat()).filter(x=>x.text).map(x=>x.text).join('\n');if(source)output.extractedText=source.slice(0,9000);}
  output.warnings=uniqueStrings([...output.warnings,`AI教材解析の担当：${results.map(x=>`${x.provider} ${x.pages}ページ`).join(' / ')}。`],20);
  return output;
 }
@@ -716,10 +762,7 @@ async function transcribeImageUnitsWithGemini(units,scopeNote){
   const pageLabel=labels.join(' / ')||`画像ページ ${index+1}`;
   state.currentOperation=`画像文字起こし・Gemini（${n+1}/${imageIndexes.length}ページ）`;
   showStatus(`Geminiが画像教材を文字起こし中...（${n+1}/${imageIndexes.length}ページ）`,Math.min(68,8+Math.round((n+1)/imageIndexes.length*58)));
-  const prompt=`あなたは正確な日本語教材OCRエンジンです。添付画像に写っている文字・数字・記号を、見える範囲でできる限り原文どおりに文字起こししてください。
-ページ=${pageLabel}
-補足=${scopeNote||'なし'}
-見出し・段落・箇条書き・表の行列・図表のラベル・脚注・ページ番号をできるだけ保持してください。グラフ・図・写真資料は、見える軸・凡例・数値・配置・関係も短く文章化してください。数式・化学式・英語・固有名詞・単位は勝手に修正せず、見たまま転記してください。読めない文字は[判読不能]とし、推測で補完しないでください。問題作成や解答の追加は禁止です。読み取れた文字と視覚資料の説明だけをextractedTextに入れ、指定JSONだけを返してください。`;
+  const prompt=`画像の教材OCR。ページ=${pageLabel}。文字・数字・数式・化学式・英語・単位を見たまま転記。見出し・改行・箇条書き・表の行列を保持。図表は軸・凡例・数値・関係を短く説明。推測で補わず、読めない箇所は[判読不能]。問題や解答は作らず、転記と図表説明だけをextractedTextに入れ、JSONのみ返す。`;
   const result=await callProvider('Gemini',prompt,GEMINI_OUTPUT_CAP,OCR_RESPONSE_SCHEMA,imageParts);
   const extracted=String(result.extractedText||'').trim();
   if(!extracted)throw new Error(`Geminiの画像文字起こし結果が空でした：${pageLabel}。このページの文字を確定できないため停止しました。`);
@@ -732,26 +775,26 @@ async function transcribeImageUnitsWithGemini(units,scopeNote){
 async function analyzeMaterialsDistributed(prepared,scopeNote){
  const originalUnits=prepared.units?.length?prepared.units:[prepared.parts||[]];
  const units=await transcribeImageUnitsWithGemini(originalUnits,scopeNote);
- const split=splitUnitsByProvider(units);ensureProviderKeys(PROVIDERS.filter(p=>split.groups[p].length));
- const results=[],providerPages={};const pageTotal=units.length;
- for(const provider of PROVIDERS){
-  const assigned=split.groups[provider];if(!assigned.length)continue;providerPages[provider]=assigned.length;
-  const batches=splitAnalysisBatches(assigned,1);
-  for(let bi=0;bi<batches.length;bi++){
-   const batch=batches[bi],inputParts=batch.flat(),allocated=batch.length;
-   state.currentOperation=`教材解析・${provider}（${allocated}ページ / ${bi+1}/${batches.length}回）`;
-   const prompt=`あなたは高校教材を読む専門家です。これは全教材のうち、あなたに割り当てられたページの一部です。他社や他の回が担当するページは未読として扱い、内容を推測・補完しないでください。読めない箇所はwarningsへ記録してください。
-補足=${scopeNote||'なし'}
-今回の担当ページ数=${allocated}。ページラベルを保持してください。subject,grade,chapters最大6,keyPoints最大8,problemPatterns最大6,extractedText最大2200文字,warnings最大8件を指定JSON形式で返してください。問題パターンは見える範囲から抽出し、解法・難易度・例の要約・出典ページを記録してください。文章の長い転載を避け、教材外知識を追加しないでください。JSON以外は出力しないでください。`;
-   showStatus(`${provider}が担当ページを解析中...`,Math.min(74,24+Math.round((results.length+1)/Math.max(1,PROVIDERS.length)*42)));
-   const requestedTokens=Math.min(4200,Math.max(1800,Math.round(4200*allocated/pageTotal))); 
-   const result=await callProvider(provider,prompt,requestedTokens,ANALYSIS_RESPONSE_SCHEMA,inputParts);
-   results.push({provider,result,pages:allocated,units:batch});
-  }
- }
- const merged=mergeAnalysisResults(results,prepared.note);state.providerAssignments.analysis=providerPages;
- recordActivity('distribution','教材解析をGemini・Groqに分散',Object.entries(providerPages).map(([p,n])=>`${p} ${n}ページ`).join(' / '),{distribution:state.providerAssignments.analysis});
- return merged;
+ const pageTexts=units.map((unit,i)=>{
+  const text=(unit||[]).filter(part=>part&&typeof part.text==='string').map(part=>part.text.trim()).filter(Boolean).join('\n');
+  return text?text:`【ページ ${i+1}】（文字情報なし）`;
+ }).filter(Boolean);
+ if(!pageTexts.length)throw new Error('教材から分析できるテキストを取得できませんでした。');
+ const fullText=pageTexts.join('\n\n').slice(0,26000);
+ const analysisBudget=15000;
+ const perPageBudget=Math.max(120,Math.floor(analysisBudget/Math.max(1,pageTexts.length)));
+ // Allocate a share to every page; avoid slicing the joined text, which could silently drop later pages.
+ const analysisText=pageTexts.map(page=>page.length>perPageBudget?compactSourceExcerpt(page,perPageBudget):page).join('\n\n');
+ const compacted=analysisText.length<fullText.length;
+ state.currentOperation=`教材全体分析・Gemini（${units.length}ページを1回に集約）`;
+ const prompt=`高校教材を分析し、出題設計用の要点だけを返す。教材本文は入力側に保持済みなので再出力禁止。教科・学年を推定し、単元は最大6、重要点は最大8、問題形式は重要なもの最大6。各形式は type/pattern/difficulty/method/exampleSummary/sourcePage を短く。教材にない知識を追加せず、読めない・不足する情報だけwarningsへ。各項目は重複させず、JSONのみ返す。補足範囲=${String(scopeNote||'なし').slice(0,180)}。`;
+ showStatus(`Geminiが教材全体をまとめて分析中...（${units.length}ページ）`,Math.min(76,28));
+ const result=await callProvider('Gemini',prompt,3000,ANALYSIS_RESPONSE_SCHEMA,[{text:analysisText}]);
+ result.extractedText=fullText;
+ result.materialMeta={...prepared.note,analysisProviders:[{provider:'Gemini',pages:units.length}],analysisInputChars:analysisText.length,analysisCompacted:compacted};
+ state.providerAssignments.analysis={Gemini:units.length,Groq:0};
+ recordActivity('distribution','教材全体分析をGemini 1回に集約',`${units.length}ページ／分析入力 ${analysisText.length.toLocaleString()}文字／Groq教材分析呼び出しなし`,{distribution:state.providerAssignments.analysis});
+ return result;
 }
 function normalizeExamPoints(questions){
  const total=questions.reduce((n,q)=>n+(Number(q.points)>0?Number(q.points):1),0);if(!questions.length||!total)return;
@@ -760,40 +803,46 @@ function normalizeExamPoints(questions){
  scaled.sort((a,b)=>(b.exact-Math.floor(b.exact))-(a.exact-Math.floor(a.exact))||a.i-b.i);
  for(let i=0;i<100-used;i++)scaled[i%scaled.length].q.points++;
 }
+function compactSourceExcerpt(source,max=1050){
+ const text=String(source||'').replace(/\s+/g,' ').trim();if(text.length<=max)return text;
+ const a=Math.floor(max*0.42),b=Math.floor(max*0.32),c=max-a-b-24,mid=Math.floor(text.length/2);
+ return text.slice(0,a)+' … '+text.slice(Math.max(a,mid-Math.floor(b/2)),mid+Math.ceil(b/2))+' … '+text.slice(-c);
+}
 async function generateDistributedExam(basePrompt,settings,analysis,analysisPayload){
  const plan=weightedSchedule(settings.count),providersWithWork=PROVIDERS.filter(p=>plan.counts[p]>0);ensureProviderKeys(providersWithWork);
- const queues=Object.fromEntries(PROVIDERS.map(p=>[p,[]])),meta=[];const keyPointGroups=splitListByProvider(analysisPayload?.keyPoints||[]),patternGroups=splitListByProvider(analysisPayload?.problemPatterns||[]);const sharedText=String(analysisPayload?.extractedText||'').slice(0,1800);
+ const queues=Object.fromEntries(PROVIDERS.map(p=>[p,[]])),meta=[],actualCounts=Object.fromEntries(PROVIDERS.map(p=>[p,0]));const keyPointGroups=splitListByProvider(analysisPayload?.keyPoints||[]),patternGroups=splitListByProvider(analysisPayload?.problemPatterns||[]);const sharedText=compactSourceExcerpt(analysisPayload?.extractedText||'',700);
  for(const provider of PROVIDERS){
   const count=plan.counts[provider];if(!count)continue;
   // Keep each JSON response manageable without imposing a tiny token ceiling.
   const batchCounts=splitIntoChunks(Array(count).fill(0),3).map(batch=>batch.length);
   let firstResult=null;
   for(let bi=0;bi<batchCounts.length;bi++){
-   const chunkCount=batchCounts[bi],alreadyMade=Object.values(queues).flat().map(q=>String(q.prompt||'').slice(0,100)).slice(-16);
+   const chunkCount=batchCounts[bi],alreadyMade=Object.values(queues).flat().map(q=>String(q.prompt||'').slice(0,55)).slice(-6);
    state.currentOperation=`問題生成・${provider}（${queues[provider].length+chunkCount}/${count}問）`;
-   const providerMaterial={subject:analysisPayload?.subject||analysis?.subject||settings.subject,grade:analysisPayload?.grade||analysis?.grade||settings.grade,chapters:(analysisPayload?.chapters||[]).slice(0,8),keyPoints:keyPointGroups[provider],problemPatterns:patternGroups[provider],sharedText};
-   const prompt=basePrompt.replaceAll(`${settings.count}問`,`${chunkCount}問`)+`\n\nこのAI専用の教材担当範囲：${JSON.stringify(providerMaterial)}\n分散生成の担当範囲：全体${settings.count}問のうち、このAIは合計${count}問を担当します。今回のバッチは${bi+1}/${batchCounts.length}回目で、今回必ず${chunkCount}問だけ作成してください。${alreadyMade.length?`今回までにすでに作成済みの問題（重複禁止）：${JSON.stringify(alreadyMade)}`:''}ここに示した要点・問題パターンを優先して、担当外AIの問題を作らず、重複を避けてください。問題文・解説は必要十分な長さにまとめてください。配点はこの担当分の内部で仮設定して構いません。全AIの出力を結合後、アプリ側で全体100点に再配分します。`;
+   const providerMaterial={subject:analysisPayload?.subject||analysis?.subject||settings.subject,grade:analysisPayload?.grade||analysis?.grade||settings.grade,chapters:(analysisPayload?.chapters||[]).slice(0,3),keyPoints:(keyPointGroups[provider]||[]).slice(0,4),problemPatterns:(patternGroups[provider]||[]).slice(0,2),sharedText};
+   const prompt=basePrompt.replaceAll(`${settings.count}問`,`${chunkCount}問`)+`\n\n担当教材要点：${JSON.stringify(providerMaterial)}\n全体${settings.count}問中、このAIの担当は${count}問。今回${bi+1}/${batchCounts.length}回目、必ず${chunkCount}問だけ作る。${alreadyMade.length?`重複禁止（既出）：${JSON.stringify(alreadyMade)}`:''}担当範囲内で重複を避け、問題文・解説・採点基準は簡潔に。結合後に全体100点へ再配分する。`;
    showStatus(`${provider}が担当問題を生成中...`,Math.min(80,18+Math.round((queues[provider].length+chunkCount)/settings.count*58)));
    // Provider weights control question ownership only. Budget scales with this batch's question count.
    // This is a generous per-request API budget, not the former 600-token clamp.
    const providerOutputCap=provider==='Gemini'?GEMINI_OUTPUT_CAP:provider==='Groq'?GROQ_GPTOSS_OUTPUT_CAP:SAMBANOVA_OUTPUT_CAP;
    const requestedTokens=Math.min(providerOutputCap,Math.max(provider==='Gemini'?2400:1800,chunkCount*1500));
-   const result=await callProvider(provider,prompt,requestedTokens,EXAM_RESPONSE_SCHEMA,[]);
+   const result=await callProvider(provider,prompt,requestedTokens,EXAM_BATCH_RESPONSE_SCHEMA,[]);
    if(!firstResult)firstResult=result;
-   const qs=Array.isArray(result.questions)?result.questions:[];if(qs.length!==chunkCount)throw new Error(`${provider}の今回の担当は${chunkCount}問ですが、${qs.length}問しか返りませんでした。別会社への自動代替はせず、問題生成を停止しました。`);
-   for(const q of qs){q._generatedBy=provider;queues[provider].push(q);}
+   const actualProvider=result?._actualProvider||provider;actualCounts[actualProvider]=(actualCounts[actualProvider]||0)+chunkCount;
+   const qs=Array.isArray(result.questions)?result.questions:[];if(qs.length!==chunkCount)throw new Error(`${actualProvider}の今回の担当は${chunkCount}問ですが、${qs.length}問しか返りませんでした。不完全な問題を採用せず停止しました。`);
+   for(const q of qs){q._generatedBy=actualProvider;if(result._fallbackFrom)q._generatedFallbackFrom=result._fallbackFrom;queues[provider].push(q);}
   }
   meta.push({provider,count,result:firstResult||{}});
  }
- const allQuestions=plan.schedule.map(provider=>queues[provider].shift()).filter(Boolean);normalizeExamPoints(allQuestions);state.providerAssignments.generation=Object.fromEntries(meta.map(x=>[x.provider,x.count]));
- recordActivity('distribution','問題生成をGemini・Groqに分散',meta.map(x=>`${x.provider} ${x.count}問`).join(' / '),{distribution:state.providerAssignments.generation});
+ const allQuestions=plan.schedule.map(provider=>queues[provider].shift()).filter(Boolean);normalizeExamPoints(allQuestions);state.providerAssignments.generation=actualCounts;
+ recordActivity('distribution','問題生成の実担当AI',PROVIDERS.map(p=>`${p} ${actualCounts[p]}問`).join(' / '),{distribution:actualCounts});
  const first=meta.map(x=>x.result).find(x=>x&&typeof x==='object')||{};return{title:first.title||'Gemini・Groq分担AI模試',subject:first.subject||analysis?.subject||settings.subject,grade:first.grade||analysis?.grade||settings.grade,scope:first.scope||'アップロード教材の範囲',questions:allQuestions,_providerDistribution:state.providerAssignments.generation};
 }
 async function fetchProviderResponse(provider,url,options,operation,model){
  let controller=null,timer=null,sambaReservationAt=null;
  try{
   // Wait for local pacing first; network timeout starts only when the actual request begins.
-  const minGap=provider==='Groq'?1000:provider==='SambaNova'?3100:250;
+  const minGap=provider==='Groq'?1200:provider==='SambaNova'?3100:250;
   const key=`${provider}:${model}`,last=providerLastRequestAt.get(key)||0,wait=Math.max(0,minGap-(Date.now()-last));
   if(wait>0){showStatus(`${provider}の利用枠に合わせて通信間隔を調整中...`,0);await delay(wait);}
   if(provider==='SambaNova')sambaReservationAt=reserveSambaNovaDailyRequest(model);
@@ -810,7 +859,8 @@ async function fetchProviderResponse(provider,url,options,operation,model){
   const safariLoadFailed=/load failed|failed to fetch|networkerror/i.test(rawDetail);
   const detail=e?.name==='AbortError'?'実際のAPI通信開始から120秒以内に応答が完了しませんでした':provider==='SambaNova'&&safariLoadFailed?'SafariがWorker中継から応答を取得できませんでした。Worker URL・ALLOWED_ORIGIN・中継アクセスキー・通信状態を確認してください。SambaNova APIへの直接接続はCORS制限により使用できません。':rawDetail.slice(0,180);
   recordActivity('api_error',`${provider} API通信エラー`,`${operation} / ${model} / ${detail}`);
-  throw new Error(`${provider} APIとの通信に失敗しました（${model}）：${detail}。HTTP応答を受け取れていないため、429やAPIキー誤りとは断定できません。自動再試行・他社への切替は行いません。`);
+  const err=new Error(`${provider} APIとの通信に失敗しました（${model}）：${detail}。HTTP応答を受け取れていないため、429やAPIキー誤りとは断定できません。`);
+  err.provider=provider;err.status=0;err.fallbackEligible=provider==='Groq';throw err;
  }finally{if(timer)clearTimeout(timer);}
 }
 async function callGemini(parts, prompt, outputTokens=7000, responseSchema=null){
@@ -849,6 +899,13 @@ async function callGemini(parts, prompt, outputTokens=7000, responseSchema=null)
  parsed._geminiFinishReason=finishReason;
  return parsed;
 }
+function compactSchemaShape(schema){
+ if(!schema||typeof schema!=='object')return 's';
+ const type=String(schema.type||'STRING').toLowerCase();
+ if(type==='object'){const fields={};for(const [key,value] of Object.entries(schema.properties||{}))fields[key]=compactSchemaShape(value);return {r:Array.isArray(schema.required)?schema.required:Object.keys(fields),p:fields};}
+ if(type==='array')return [compactSchemaShape(schema.items||{type:'STRING'})];
+ return ({string:'s',number:'n',integer:'i',boolean:'b'}[type]||'s');
+}
 function toStandardJsonSchema(schema){
  if(!schema||typeof schema!=='object')return {type:'string'};
  const type=String(schema.type||'STRING').toLowerCase();
@@ -873,7 +930,8 @@ function providerError(provider,operation,model,status,message,response=null){
  const hint=providerErrorHint(provider,status,message,response);
  const retry=getHeader(response,'retry-after');
  recordActivity('api_error',`${provider} APIエラー`,`${operation} / ${model} / HTTP ${status} / ${String(message).slice(0,160)}`);
- return new Error(`${provider} APIエラー (${status})［${model}］：${message}${hint?'\n'+hint:''}${retry&&!String(hint).includes(retry)?`\n再開の目安：${retry}秒後。`:''}\n自動再試行・他社への自動切替は行わず、この工程で停止しました。設定・利用上限・モデル利用権限を確認してから手動で再実行してください。`);
+ const err=new Error(`${provider} APIエラー (${status})［${model}］：${message}${hint?'\n'+hint:''}${retry&&!String(hint).includes(retry)?`\n再開の目安：${retry}秒後。`:''}`);
+ err.provider=provider;err.status=Number(status)||0;err.fallbackEligible=provider==='Groq'&&(status===408||status===429||status===498||status>=500);return err;
 }
 async function callGroqCompatible(provider,prompt,outputTokens=4000,responseSchema=null,materialParts=[]){
  const isGroq=provider==='Groq';
@@ -886,7 +944,7 @@ async function callGroqCompatible(provider,prompt,outputTokens=4000,responseSche
  const imageCount=materialParts.filter(part=>part&&part.inlineData).length;
  if(isGroq&&imageCount)throw new Error('画像データはGemini専用です。Geminiの文字起こしが完了した後、文章データだけをGroqへ送る設計です。画像をGroqへ送信する処理は停止しました。');
  if(!isGroq&&imageCount>3)throw new Error(`${provider}への画像送信は1回につき最大3枚です。ページ数を減らして再実行してください。`);
- const schemaNote=responseSchema?`\n\n出力JSONスキーマ（全項目に従うこと）：\n${JSON.stringify(toStandardJsonSchema(responseSchema))}`:'';
+ const schemaNote=responseSchema?`\nJSON形（r=必須,p=項目,[] =配列,s=文字列,n=数値,i=整数,b=真偽値）：${JSON.stringify(compactSchemaShape(responseSchema))}`:'';
  const promptWithSchema=`${prompt}${schemaNote}\n必ずJSONオブジェクトだけを返してください。Markdownのコードブロックや前後の説明文は付けないでください。`;
  const content=[{type:'text',text:promptWithSchema},...materialParts.flatMap(part=>part&&part.text?[{type:'text',text:part.text}]:part&&part.inlineData?[{type:'image_url',image_url:{url:`data:${part.inlineData.mimeType};base64,${part.inlineData.data}`}}]:[])];
  let url,requestHeaders;
@@ -918,13 +976,16 @@ async function callGroqCompatible(provider,prompt,outputTokens=4000,responseSche
  if(!data||typeof data!=='object'||Array.isArray(data))throw new Error(`${provider}から予期しない応答形式が返されました（${model}）。`);
  recordProviderUsage(provider,model,operation,data.usage||{});
  const choice=data.choices?.[0]||{};
- if(choice.finish_reason==='length')throw new Error(`${provider}の出力が要求した最大 ${body.max_completion_tokens||body.max_tokens} トークンに達して途中終了しました（${model}）。不完全なJSONは採用しません。これはモデルの出力枠またはサービス側の制限です。GroqではGPT-OSS 120B/20Bを利用でき、問題作成・正答・解説・独立検証に対応しています。`);
+ if(choice.finish_reason==='length'){
+  const err=new Error(`${provider}の出力が要求した最大 ${body.max_completion_tokens||body.max_tokens} トークンに達して途中終了しました（${model}）。不完全なJSONは採用しません。`);
+  err.provider=provider;err.fallbackEligible=provider==='Groq';throw err;
+ }
  if(choice.finish_reason&&choice.finish_reason!=='stop'&&choice.finish_reason!=='completed'&&choice.finish_reason!=='tool_calls')throw new Error(`${provider}の生成が途中終了しました（${model}）。終了理由：${choice.finish_reason}。この返答は採用せず停止しました。`);
  const message=choice.message||{};
  let textOut=typeof message.content==='string'?message.content:Array.isArray(message.content)?message.content.map(x=>x.text||'').join('\n'):'';
  if(!textOut&&message.refusal)textOut=String(message.refusal);
  if(!textOut){const reason=data.choices?.[0]?.finish_reason||'不明';throw new Error(`${provider}から解析可能な本文が返りませんでした（${model}）。終了理由：${reason}。自動再試行はしません。`);}
- try{return parseJson(textOut);}catch(e){const detail=String(e.message||e).slice(0,180);recordActivity('api_error',`${provider}応答のJSON解析エラー`,`${operation} / ${model} / ${detail}`);throw new Error(`${provider}の返答をJSONとして読み取れませんでした（${model}）。詳細：${detail}。自動再試行・他社への切替は行いません。問題数を減らすか、モデルを手動で変更して再実行してください。`);}
+ try{return parseJson(textOut);}catch(e){const detail=String(e.message||e).slice(0,180);recordActivity('api_error',`${provider}応答のJSON解析エラー`,`${operation} / ${model} / ${detail}`);const err=new Error(`${provider}の返答をJSONとして読み取れませんでした（${model}）。詳細：${detail}。`);err.provider=provider;err.fallbackEligible=provider==='Groq';throw err;}
 }
 function stripJsonEnvelope(source){
  let v=String(source??'').replace(/^\uFEFF/,'').trim();
@@ -982,7 +1043,7 @@ $('analyzeBtn').addEventListener('click',async()=>{
    const pageLimit=Number($('pageLimit').value)||15;
    showStatus(`複数ページを整理中...（上限 ${pageLimit} ページ）`,5);
    const prepared=await prepareGeminiMaterials(state.files,pageLimit);state.materialMeta=prepared.note;
-   showStatus(`画像ページはGeminiだけが読み取り、その後Gemini 65%・Groq 35%で教材内容を分析します...（${prepared.note.pagesUsed}ページ）`,8);
+   showStatus(`画像ページはGeminiだけが読み取り、教材全体の分析もGeminiに集約します...（${prepared.note.pagesUsed}ページ）`,8);
    result=await analyzeMaterialsDistributed(prepared,$('scopeNote').value||'なし');
   }else{
    const text=await extractLocal();if(!text||text.replace(/\s/g,'').length<20)throw new Error('文字をほとんど読み取れませんでした。写真を鮮明にするか、テキストを含むPDFをお試しください。');
@@ -990,26 +1051,25 @@ $('analyzeBtn').addEventListener('click',async()=>{
   }
   if(!result||typeof result!=='object')throw new Error('教材分析結果が空でした。');
   state.analysis=result;$('sourceText').value=result.extractedText||'';renderSummary(result);$('summary').classList.add('show');$('generateBtn').disabled=false;
-  const m=result.materialMeta||{};recordActivity('analysis','教材解析が完了',`${mode==='ai'?'Gemini・Groq 2社分担':'端末内'} / ${m.pagesUsed||state.files.length}ページ処理・${m.pagesSkipped||0}ページ省略・${m.duplicates||0}重複除外`);
+  const m=result.materialMeta||{};recordActivity('analysis','教材解析が完了',`${mode==='ai'?'Gemini画像OCR・教材全体分析':'端末内'} / ${m.pagesUsed||state.files.length}ページ処理・${m.pagesSkipped||0}ページ省略・${m.duplicates||0}重複除外`);
   showStatus('解析が完了しました。内容を確認して模試を作成できます。',100);setTimeout(hideStatus,2400);
  }catch(e){console.error(e);recordActivity('error','教材解析に失敗',String(e.message||e).slice(0,220));showStatus('エラー：'+e.message,0);$('status').classList.add('show');}
  finally{state.currentOperation=oldOperation;setBusy(false);$('generateBtn').disabled=!state.analysis;}
 });
-function renderSummary(a){const tags=[...(a.chapters||[]),...(a.keyPoints||[])].slice(0,12);$('summaryBody').innerHTML=`<div><b>教科：</b>${escapeHtml(a.subject||'未判定')}　<b>レベル：</b>${escapeHtml(a.grade||'未判定')}</div><div class="tags">${tags.map(t=>`<span class="tag">${escapeHtml(t)}</span>`).join('')||'<span class="muted">単元・重要事項のタグなし</span>'}</div><div><b>問題パターン：</b>${(a.problemPatterns||[]).length}種類</div>${a.materialMeta?`<div class="small muted">解析ページ ${a.materialMeta.pagesUsed||0} / 省略 ${a.materialMeta.pagesSkipped||0} / 重複除外 ${a.materialMeta.duplicates||0} / 本文 ${a.materialMeta.textChars||0}文字 / 画像 ${Math.round((a.materialMeta.imageBytes||0)/1024)}KB</div>`:''}${(a.warnings||[]).length?`<div class="notice warn">${(a.warnings||[]).map(escapeHtml).join('<br>')}</div>`:''}`;}
+function renderSummary(a){const tags=[...(a.chapters||[]),...(a.keyPoints||[])].slice(0,12);$('summaryBody').innerHTML=`<div><b>教科：</b>${escapeHtml(a.subject||'未判定')}　<b>レベル：</b>${escapeHtml(a.grade||'未判定')}</div><div class="tags">${tags.map(t=>`<span class="tag">${escapeHtml(t)}</span>`).join('')||'<span class="muted">単元・重要事項のタグなし</span>'}</div><div><b>問題パターン：</b>${(a.problemPatterns||[]).length}種類</div>${a.materialMeta?`<div class="small muted">解析ページ ${a.materialMeta.pagesUsed||0} / 省略 ${a.materialMeta.pagesSkipped||0} / 重複除外 ${a.materialMeta.duplicates||0} / 本文 ${a.materialMeta.textChars||0}文字 / 画像 ${Math.round((a.materialMeta.imageBytes||0)/1024)}KB</div>${a.materialMeta.analysisInputChars?`<div class="small muted">教材全体分析：Gemini 1回・入力 ${a.materialMeta.analysisInputChars.toLocaleString()}文字${a.materialMeta.analysisCompacted?'（ページごとの抜粋を使用。全文は下の教材本文に保持）':''}</div>`:''}`:''}${(a.warnings||[]).length?`<div class="notice warn">${(a.warnings||[]).map(escapeHtml).join('<br>')}</div>`:''}`;}
 function getSettings(){return{subject:$('subject').value,grade:$('grade').value,count:Number($('count').value),difficulty:$('difficulty').value,minutes:$('minutes').value,mix:$('mixTypes').checked,strict:$('strictScope').checked,scopeNote:$('scopeNote').value};}
-$('generateBtn').addEventListener('click',async()=>{if(!state.analysis)return;setBusy(true);const oldOperation=state.currentOperation;state.currentOperation='問題生成';try{const mode=document.querySelector('input[name="mode"]:checked').value;const s=getSettings();let exam;if(mode==='ai'){showStatus('類題・選択肢・解答・解説を生成中...',15);const a={subject:state.analysis.subject||s.subject,grade:state.analysis.grade||s.grade,chapters:(state.analysis.chapters||[]).slice(0,8),keyPoints:(state.analysis.keyPoints||[]).slice(0,10),problemPatterns:(state.analysis.problemPatterns||[]).slice(0,7).map(p=>({type:String(p.type||'').slice(0,50),pattern:String(p.pattern||'').slice(0,180),difficulty:String(p.difficulty||'').slice(0,30),method:String(p.method||'').slice(0,180),exampleSummary:String(p.exampleSummary||'').slice(0,120),sourcePage:String(p.sourcePage||'').slice(0,50)})),extractedText:$('sourceText').value.trim().slice(0,3200),warnings:(state.analysis.warnings||[]).slice(0,2)};const prompt=`日本の高校の定期考査・模試を作る専門家として、以下の教材分析だけを根拠に、元教材と同じ知識・解法・形式を使った新しい類題を${s.count}問作成してください。元問題の文章をそのまま転載せず、数値・条件・表現を変えてください。
-設定：教科=${s.subject}、学年=${s.grade}、難易度=${s.difficulty}、試験時間=${s.minutes}分、形式混合=${s.mix}、教材外知識を避ける=${s.strict}、補足=${s.scopeNote||'なし'}。
-共通教科=${a.subject}、学年=${a.grade}。各AIには担当する要点・問題パターンだけを別途分配します。
-出力条件：指定されたJSONスキーマに厳密に従う。問題数は${s.count}問、合計100点。選択問題は選択肢4つ、answerは選択肢と完全一致。全問に正答・採点基準・短い解説を付ける。解説は原則80文字以内、採点基準は60文字以内にまとめる。各問は問題文を作った後にもう一度独立して解き、正答・選択肢・解説の整合性を確認する。数値・数式は途中計算まで検算する。曖昧な問題や教材外の知識を問う問題は作らない。sourcePageは確実に分かる場合だけ記載。answerSpaceRowsは1〜7。数学は途中式・証明を求め、数式は通常文字（x²、√、≦、(a+b)/c）で表記。英語は語彙・文法・読解・英作文、国語は漢字・読解・記述、理科は単位・実験・考察、社会は年代・地名・資料を適切に扱う。JSON以外の文章やMarkdown記号は出力しない。`;exam=await generateDistributedExam(prompt,s,state.analysis,a);
+$('generateBtn').addEventListener('click',async()=>{if(!state.analysis)return;setBusy(true);const oldOperation=state.currentOperation;state.currentOperation='問題生成';try{const mode=document.querySelector('input[name="mode"]:checked').value;const s=getSettings();let exam;if(mode==='ai'){showStatus('類題・選択肢・解答・解説を生成中...',15);const a={subject:state.analysis.subject||s.subject,grade:state.analysis.grade||s.grade,chapters:(state.analysis.chapters||[]).slice(0,8),keyPoints:(state.analysis.keyPoints||[]).slice(0,10),problemPatterns:(state.analysis.problemPatterns||[]).slice(0,7).map(p=>({type:String(p.type||'').slice(0,50),pattern:String(p.pattern||'').slice(0,180),difficulty:String(p.difficulty||'').slice(0,30),method:String(p.method||'').slice(0,180),exampleSummary:String(p.exampleSummary||'').slice(0,120),sourcePage:String(p.sourcePage||'').slice(0,50)})),extractedText:$('sourceText').value.trim().slice(0,3200),warnings:(state.analysis.warnings||[]).slice(0,2)};const prompt=`高校定期考査レベルの新作類題を教材分析だけを根拠に${s.count}問作成。元問題の文面は転載せず、条件・数値・表現を変える。
+設定：教科=${s.subject}、学年=${s.grade}、難易度=${s.difficulty}、時間=${s.minutes}分、形式混合=${s.mix}、教材外知識を避ける=${s.strict}、補足=${s.scopeNote||'なし'}。共通教科=${a.subject}、学年=${a.grade}。
+JSONスキーマ厳守。各問に正答・短い採点基準・解説を付け、選択式は選択肢4つ・answerは本文と完全一致。解説45文字以内、採点基準35文字以内を目安に簡潔に。数値は内部で再計算し、条件・正答・選択肢に矛盾がないか確認。曖昧な設問・教材外知識は避ける。sourcePageは確実な場合のみ、answerSpaceRowsは1〜7。教科特性（数学の途中式、英語の綴り・文法、国語の根拠、理科の単位・実験、社会の年代・資料）を守る。JSON以外は禁止。`;exam=await generateDistributedExam(prompt,s,state.analysis,a);
  }else{const text=$('sourceText').value.trim();if(!text)throw new Error('読み取った教材本文がありません。');exam=makeLocalExam(text,s,state.analysis);}
  if(!Array.isArray(exam.questions)||!exam.questions.length)throw new Error('問題が生成されませんでした。設定を変えて再実行してください。');state.questions=exam.questions.slice(0,s.count).map((q,i)=>{const type=['choice','short','calculation','essay'].includes(q.type)?q.type:(Array.isArray(q.choices)&&q.choices.length?'choice':'short');return({...q,id:i+1,type,points:Number(q.points)||10,choices:Array.isArray(q.choices)?q.choices:[],acceptableAnswers:Array.isArray(q.acceptableAnswers)?q.acceptableAnswers:[],_answerStatus:mode==='local'?'verified':'unverified',answerSpaceRows:Math.max(1,Math.min(7,Number(q.answerSpaceRows)||(['essay'].includes(type)?6:['calculation'].includes(type)?4:type==='short'?2:1)))});});
  state.questions.forEach(q=>{if(q.type==='choice'){const idx=choiceIndex(q.answer,q);if(idx>=0)q.answer=q.choices[idx];}});
  if(mode==='ai'&&$('verifyAnswers').checked){
-  showStatus('生成元とは別のAI（GeminiまたはGroq）で正答を独立検証中...',82);state.currentOperation='正答検証';
+  showStatus('計算・記述・曖昧な問題を重点検証中...',82);state.currentOperation='重点正答検証';
   try{exam._answerAudit=await verifyGeneratedAnswers(state.questions,s,state.analysis);}
   catch(auditError){recordActivity('error','マルチAI検証で停止',String(auditError.message||auditError).slice(0,220));throw new Error('正答検証を完了できないため、模試ページへの移行を停止しました。'+String(auditError.message||auditError));}
  }else if(mode==='ai'){
-  state.questions.forEach(q=>{q._answerStatus='unverified';q._answerAuditReason='独立検証をOFFにしたため、正答は未確認です。';});exam._answerAudit={confirmed:0,corrected:0,review:state.questions.length};exam._answerAuditWarning='正答の独立検証がOFFです。AI生成の正答は自動採点しません。';
+  state.questions.forEach(q=>{q._answerStatus='unverified';q._answerAuditReason='重点独立検証をOFFにしたため、正答は未確認です。';});exam._answerAudit={confirmed:0,corrected:0,review:state.questions.length};exam._answerAuditWarning='重点独立検証をOFFにしたため、AI生成の正答は未確認です。誤採点を避けるため自動採点を保留します。';
  }
  state.answers={};state.graded=false;state.examMode=mode;state.examMeta={...exam,settings:s};state.grading=null;renderExam(exam,mode,s);$('examSection').classList.add('show');$('testNavTitle').textContent=exam.title||'模試';openTestPage();hideStatus();
   const audit=exam._answerAudit||{confirmed:0,corrected:0,review:0};recordActivity('exam','模試を作成',`${exam.subject||s.subject} / ${state.questions.length}問 / 正答確認 ${audit.confirmed||0}・修正 ${audit.corrected||0}・保留 ${audit.review||0}`);
@@ -1028,59 +1088,97 @@ function simpleArithmeticInQuestion(prompt){
  return null;
 }
 function numericFromAnswer(value){const direct=numericAnswer(value);if(direct!==null)return direct;const m=String(value||'').normalize('NFKC').match(/[+-]?(?:\d+(?:\.\d*)?|\.\d+)/);return m?Number(m[0]):null;}
+function classifyQuestionRisk(q,issues=[]){
+ const text=String(q?.prompt||'').normalize('NFKC');
+ const answer=String(q?.answer||'').normalize('NFKC');
+ const calculation=q?.type==='calculation'||/(計算しなさい|求めなさい|式の値|途中式|有効数字|単位を付け|何cm|何m|何g|何mol|何％|何人|何円|\d\s*[+＋\-−×＊*÷／/＝=])/i.test(text);
+ const written=q?.type==='essay'||/(理由を|なぜ|どうして|説明しなさい|説明せよ|述べなさい|論じ|考察|比較し|根拠を|具体的に記述|要約し|どのように)/.test(text);
+ const ambiguous=/(最も適切|最も妥当|場合に応じ|条件に応じ|複数の|一概に|解釈|判断しなさい|適切か|妥当性|曖昧|例を挙げて)/.test(text);
+ const structural=Array.isArray(issues)&&issues.length>0;
+ const emptyOrLongAnswer=!answer.trim()||answer.length>180;
+ const highRisk=calculation||written||ambiguous||structural||emptyOrLongAnswer;
+ return{highRisk,calculation,written,ambiguous,structural,reason:calculation?'計算・数値':written?'記述・論述':ambiguous?'曖昧さの可能性':structural?'形式チェック異常':emptyOrLongAnswer?'正答形式の確認':'通常の客観問題'};
+}
 function allocateVerifiers(questions){
  const groups=Object.fromEntries(PROVIDERS.map(p=>[p,[]]));
- const creators=Object.fromEntries(PROVIDERS.map(p=>[p,questions.filter(q=>q._generatedBy===p).length]));
- for(const q of questions){
-  const creator=PROVIDERS.includes(q._generatedBy)?q._generatedBy:'Gemini';
-  const verifier=creator==='Gemini'?'Groq':'Gemini';
-  groups[verifier].push(q);
- }
- const counts=Object.fromEntries(PROVIDERS.map(p=>[p,groups[p].length]));
- return{groups,counts,creators};
+ for(const q of questions){const creator=PROVIDERS.includes(q._generatedBy)?q._generatedBy:'Gemini';const verifier=creator==='Gemini'?'Groq':'Gemini';groups[verifier].push(q);}
+ const counts=Object.fromEntries(PROVIDERS.map(p=>[p,groups[p].length]));return{groups,counts};
 }
 function makeAuditPrompt(items,provider,reference){
- const compact=items.map(q=>({id:q.id,type:q.type,question:String(q.prompt||'').slice(0,850),choices:(q.choices||[]).slice(0,4).map(x=>String(x).slice(0,80)),proposedAnswer:String(q.answer||'').slice(0,120),explanation:String(q.explanation||'').slice(0,80)}));
- return `あなたは問題作成AIとは独立した${provider}の試験校閲者です。候補解答を信用せず、各問を最初から独立に解いてください。A:独立解答。B:代入・逆算・別解・単位等で再検算。C:選択式は全選択肢を照合し正解がちょうど1つか確認。D:解説と独立解答を照合。E:教材の範囲・条件・定義を確認。教科=${reference.subject}。単元=${JSON.stringify(reference.topics)}。要点=${JSON.stringify(reference.keyPoints)}。教材根拠=${reference.source}。問題=${JSON.stringify(compact)}。各検査で不確実ならREVIEW。CONFIRMEDは提案解答と独立解答が一致し、solutionCheck/explanationConsistent/sourceSupported=true、confidence>=0.92の場合のみ。CORRECTEDは提案解答が明確に誤りで修正答が一意、同じ3フラグtrue、confidence>=0.92の場合のみ。選択問題はverifiedAnswerを選択肢本文と完全一致。reviewではverifiedAnswer/independentAnswerを空文字。非選択問題はchoiceUnique=true。reason短文、verifiedExplanationは45文字以内、reasonは35文字以内。全IDを一度ずつ返す。JSONのみ。`;
+ const compact=items.map(q=>({id:q.id,type:q.type,q:String(q.prompt||'').slice(0,600),c:(q.choices||[]).slice(0,4),a:String(q.answer||'').slice(0,90),e:String(q.explanation||'').slice(0,35)}));
+ return `別AIの独立検証。問題を解き直し、計算・記述・条件の曖昧さ・教材範囲・正答と解説の整合を確認。教科=${reference.subject}。単元=${JSON.stringify(reference.topics)}。要点=${JSON.stringify(reference.keyPoints)}。根拠=${reference.source}。問題=${JSON.stringify(compact)}。不確実ならREVIEW。CONFIRMEDは独立解答と正答が一致し、solutionCheck/explanationConsistent/sourceSupported/choiceUnique=true、confidence>=0.92。CORRECTEDは誤答が明確で正答が一意の場合のみ。選択式verifiedAnswerは選択肢本文と一致。REVIEWのverifiedAnswer/independentAnswerは空文字。reasonは25文字以内。全IDを1回ずつ含むJSONのみ。`;
 }
 async function requestAuditGroup(provider,items,reference){
- state.currentOperation=`正答検証・${provider}（${items.length}問）`;
- const prompt=makeAuditPrompt(items,provider,reference);
- const outputBudget=Math.max(1800,items.length*900);
- return callProvider(provider,prompt,outputBudget,ANSWER_AUDIT_SCHEMA,[]);
+ state.currentOperation=`重点正答検証・${provider}（${items.length}問）`;
+ return callProvider(provider,makeAuditPrompt(items,provider,reference),Math.max(1500,items.length*850),ANSWER_AUDIT_SCHEMA,[],{allowFallback:false});
 }
 async function verifyGeneratedAnswers(questions,settings,analysis){
- const precheck=new Map(),mathExpected=new Map(),seenPrompt=new Set();
- for(const q of questions){const issues=[],p=norm(q.prompt||'');if(p.length<8)issues.push('問題文が短すぎます');if(seenPrompt.has(p))issues.push('問題文が重複しています');seenPrompt.add(p);if(!String(q.answer||'').trim())issues.push('生成時の正答が空欄です');if(!Number.isFinite(Number(q.points))||Number(q.points)<=0)issues.push('配点が不正です');
-  const looksLikeCalculation=q.type==='calculation'||/計算|式の値|演算|計算しなさい/.test(String(q.prompt||''));const simpleResult=looksLikeCalculation?simpleArithmeticInQuestion(q.prompt):null;if(simpleResult!==null)mathExpected.set(q.id,simpleResult);if(q.type==='choice'){const choices=(q.choices||[]).map(norm);if(choices.length!==4)issues.push('選択肢が4個ではありません');if(new Set(choices).size!==choices.length)issues.push('選択肢が重複しています');}precheck.set(q.id,issues);}
- const reference={subject:analysis?.subject||settings.subject,topics:(analysis?.chapters||[]).slice(0,4),keyPoints:(analysis?.keyPoints||[]).slice(0,5),source:String(analysis?.extractedText||'').slice(0,650)};
- const allocated=allocateVerifiers(questions),primaryById=new Map();
+ const precheck=new Map(),mathExpected=new Map(),seenPrompt=new Set(),highRisk=[],localChecked=[];
+ for(const q of questions){
+  const issues=[],p=norm(q.prompt||'');
+  if(p.length<8)issues.push('問題文が短すぎます');
+  if(seenPrompt.has(p))issues.push('問題文が重複しています');seenPrompt.add(p);
+  if(!String(q.answer||'').trim())issues.push('生成時の正答が空欄です');
+  if(!Number.isFinite(Number(q.points))||Number(q.points)<=0)issues.push('配点が不正です');
+  if(q.type==='choice'){const choices=(q.choices||[]).map(norm);if(choices.length!==4)issues.push('選択肢が4個ではありません');if(new Set(choices).size!==choices.length)issues.push('選択肢が重複しています');if(q.answer&&!choices.includes(norm(q.answer))&&choiceIndex(q.answer,q)<0)issues.push('正答が選択肢にありません');}
+  const looksLikeCalculation=q.type==='calculation'||/計算|式の値|演算|求めなさい|途中式/.test(String(q.prompt||''));
+  const simpleResult=looksLikeCalculation?simpleArithmeticInQuestion(q.prompt):null;if(simpleResult!==null)mathExpected.set(q.id,simpleResult);
+  precheck.set(q.id,issues);
+  const risk=classifyQuestionRisk(q,issues);
+  if(risk.highRisk){q._verificationFocus=risk.reason;highRisk.push(q);}
+  else{q._answerStatus='local_checked';q._answerAuditLevel='local';q._answerAuditReason='端末内の形式チェック合格。独立検証対象外の通常問題です。';localChecked.push(q);}
+ }
+ const counts={Gemini:0,Groq:0};
+ if(!highRisk.length){state.providerAssignments.verification={...counts,secondary:{Gemini:0,Groq:0}};recordActivity('audit','重点検証対象なし',`${localChecked.length}問を端末内形式チェック。別AI検証なし。`);return{confirmed:0,corrected:0,review:0,localChecked:localChecked.length,independentTarget:0,providers:counts,secondary:0};}
+ const reference={subject:analysis?.subject||settings.subject,topics:(analysis?.chapters||[]).slice(0,2),keyPoints:(analysis?.keyPoints||[]).slice(0,2),source:compactSourceExcerpt(analysis?.extractedText||'',260)};
+ const allocated=allocateVerifiers(highRisk),primaryById=new Map(),actualCounts={Gemini:0,Groq:0};
  const primaryProviders=PROVIDERS.filter(p=>allocated.groups[p].length);ensureProviderKeys(primaryProviders);
  for(const provider of primaryProviders){
   const group=allocated.groups[provider],auditBatches=splitIntoChunks(group,2);
   for(let bi=0;bi<auditBatches.length;bi++){
    const batch=auditBatches[bi];
-   showStatus(`${provider}で担当問題を独立検証中...（${bi+1}/${auditBatches.length}）`,Math.min(91,79+Math.round((primaryById.size+batch.length)/Math.max(1,questions.length)*10)));
-   const response=await requestAuditGroup(provider,batch,reference),checks=Array.isArray(response.checks)?response.checks:[];
-   for(const check of checks){const id=Number(check.id);if(primaryById.has(id))primaryById.set(id,null);else primaryById.set(id,{...check,provider});}
+   // If Groq is already unavailable, do not send another copy to Gemini for questions Gemini itself created.
+   // A same-provider recheck is not independent, so mark these items for manual review without wasting tokens.
+   if(provider==='Groq'&&(groqUnavailableThisSession||!$('groqApiKey')?.value.trim())){
+    groqUnavailableThisSession=true;groqUnavailableReason=groqUnavailableReason||'Groq検証キー未入力または利用停止中';
+    for(const q of batch){primaryById.set(Number(q.id),{verdict:'REVIEW',reason:'独立検証に使える別AIが利用できません。Gemini再確認は同一AIとなるため省略しました。',provider:'',confidence:0});}
+    continue;
+   }
+   showStatus(`${provider}で重要問題を独立検証中...（${bi+1}/${auditBatches.length}）`,Math.min(91,79+Math.round((primaryById.size+batch.length)/Math.max(1,highRisk.length)*10)));
+   let response;
+   try{response=await requestAuditGroup(provider,batch,reference);}
+   catch(error){
+    if(provider==='Groq'&&groqFallbackAllowed(error)){
+     groqUnavailableThisSession=true;groqUnavailableReason=String(error.message||'Groq独立検証が利用できません').slice(0,180);
+     for(const q of batch)primaryById.set(Number(q.id),{verdict:'REVIEW',reason:'Groq利用不可。Geminiが生成した問題を同じGeminiで再検証すると独立確認にならないため省略。',provider:'',confidence:0});
+     recordActivity('distribution','独立検証でGroq停止','Gemini生成問題の再検証は同一AIになるため省略し、手動確認に回しました。');
+     continue;
+    }
+    throw error;
+   }
+   const checks=Array.isArray(response.checks)?response.checks:[],actualVerifier=response?._actualProvider||provider;
+   for(const check of checks){const id=Number(check.id);if(primaryById.has(id))primaryById.set(id,null);else{primaryById.set(id,{...check,provider:actualVerifier,fallbackFrom:response?._fallbackFrom||''});if(actualCounts[actualVerifier]!==undefined)actualCounts[actualVerifier]++;}}
   }
  }
  const primaryCheck=q=>primaryById.get(Number(q.id));
- const uncertain=questions.filter(q=>{const c=primaryCheck(q),v=String(c?.verdict||'REVIEW').toUpperCase(),conf=Number(c?.confidence);return v==='REVIEW'||!Number.isFinite(conf)||conf<.92;});
  const summary={confirmed:0,corrected:0,review:0},validCheck=c=>{const verdict=String(c?.verdict||'REVIEW').toUpperCase(),answer=String(c?.verifiedAnswer||'').trim(),ind=String(c?.independentAnswer||'').trim(),confidence=Number(c?.confidence);return !!c&&['CONFIRMED','CORRECTED'].includes(verdict)&&!!answer&&!!ind&&c.solutionCheck===true&&c.explanationConsistent===true&&c.sourceSupported===true&&c.choiceUnique===true&&Number.isFinite(confidence)&&confidence>=.92&&norm(answer)===norm(ind);};
- for(const q of questions){const a=primaryCheck(q),issues=precheck.get(q.id)||[];let valid=!issues.length&&validCheck(a),verdict=String(a?.verdict||'REVIEW').toUpperCase(),answer=String(a?.verifiedAnswer||'').trim();
+ for(const q of highRisk){
+  const a=primaryCheck(q),issues=precheck.get(q.id)||[];let valid=!issues.length&&validCheck(a),verdict=String(a?.verdict||'REVIEW').toUpperCase(),answer=String(a?.verifiedAnswer||'').trim();
   if(valid&&mathExpected.has(q.id)){const n=numericFromAnswer(q.type==='choice'?(q.choices||[]).find(x=>norm(x)===norm(answer)):answer);valid=n!==null&&Math.abs(n-mathExpected.get(q.id))<1e-9;if(!valid)q._answerAuditReason='端末内の独立計算とAI検証結果が一致しません。';}
   let acceptable=Array.isArray(a?.acceptableAnswers)?a.acceptableAnswers.map(x=>String(x).trim()).filter(Boolean).slice(0,4):[];
   if(valid&&q.type==='choice'){const opts=(q.choices||[]).map(norm);valid=opts.length===4&&new Set(opts).size===4&&opts.includes(norm(answer));acceptable=acceptable.filter(x=>opts.includes(norm(x)));}
-  if(valid&&verdict==='CONFIRMED'&&norm(answer)!==norm(q.answer||''))valid=false;if(valid&&verdict==='CORRECTED'&&norm(answer)===norm(q.answer||''))valid=false;
-  if(!valid){q._answerStatus='review';q._answerAuditReason=(q._answerAuditReason||[...issues,String(a?.reason||`${a?.provider||'独立検証'}で確定条件を満たしませんでした。`)].filter(Boolean).join(' / ')).slice(0,240);summary.review++;continue;}
-  q._answerStatus='verified';q._answerAuditReason=`${verdict==='CORRECTED'?'正答を修正':'独立解答と一致'}。生成=${q._generatedBy||'不明'}／検証=${a.provider}。信頼度 ${Math.round(Number(a.confidence)*100)}%。`;q.answer=answer;q.acceptableAnswers=acceptable;q._answerAuditVerdict=verdict;q._answerConfidence=Number(a.confidence);if(a.verifiedExplanation)q.explanation=String(a.verifiedExplanation).slice(0,240);if(verdict==='CORRECTED')summary.corrected++;else summary.confirmed++;
+  if(valid&&verdict==='CONFIRMED'&&norm(answer)!==norm(q.answer||''))valid=false;
+  if(valid&&verdict==='CORRECTED'&&norm(answer)===norm(q.answer||''))valid=false;
+  if(!valid){q._answerStatus='review';q._answerAuditLevel='independent';q._answerAuditReason=(q._answerAuditReason||[q._verificationFocus,...issues,String(a?.reason||`${a?.provider||'独立検証'}で確定条件を満たしませんでした。`)].filter(Boolean).join(' / ')).slice(0,240);summary.review++;continue;}
+  const sameProvider=a.provider===(q._generatedBy||'');
+  if(sameProvider){q._answerStatus='review';q._answerAuditLevel='independent';q._answerAuditReason=`${a.provider}が代替確認しましたが生成元と同じAIのため独立検証になりません。手動確認してください。`;summary.review++;continue;}
+  q._answerStatus='verified';q._answerAuditLevel='independent';q._answerAuditReason=`${verdict==='CORRECTED'?'正答修正':'独立解答一致'}。生成=${q._generatedBy||'不明'}／検証=${a.provider}${a.fallbackFrom?'（Groq停止時Gemini代替）':''}。信頼度${Math.round(Number(a.confidence)*100)}%。`;q.answer=answer;q.acceptableAnswers=acceptable;q._answerAuditVerdict=verdict;q._answerConfidence=Number(a.confidence);if(a.verifiedExplanation)q.explanation=String(a.verifiedExplanation).slice(0,180);if(verdict==='CORRECTED')summary.corrected++;else summary.confirmed++;
  }
- const counts={};for(const p of PROVIDERS)counts[p]=allocated.groups[p].length;
+ for(const p of PROVIDERS)counts[p]=actualCounts[p];
  state.providerAssignments.verification={...counts,secondary:{Gemini:0,Groq:0}};
- summary.review=questions.filter(q=>q._answerStatus!=='verified').length;summary.confirmed=questions.filter(q=>q._answerStatus==='verified'&&q._answerAuditVerdict==='CONFIRMED').length;summary.corrected=questions.filter(q=>q._answerStatus==='verified'&&q._answerAuditVerdict==='CORRECTED').length;
- recordActivity('audit','Gemini・Groq独立正答検証完了',`一次検証 ${PROVIDERS.map(p=>`${p} ${counts[p]}問`).join(' / ')} ／ 要確認 ${uncertain.length}問 ／ 確認${summary.confirmed}・修正${summary.corrected}・保留${summary.review}`);
- return{...summary,providers:counts,secondary:0};
+ summary.review=highRisk.filter(q=>q._answerStatus!=='verified').length;summary.confirmed=highRisk.filter(q=>q._answerStatus==='verified'&&q._answerAuditVerdict==='CONFIRMED').length;summary.corrected=highRisk.filter(q=>q._answerStatus==='verified'&&q._answerAuditVerdict==='CORRECTED').length;
+ recordActivity('audit','重要問題の重点独立検証完了',`重点対象 ${highRisk.length}問／通常問題の形式チェック ${localChecked.length}問／Groq ${counts.Groq}問・Gemini ${counts.Gemini}問／要確認 ${summary.review}問`);
+ return{...summary,localChecked:localChecked.length,independentTarget:highRisk.length,providers:counts,secondary:0};
 }
 
 function makeLocalExam(text,s,analysis){const qs=[];const lines=text.split(/[\n。！？!?；;]/).map(x=>x.trim()).filter(x=>x.length>=8);const seen=new Set();
@@ -1124,7 +1222,7 @@ function printHeadMarkup(kind='question'){
 function writingLines(rows){return `<div class="print-writing-space">${Array.from({length:rows},()=>'<div class="print-line"></div>').join('')}</div>`;}
 function renderExam(exam,mode,s){
  const total=state.questions.reduce((n,q)=>n+q.points,0),template=subjectTemplate(exam.subject||s.subject);$('examSection').dataset.subject=template.key;$('testPaper').dataset.subject=template.key;
- $('examTitle').textContent=exam.title||'オリジナル模試';$('examMeta').textContent=`${template.label} · ${exam.subject||s.subject} · ${exam.grade||s.grade} · ${exam.scope||'教材範囲'}`;$('examMode').textContent=mode==='ai'?'Gemini・Groq 2社分担AI生成':'端末内・簡易生成';$('qCount').textContent=state.questions.length;$('totalPoints').textContent=total;$('timeLimit').textContent=s.minutes==='時間制限なし'?'なし':s.minutes+'分';const audit=exam._answerAudit;const auditText=audit?` Gemini・Groqの独立検証：確認 ${audit.confirmed}問・修正 ${audit.corrected}問・要確認 ${audit.review}問。生成元とは別のAIが検証し、不確かな解答は採点保留。`:'';$('examNotice').textContent='採点は端末内で実行（AIへの採点送信なし）。記述・計算過程の部分点は手動確認になります。'+auditText+(exam._answerAuditWarning?` 検証上の注意：${exam._answerAuditWarning}`:'')+(exam._jsonRecovered?` 注意：AIの返答が途中で切れたため、完全に読み取れた${state.questions.length}問だけを採用しました。問題数を減らすと安定します。`:exam._geminiFinishReason==='MAX_TOKENS'?' 注意：AIの出力上限に達しました。問題数を減らして再作成してください。':Array.isArray(exam.questions)&&exam.questions.length<(s.count||0)?` 注意：指定${s.count}問に対して${exam.questions.length}問だけ生成されました。必要なら問題数を減らして再作成してください。`:'');
+ $('examTitle').textContent=exam.title||'オリジナル模試';$('examMeta').textContent=`${template.label} · ${exam.subject||s.subject} · ${exam.grade||s.grade} · ${exam.scope||'教材範囲'}`;$('examMode').textContent=mode==='ai'?'Gemini主担当・Groq分担AI生成':'端末内・簡易生成';$('qCount').textContent=state.questions.length;$('totalPoints').textContent=total;$('timeLimit').textContent=s.minutes==='時間制限なし'?'なし':s.minutes+'分';const audit=exam._answerAudit;const auditText=audit?` 重点独立検証：確認 ${audit.confirmed}問・修正 ${audit.corrected}問・要確認 ${audit.review}問。通常問題 ${audit.localChecked||0}問は端末内形式チェックのみで、別AIの独立検証対象外です。`:'';$('examNotice').textContent='採点は端末内で実行（AIへの採点送信なし）。記述・計算過程の部分点は手動確認になります。'+auditText+(exam._answerAuditWarning?` 検証上の注意：${exam._answerAuditWarning}`:'')+(exam._jsonRecovered?` 注意：AIの返答が途中で切れたため、完全に読み取れた${state.questions.length}問だけを採用しました。問題数を減らすと安定します。`:exam._geminiFinishReason==='MAX_TOKENS'?' 注意：AIの出力上限に達しました。問題数を減らして再作成してください。':Array.isArray(exam.questions)&&exam.questions.length<(s.count||0)?` 注意：指定${s.count}問に対して${exam.questions.length}問だけ生成されました。必要なら問題数を減らして再作成してください。`:'');
  $('questionPrintHead').innerHTML=printHeadMarkup('question');
  const timeLabel=s.minutes==='時間制限なし'?'時間制限なし':`試験時間 ${escapeHtml(s.minutes)} 分`;const topNote=`<div class="subject-paper-note"><div>${escapeHtml(template.note)}</div><div class="paper-meta-strip"><span>${escapeHtml(timeLabel)}</span><span>満点 ${total} 点</span><span>${state.questions.length} 問</span></div></div>`;
  $('questionList').innerHTML=topNote+state.questions.map((q,i)=>{const kind=q.type==='choice'?'選択':q.type==='essay'?'論述':q.type==='calculation'?'計算・過程':'短答';const section=subjectSectionLabel(exam.subject||s.subject,q,i);
@@ -1133,7 +1231,7 @@ function renderExam(exam,mode,s){
   return `<article class="qcard" data-q="${q.id}">${section?`<div class="subject-section-label">${escapeHtml(section)}</div>`:''}<div class="qtop"><span><span class="q-number">問 ${String(i+1).padStart(2,'0')}</span><span class="question-kind">${kind}</span> <span class="small">${escapeHtml(q.difficulty||'')}</span></span><span>〔 ${q.points} 点 〕</span></div><h3>${promptMarkup(q.prompt,exam.subject||s.subject)}</h3>${answerControl}${rows?writingLines(rows):''}<div class="small muted source-note" style="margin-top:8px">${q.sourcePage?'出題範囲参照：'+escapeHtml(q.sourcePage):''}</div></article>`;
  }).join('');
  $('answerSheetPrint').innerHTML=printHeadMarkup('answer-sheet')+`<h2 class="print-section-title">解答欄</h2><table class="answer-sheet-table"><thead><tr><th>問題</th><th>解答欄</th><th>配点</th></tr></thead><tbody>${state.questions.map(q=>`<tr><th>問${q.id}</th><td>${q.type==='choice'?'選択肢の記号を記入（　　　　　）':q.type==='essay'||q.type==='calculation'?'<div style="height:72px"></div>':'<div style="height:35px"></div>'}</td><td>${q.points}点</td></tr>`).join('')}</tbody></table>`;
- $('answerKeyPrint').innerHTML=printHeadMarkup('key')+`<h2 class="print-section-title">模範解答・解説・採点基準</h2><table class="key-table"><thead><tr><th>問題</th><th>模範解答</th><th>採点基準・解説</th><th>配点</th></tr></thead><tbody>${state.questions.map(q=>`<tr><th>問${q.id}</th><td>${q._answerStatus==='verified'?escapeHtml(q.answer||'要確認'):'独立検証未完了・採点保留'}</td><td>${escapeHtml(q._answerAuditReason||'')}${q._answerAuditReason?'<hr>':''}${escapeHtml(q.markingGuide||'')}${q.markingGuide&&q.explanation?'<hr>':''}${escapeHtml(q.explanation||'')}</td><td>${q.points}点</td></tr>`).join('')}</tbody></table>`;
+ $('answerKeyPrint').innerHTML=printHeadMarkup('key')+`<h2 class="print-section-title">模範解答・解説・採点基準</h2><table class="key-table"><thead><tr><th>問題</th><th>模範解答</th><th>採点基準・解説</th><th>配点</th></tr></thead><tbody>${state.questions.map(q=>`<tr><th>問${q.id}</th><td>${q._answerStatus==='verified'?escapeHtml(q.answer||'要確認'):q._answerStatus==='local_checked'?escapeHtml(q.answer||'要確認')+'（形式確認のみ・独立検証対象外）':'独立検証未完了・採点保留'}</td><td>${escapeHtml(q._answerAuditReason||'')}${q._answerAuditReason?'<hr>':''}${escapeHtml(q.markingGuide||'')}${q.markingGuide&&q.explanation?'<hr>':''}${escapeHtml(q.explanation||'')}</td><td>${q.points}点</td></tr>`).join('')}</tbody></table>`;
  $('resultBox').classList.remove('show');$('gradeBtn').textContent='答案を採点する（端末内）';$('submitExamBtn').textContent='答案を提出・採点';
 }
 $('questionList').addEventListener('input',e=>{const el=e.target;if(el.matches('[data-answer]'))state.answers[el.dataset.answer]=el.value;if(el.matches('input[type=radio]'))state.answers[el.name.slice(1)]=el.value;});
@@ -1183,7 +1281,7 @@ function applyTeacherMarks(results){
   if(!q||!card)continue;
   const status=r.status|| (r.needsReview?'review':r.score>=q.points?'correct':'incorrect');
   card.classList.add(status==='correct'?'is-correct':status==='review'?'is-review':'is-incorrect');
-  if(q._answerStatus==='verified'&&q.type==='choice'&&q.choices.length){
+  if(['verified','local_checked'].includes(q._answerStatus)&&q.type==='choice'&&q.choices.length){
    const accepted=[q.answer,...(q.acceptableAnswers||[])].filter(v=>v!==undefined&&v!==null&&String(v).trim()!=='');
    const correctIndexes=new Set(accepted.map(v=>choiceIndex(v,q)).filter(i=>i>=0));
    const selected=card.querySelector('input[type="radio"]:checked');
@@ -1198,14 +1296,14 @@ function applyTeacherMarks(results){
   const reason=status==='correct'?'正答と一致しています。':status==='review'?(r.reason||'記述内容・途中式の確認が必要です。'):(r.reason||'正答と一致しません。');
   const given=String(state.answers[q.id]??'').trim();
   const correctAnswer=String(q.answer??'').trim();
-  const detail=q._answerStatus!=='verified'?'正答：独立検証未完了のため非表示・採点保留':status==='correct'?'':status==='review'?'手動確認：部分点が必要な場合は答案と採点基準を確認してください。':`正答：${escapeHtml(correctAnswer||'模範解答を確認')}`;
+  const detail=!['verified','local_checked'].includes(q._answerStatus)?'正答：独立検証未完了のため非表示・採点保留':q._answerStatus==='local_checked'?`正答：${escapeHtml(correctAnswer||'確認')}（端末内形式チェックのみ・独立検証対象外）`:status==='correct'?'':status==='review'?'手動確認：部分点が必要な場合は答案と採点基準を確認してください。':`正答：${escapeHtml(correctAnswer||'模範解答を確認')}`;
   card.insertAdjacentHTML('beforeend',`<div class="teacher-marking ${status}"><span class="mark-stamp">${symbol}</span><div><b>${title}　${Math.max(0,Number(r.score)||0)} / ${q.points}点</b><small>${escapeHtml(reason)}</small>${given?`<small>あなたの解答：${escapeHtml(given)}</small>`:'<small>未回答</small>'}${detail?`<small>${detail}</small>`:''}</div></div>`);
  }
 }
 function showGradeResults(results,overallFeedback='',weakAreas=[]){
  const total=state.questions.reduce((n,q)=>n+q.points,0),score=results.reduce((n,r)=>n+Math.max(0,Math.min(Number(r.maxPoints)||0,Number(r.score)||0)),0),pct=total?Math.round(score/total*100):0;
- const reviewCount=results.filter(r=>r.needsReview).length;
- $('resultBox').innerHTML=`<div class="grade-score">${reviewCount?'仮得点':'得点'}　${score} / ${total} 点</div><div><b>得点率 ${pct}%</b></div><div class="grading-note">端末内の自動採点です。Geminiへの採点リクエストは送信していません。${reviewCount?` ${reviewCount}問は途中式・記述の確認待ちです。`:''}</div><div class="grade-detail"><h4>総合結果</h4><div>${escapeHtml(overallFeedback||'採点が完了しました。')}</div>${weakAreas.length?`<p><b>復習したい分野：</b>${weakAreas.map(escapeHtml).join('、')}</p>`:''}</div>${results.map(r=>{const q=state.questions.find(x=>x.id===Number(r.id));if(!q)return '';const sc=Math.max(0,Math.min(q.points,Number(r.score)||0));const status=r.status|| (r.needsReview?'review':sc>=q.points?'correct':'incorrect');return `<div class="grade-detail"><h4>第${q.id}問　${sc}/${q.points}点　${status==='correct'?'○ 正解':status==='review'?'△ 要確認':'× 不正解'}</h4><div><b>あなたの解答：</b>${escapeHtml(state.answers[q.id]||'未回答')}</div><div><b>正答：</b>${q._answerStatus==='verified'?escapeHtml(q.answer||'要手動確認'):'独立検証未完了・採点保留'}</div><div><b>解説：</b>${escapeHtml(q.explanation||r.reason||'解説はありません。')}</div>${r.needsReview?'<div class="grading-note">記述・途中式を見て部分点を判断してください。</div>':''}</div>`;}).join('')}`;
+ const reviewCount=results.filter(r=>r.needsReview).length;const provisional=reviewCount>0||state.questions.some(q=>q._answerStatus==='local_checked');const localOnlyCount=state.questions.filter(q=>q._answerStatus==='local_checked').length;
+ $('resultBox').innerHTML=`<div class="grade-score">${provisional?'仮得点':'得点'}　${score} / ${total} 点</div><div><b>得点率 ${pct}%</b></div><div class="grading-note">端末内の自動採点です。Geminiへの採点リクエストは送信していません。${reviewCount?` ${reviewCount}問は途中式・記述の確認待ちです。`:''}${localOnlyCount?` 通常問題${localOnlyCount}問は別AIの独立検証対象外のため、得点は暫定です。`:''}</div><div class="grade-detail"><h4>総合結果</h4><div>${escapeHtml(overallFeedback||'採点が完了しました。')}</div>${weakAreas.length?`<p><b>復習したい分野：</b>${weakAreas.map(escapeHtml).join('、')}</p>`:''}</div>${results.map(r=>{const q=state.questions.find(x=>x.id===Number(r.id));if(!q)return '';const sc=Math.max(0,Math.min(q.points,Number(r.score)||0));const status=r.status|| (r.needsReview?'review':sc>=q.points?'correct':'incorrect');return `<div class="grade-detail"><h4>第${q.id}問　${sc}/${q.points}点　${status==='correct'?'○ 正解':status==='review'?'△ 要確認':'× 不正解'}</h4><div><b>あなたの解答：</b>${escapeHtml(state.answers[q.id]||'未回答')}</div><div><b>正答：</b>${q._answerStatus==='verified'?escapeHtml(q.answer||'要手動確認'):q._answerStatus==='local_checked'?escapeHtml(q.answer||'要確認')+'（独立検証対象外）':'独立検証未完了・採点保留'}</div><div><b>解説：</b>${escapeHtml(q.explanation||r.reason||'解説はありません。')}</div>${r.needsReview?'<div class="grading-note">記述・途中式を見て部分点を判断してください。</div>':''}</div>`;}).join('')}`;
  $('resultBox').classList.add('show');
  applyTeacherMarks(results);
  $('resultBox').scrollIntoView({behavior:'smooth',block:'nearest'});
@@ -1228,13 +1326,15 @@ function gradeLocally(){
   const given=String(state.answers[q.id]??'').trim(),correct=answerMatches(q,given),hasAnswer=!!given;
   let status='incorrect',score=0,reason='';
   if(!hasAnswer){reason='未回答のため0点です。';}
-  else if(q._answerStatus!=='verified'){
-   status='review';reason='模範解答の独立検証が未完了です。誤った正答で採点しないため、この問題は採点保留にしています。';
+  else if(!['verified','local_checked'].includes(q._answerStatus)){
+   status='review';reason='重要問題の独立検証が未完了です。誤った正答で採点しないため、この問題は採点保留にしています。';
+  }else if(q._answerStatus==='local_checked'&&!correct){
+   status='review';reason='端末内の形式チェックのみで、別AIの独立検証対象外です。誤答とは確定せず手動確認に回します。';
   }else if(q.type==='essay'){
    status='review';reason='論述問題は表現・論理・根拠を確認する必要があるため、自動で点数を確定していません。';
   }else if(q.type==='calculation'&&!correct){
    status='review';reason='最終答案は模範解答と一致しません。途中式による部分点を確認してください。';
-  }else if(correct){status='correct';score=q.points;reason='登録された正答または許容解と一致しました。';}
+  }else if(correct){status='correct';score=q.points;reason=q._answerStatus==='local_checked'?'AI作成正答と一致（独立検証対象外・暫定判定）。':'登録された正答または許容解と一致しました。';}
   else{status='incorrect';reason='登録された正答・許容解と一致しません。';}
   return{id:q.id,score,maxPoints:q.points,status,judgement:status==='correct'?'正解':status==='review'?'要確認':'不正解',reason,needsReview:status==='review'};
  });
@@ -1257,7 +1357,7 @@ function printInMode(mode){recordActivity('print','印刷・PDF出力',mode==='q
 $('printBtn').addEventListener('click',()=>printInMode('question'));
 $('printAnswerSheetBtn').addEventListener('click',()=>printInMode('answer-sheet'));
 $('printKeyBtn').addEventListener('click',()=>printInMode('key'));
-$('answerKeyBtn').addEventListener('click',()=>{const lines=state.questions.map(q=>`【第${q.id}問・${q.points}点】\n模範解答：${q._answerStatus==='verified'?(q.answer??'手動確認'):'独立検証未完了・採点保留'}\n検証メモ：${q._answerAuditReason||'なし'}\n採点基準：${q.markingGuide||'なし'}\n解説：${q.explanation||''}`).join('\n\n');downloadText('模試_模範解答と採点基準.txt',lines);});
+$('answerKeyBtn').addEventListener('click',()=>{const lines=state.questions.map(q=>`【第${q.id}問・${q.points}点】\n模範解答：${q._answerStatus==='verified'?(q.answer??'手動確認'):q._answerStatus==='local_checked'?`${q.answer??'手動確認'}（独立検証対象外・形式確認のみ）`:'独立検証未完了・採点保留'}\n検証メモ：${q._answerAuditReason||'なし'}\n採点基準：${q.markingGuide||'なし'}\n解説：${q.explanation||''}`).join('\n\n');downloadText('模試_模範解答と採点基準.txt',lines);});
 function downloadText(name,txt){const blob=new Blob([txt],{type:'text/plain;charset=utf-8'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
 window.addEventListener('beforeunload',()=>{if(state.tesseract)state.tesseract.terminate();});
 </script>
