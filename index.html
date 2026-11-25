@@ -171,7 +171,8 @@ body.test-mode{background:#edf0f4!important;color:#171717!important;color-scheme
 
 
 /* Settings modal and advanced exam builder */
-.upload-grid{grid-template-columns:1fr}.header-actions{display:flex;align-items:center;gap:8px}.settings-open-btn{padding:9px 14px;white-space:nowrap}
+.upload-grid{grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);align-items:start}.home-create-panel{min-width:0}.home-create-panel .choice{min-height:58px}.home-create-panel .choice b{display:block;font-size:12px}.home-create-panel .choice small{display:block;font-size:10px;margin-top:2px}.home-generate-btn{min-height:52px;font-size:16px}.header-actions{display:flex;align-items:center;gap:8px}.settings-open-btn{padding:9px 14px;white-space:nowrap}
+@media(max-width:820px){.upload-grid{grid-template-columns:1fr}}
 .settings-overlay{display:none;position:fixed;inset:0;z-index:1000;background:#030914d9;padding:14px;overflow-y:auto;overscroll-behavior:contain}
 .settings-overlay.open{display:block}
 .settings-dialog{width:min(920px,100%);margin:12px auto 34px;background:#0d1828;border:1px solid #486080;border-radius:20px;box-shadow:0 24px 80px #0009;overflow:hidden}
@@ -243,19 +244,40 @@ body.test-mode{background:#edf0f4!important;color:#171717!important;color-scheme
         <div class="small muted" style="margin-top:6px">※ AIありでは、AIが抽出した文章・問題パターンを表示します。AIなしではOCR・PDF文字抽出の結果です。</div>
       </div>
     </section>
+    <section class="panel home-create-panel" id="homeCreatePanel">
+      <div class="section-head"><h2>02 / 模試の基本設定</h2><span class="tag">ホーム画面</span></div>
+      <p class="sub">基本項目を選んだら、下のボタンですぐに模試を作成できます。細かな条件は右上の「設定」から調整できます。</p>
+      <div class="label">生成方式</div>
+      <div class="row">
+        <label class="choice" style="flex:1"><input type="radio" name="mode" value="ai" checked> <span><b>AIで類題を生成</b><small class="muted">Gemini＋Groqを使用</small></span></label>
+        <label class="choice" style="flex:1"><input type="radio" name="mode" value="local"> <span><b>AI APIなし</b><small class="muted">端末内の簡易作成</small></span></label>
+      </div>
+      <div id="localInfo" class="notice warn hidden">AIなしモードは端末内処理です。写真OCRは初回に日本語辞書（数MB〜）をダウンロードするため、通信環境によっては数分かかる場合があります。120秒で進まない場合はエラー表示します。自由な類題生成はできません。詳細な出題指定はAIありモードで反映されます。</div>
+      <div class="label">教科</div>
+      <select id="subject"><option>自動判定</option><option>国語</option><option>数学</option><option>英語</option><option>理科</option><option>社会</option><option>その他</option></select>
+      <div class="row">
+        <div><label class="label" for="grade">学年・レベル</label><select id="grade"><option>教材から推定</option><option>小学生</option><option>中学1年</option><option>中学2年</option><option>中学3年</option><option>高校1年</option><option>高校2年</option><option>高校3年</option><option>大学受験</option><option>指定なし</option></select></div>
+        <div><label class="label" for="count">問題数</label><select id="count"><option>5</option><option selected>10</option><option>15</option><option>20</option><option>30</option><option>40</option></select></div>
+      </div>
+      <div class="row">
+        <div><label class="label" for="difficulty">難易度</label><select id="difficulty"><option>教材と同程度</option><option>基礎</option><option>標準</option><option>応用</option><option>難関</option><option>基礎〜応用を混合</option></select></div>
+        <div><label class="label" for="minutes">制限時間</label><select id="minutes"><option>15</option><option>30</option><option selected>50</option><option>60</option><option>80</option><option>90</option><option>時間制限なし</option></select></div>
+      </div>
+      <label class="switchline"><input type="checkbox" id="mixTypes" checked> 教材に合わせて問題形式を混ぜる</label>
+      <label class="switchline"><input type="checkbox" id="strictScope" checked> 教材にない知識をなるべく出題しない</label>
+      <label class="switchline"><input type="checkbox" id="verifyAnswers" checked> 計算・記述・曖昧な問題を別AIで重点検証</label>
+      <div class="notice warn" style="margin-top:8px">通常問題は端末内で形式を確認し、計算・記述・曖昧な問題を別AIで重点検証します。Groq停止時はGeminiへ1回だけ代替します。</div>
+      <button class="btn green full home-generate-btn" id="generateBtn" type="button" disabled>AIで類題を生成</button>
+      <div class="small muted" style="margin-top:8px">先に左側で教材を解析してください。APIキーやモデルの設定は右上の「設定」内にあります。</div>
+      <div class="actions"><button class="btn secondary full" id="openAdvancedSettingsBtn" type="button">詳細な出題設定・API設定を開く ⚙</button></div>
+    </section>
   </div>
 
   <div class="settings-overlay" id="settingsOverlay" aria-hidden="true">
     <div class="settings-dialog" role="dialog" aria-modal="true" aria-labelledby="settingsDialogTitle">
-      <div class="settings-dialog-head"><div><div class="eyebrow">EXAM CONFIGURATION</div><h2 id="settingsDialogTitle">模試の設定</h2><p>基本設定・問題形式・図形/作図・AI設定をここで変更できます。</p></div><button class="btn secondary" id="settingsCloseBtn" type="button">閉じる ✕</button></div>
+      <div class="settings-dialog-head"><div><div class="eyebrow">EXAM CONFIGURATION</div><h2 id="settingsDialogTitle">詳細設定・API設定</h2><p>ホーム画面で基本設定と模試生成を行い、ここでは細かな出題条件とAPI接続を管理します。</p></div><button class="btn secondary" id="settingsCloseBtn" type="button">閉じる ✕</button></div>
     <section class="panel settings-panel">
-      <div class="section-head"><h2>02 / 作成設定</h2><span class="tag">類題モード</span></div>
-      <p class="sub">教材の問題形式・解法・難易度を参考に、新しい問題を作成します。</p>
-      <div class="label">生成方式</div>
-      <div class="row">
-        <label class="choice" style="flex:1"><input type="radio" name="mode" value="ai" checked> AI APIあり</label>
-        <label class="choice" style="flex:1"><input type="radio" name="mode" value="local"> AI APIなし</label>
-      </div>
+      <div class="section-head"><h2>API設定</h2><span class="tag">接続・モデル</span></div>
       <div id="aiSettings">
         <div class="label">Gemini APIキー</div>
         <input class="input" id="apiKey" type="password" autocomplete="off" placeholder="AIza...">
@@ -323,9 +345,9 @@ body.test-mode{background:#edf0f4!important;color:#171717!important;color-scheme
         <div class="small muted" id="multiApiStatus" style="margin-top:7px">AIありモードではGemini APIキーが必須です。画像OCR・教材全体分析はGeminiのみ。問題作成はGemini 65%／Groq 35%を目安に分担し、計算・記述・曖昧な問題を別AIで重点検証します。Groqキーは任意で、未入力・利用上限時はGeminiが代替します。</div>
         <div class="notice" id="apiQuotaStatus" role="status" aria-live="polite" style="margin-top:8px">API利用枠：最初の通信後、各社が返す残りリクエスト数・トークン枠を取得できた場合にここへ表示します。</div>
       </section>
-      <div id="localInfo" class="notice warn hidden">AIなしモードは端末内処理です。写真OCRは初回に日本語辞書（数MB〜）をダウンロードするため、通信環境によっては数分かかる場合があります。120秒で進まない場合はエラー表示します。自由な類題生成はできません。詳細な出題指定はAIありモードで反映されます。</div>
 
-      <div class="settings-intro"><strong>かんたん設定</strong><span>まずは教科・学年・問題数・難易度を選択。もっと細かくしたいときだけ下の項目を開いてください。</span></div>
+      <div class="section-head" style="margin-top:18px"><h2>詳細な出題設定</h2><span class="tag">必要な項目だけ開く</span></div>
+      <div class="settings-intro"><strong>ここは細かく調整したい人向け</strong><span>教科・学年・問題数・難易度などの基本設定と「AIで類題を生成」はホーム画面にあります。</span></div>
       <details class="advanced-block" open>
         <summary>① どんな模試にする？ <small>目的・範囲・出題の方針</small></summary>
         <div class="advanced-content">
@@ -397,23 +419,7 @@ body.test-mode{background:#edf0f4!important;color:#171717!important;color-scheme
       </details>
       <div class="notice good" id="settingsSavedNote">設定はこの端末のブラウザに保存されます。APIキーはこの設定保存の対象外です。</div>
 
-      <div class="label">教科</div>
-      <select id="subject"><option>自動判定</option><option>国語</option><option>数学</option><option>英語</option><option>理科</option><option>社会</option><option>その他</option></select>
-      <div class="row">
-        <div><label class="label" for="grade">学年・レベル</label><select id="grade"><option>教材から推定</option><option>小学生</option><option>中学1年</option><option>中学2年</option><option>中学3年</option><option>高校1年</option><option>高校2年</option><option>高校3年</option><option>大学受験</option><option>指定なし</option></select></div>
-        <div><label class="label" for="count">問題数</label><select id="count"><option>5</option><option selected>10</option><option>15</option><option>20</option><option>30</option><option>40</option></select></div>
-      </div>
-      <div class="row">
-        <div><label class="label" for="difficulty">難易度</label><select id="difficulty"><option>教材と同程度</option><option>基礎</option><option>標準</option><option>応用</option><option>難関</option><option>基礎〜応用を混合</option></select></div>
-        <div><label class="label" for="minutes">制限時間</label><select id="minutes"><option>15</option><option>30</option><option selected>50</option><option>60</option><option>80</option><option>90</option><option>時間制限なし</option></select></div>
-      </div>
-      <label class="switchline"><input type="checkbox" id="mixTypes" checked> 教材に合わせて問題形式を混ぜる</label>
-      <label class="switchline"><input type="checkbox" id="strictScope" checked> 教材にない知識をなるべく出題しない</label>
-      <label class="switchline"><input type="checkbox" id="verifyAnswers" checked> 計算・記述・曖昧な問題を別AIで重点検証（通常問題は端末内形式チェック）</label>
-      <div class="notice warn" style="margin-top:6px">計算・記述・曖昧な問題と形式チェックで異常が見つかった問題だけ別AIで独立検証します。通常問題は選択肢・正答欄・配点・重複を端末内で確認し、独立検証対象外であることを表示します。Groq停止時はGeminiへ1回だけ代替します。</div>
-      <button class="btn green full" id="generateBtn" type="button" disabled>解析した教材から模試を作成</button>
-      <div class="small muted" style="margin-top:8px">先に教材を解析してください。詳細な指定はこの画面の上部にある「設定」ボタンからいつでも変更できます。</div>
-      <div class="actions"><button class="btn secondary full" id="settingsApplyBtn" type="button">設定を適用して閉じる</button></div>
+      <div class="actions"><button class="btn secondary full" id="settingsApplyBtn" type="button">詳細設定を保存して閉じる</button></div>
     </section>
     </div>
   </div>
@@ -680,6 +686,7 @@ $('testPaper').appendChild($('examSection'));
 setupLocalPersistence();
 bindBuilderSettings();
 $('openSettingsBtn').addEventListener('click',openSettings);
+$('openAdvancedSettingsBtn').addEventListener('click',openSettings);
 $('settingsCloseBtn').addEventListener('click',closeSettings);
 $('settingsApplyBtn').addEventListener('click',closeSettings);
 $('settingsOverlay').addEventListener('click',e=>{if(e.target===$('settingsOverlay'))closeSettings();});
