@@ -512,6 +512,8 @@ const GEMINI_OUTPUT_CAP=6500;
 const GROQ_GPTOSS_OUTPUT_CAP=6000;
 let groqUnavailableThisSession=false;
 let groqUnavailableReason='';
+// Verification failures are tracked separately: a bad audit response must not disable normal Groq generation.
+const auditUnavailableThisSession={Gemini:false,Groq:false};
 const SAMBANOVA_OUTPUT_CAP=5000;
 const SAMBANOVA_DAILY_LIMIT=18; // Keep two requests of headroom below the published 20/day Free Tier limit.
 const SAMBANOVA_DAILY_WINDOW=24*60*60*1000;
@@ -894,6 +896,22 @@ const ANSWER_AUDIT_SCHEMA={type:'OBJECT',properties:{
   reason:{type:'STRING'},verifiedExplanation:{type:'STRING'}
  },required:['id','verdict','verifiedAnswer','independentAnswer','solutionCheck','choiceUnique','explanationConsistent','sourceSupported','confidence','reason']}}
 },required:['checks']};
+// GPT-OSS 120B/20B support Groq strict Structured Outputs. Every property is required
+// and optional content is represented by an empty string/array to avoid best-effort JSON 400s.
+const GROQ_AUDIT_STRICT_SCHEMA={
+ type:'object',additionalProperties:false,
+ properties:{checks:{type:'array',items:{
+  type:'object',additionalProperties:false,
+  properties:{
+   id:{type:'integer'},verdict:{type:'string'},verifiedAnswer:{type:'string'},independentAnswer:{type:'string'},
+   acceptableAnswers:{type:'array',items:{type:'string'}},solutionCheck:{type:'boolean'},choiceUnique:{type:'boolean'},
+   explanationConsistent:{type:'boolean'},sourceSupported:{type:'boolean'},confidence:{type:'number'},
+   reason:{type:'string'},verifiedExplanation:{type:'string'}
+  },
+  required:['id','verdict','verifiedAnswer','independentAnswer','acceptableAnswers','solutionCheck','choiceUnique','explanationConsistent','sourceSupported','confidence','reason','verifiedExplanation']
+ }}},
+ required:['checks']
+};
 function mergeAnalysisResults(results,materialMeta){
  const values=results.map(x=>x.result||{}),first=values.find(x=>x.subject||x.grade)||{};
  const patterns=[];const seenPatterns=new Set();
@@ -1106,12 +1124,14 @@ async function callGroqCompatible(provider,prompt,outputTokens=4000,responseSche
  saveApiKeyIfRequested();
  const model=$(isGroq?'groqModel':'sambanovaModel').value||(isGroq?'openai/gpt-oss-120b':'gemma-4-31B-it');
  const operation=state.currentOperation||'AI処理';
+ const isGroqAudit=isGroq&&operation.includes('正答検証')&&model.startsWith('openai/gpt-oss-');
  if(!Array.isArray(materialParts))throw new Error(`${provider}への教材データの形式が正しくありません。`);
  const imageCount=materialParts.filter(part=>part&&part.inlineData).length;
  if(isGroq&&imageCount)throw new Error('画像データはGemini専用です。Geminiの文字起こしが完了した後、文章データだけをGroqへ送る設計です。画像をGroqへ送信する処理は停止しました。');
  if(!isGroq&&imageCount>3)throw new Error(`${provider}への画像送信は1回につき最大3枚です。ページ数を減らして再実行してください。`);
- const schemaNote=responseSchema?`\nJSON形（r=必須,p=項目,[] =配列,s=文字列,n=数値,i=整数,b=真偽値）：${JSON.stringify(compactSchemaShape(responseSchema))}`:'';
- const promptWithSchema=`${prompt}${schemaNote}\n必ずJSONオブジェクトだけを返してください。Markdownのコードブロックや前後の説明文は付けないでください。`;
+ const schemaNote=responseSchema&&!isGroqAudit?`\nJSON形（r=必須,p=項目,[] =配列,s=文字列,n=数値,i=整数,b=真偽値）：${JSON.stringify(compactSchemaShape(responseSchema))}`:'';
+ const auditFormatNote=isGroqAudit?'\n返答はJSONオブジェクトのみ。最上位キーはchecks。各checks要素にはid,verdict,verifiedAnswer,independentAnswer,acceptableAnswers,solutionCheck,choiceUnique,explanationConsistent,sourceSupported,confidence,reason,verifiedExplanationをすべて含める。該当しないacceptableAnswersは[]、verifiedExplanationは空文字。verdictはCONFIRMED/CORRECTED/REVIEWのいずれか。':'\n必ずJSONオブジェクトだけを返してください。Markdownのコードブロックや前後の説明文は付けないでください。';
+ const promptWithSchema=`${prompt}${schemaNote}${auditFormatNote}`;
  const content=[{type:'text',text:promptWithSchema},...materialParts.flatMap(part=>part&&part.text?[{type:'text',text:part.text}]:part&&part.inlineData?[{type:'image_url',image_url:{url:`data:${part.inlineData.mimeType};base64,${part.inlineData.data}`}}]:[])];
  let url,requestHeaders;
  if(isGroq){url='https://api.groq.com/openai/v1/chat/completions';requestHeaders={'Content-Type':'application/json','Authorization':`Bearer ${key}`};}
@@ -1126,7 +1146,7 @@ async function callGroqCompatible(provider,prompt,outputTokens=4000,responseSche
  const body={model,messages:[{role:'user',content:content.length===1?promptWithSchema:content}],temperature:0.2,stream:false};
  if(isGroq){
   body.max_completion_tokens=Math.max(256,Math.floor(Number(outputTokens)||GROQ_GPTOSS_OUTPUT_CAP));
-  body.response_format={type:'json_object'};
+  body.response_format=isGroqAudit?{type:'json_schema',json_schema:{name:'exam_forge_answer_audit',strict:true,schema:GROQ_AUDIT_STRICT_SCHEMA}}:{type:'json_object'};
   if(model.startsWith('openai/gpt-oss-')){
    body.reasoning_effort=operation.includes('正答検証')?'medium':'low';
    body.include_reasoning=false;
@@ -1280,6 +1300,7 @@ JSONスキーマ厳守。typeはchoice/short/calculation/essay/drawingのいず�
   showStatus('計算・記述・曖昧な問題を重点検証中...',82);state.currentOperation='重点正答検証';
   try{exam._answerAudit=await verifyGeneratedAnswers(state.questions,s,state.analysis);}
   catch(auditError){recordActivity('error','マルチAI検証で停止',String(auditError.message||auditError).slice(0,220));throw new Error('正答検証を完了できないため、模試ページへの移行を停止しました。'+String(auditError.message||auditError));}
+  if(exam._answerAudit?.verificationProviderIssues?.length){exam._answerAuditWarning=`${exam._answerAudit.verificationProviderIssues.join('・')}の検証APIでエラーが発生したため、該当問題は正答未確定・手動確認です。模試生成は継続しました。`;}
  }else if(mode==='ai'){
   state.questions.forEach(q=>{q._answerStatus='unverified';q._answerAuditReason='重点独立検証をOFFにしたため、正答は未確認です。';});exam._answerAudit={confirmed:0,corrected:0,review:state.questions.length};exam._answerAuditWarning='重点独立検証をOFFにしたため、AI生成の正答は未確認です。誤採点を避けるため自動採点を保留します。';
  }
@@ -1324,7 +1345,8 @@ function allocateVerifiers(questions){
 }
 function makeAuditPrompt(items,provider,reference){
  const compact=items.map(q=>({id:q.id,type:q.type,q:String(q.prompt||'').slice(0,420),c:(q.choices||[]).slice(0,4),a:String(q.answer||'').slice(0,70),e:String(q.explanation||'').slice(0,28),f:q.figureType||'',d:String(q.figureData||'').slice(0,220)}));
- return `別AIの独立検証。問題を解き直し、計算・記述・条件の曖昧さ・教材範囲・正答と解説の整合を確認。教科=${reference.subject}。単元=${JSON.stringify(reference.topics)}。要点=${JSON.stringify(reference.keyPoints)}。根拠=${reference.source}。問題=${JSON.stringify(compact)}。不確実ならREVIEW。CONFIRMEDは独立解答と正答が一致し、solutionCheck/explanationConsistent/sourceSupported/choiceUnique=true、confidence>=0.92。CORRECTEDは誤答が明確で正答が一意の場合のみ。選択式verifiedAnswerは選択肢本文と一致。REVIEWのverifiedAnswer/independentAnswerは空文字。reasonは25文字以内。全IDを1回ずつ含むJSONのみ。`;
+ const example={checks:[{id:1,verdict:'REVIEW',verifiedAnswer:'',independentAnswer:'',acceptableAnswers:[],solutionCheck:false,choiceUnique:false,explanationConsistent:false,sourceSupported:false,confidence:0,reason:'根拠不足',verifiedExplanation:''}]};
+ return `独立検証。各問題を解き直し、計算・記述・曖昧さ・教材範囲・正答と解説の整合を確認。教科=${reference.subject}。単元=${JSON.stringify(reference.topics)}。要点=${JSON.stringify(reference.keyPoints)}。根拠=${reference.source}。対象=${JSON.stringify(compact)}。全IDを各1回だけchecksへ返す。最上位はchecks配列。各要素はid,verdict,verifiedAnswer,independentAnswer,acceptableAnswers,solutionCheck,choiceUnique,explanationConsistent,sourceSupported,confidence,reason,verifiedExplanationの全キー必須。該当なしの配列は[]、文字列は空文字。verdictはCONFIRMED/CORRECTED/REVIEW。CONFIRMEDは独立解答と元の正答が一致し、4つの判定フラグがすべてtrue、confidence>=0.92の場合のみ。CORRECTEDは誤答が明確で正答が一意の場合のみ。選択式verifiedAnswerは選択肢本文と一致。REVIEW時のverifiedAnswer/independentAnswerは空文字、4つの判定フラグはfalse、confidenceは0〜0.91。reasonは25文字以内。出力形式例=${JSON.stringify(example)}。JSON以外は禁止。`;
 }
 async function requestAuditGroup(provider,items,reference){
  state.currentOperation=`重点正答検証・${provider}（${items.length}問）`;
@@ -1355,24 +1377,22 @@ async function verifyGeneratedAnswers(questions,settings,analysis){
   const group=allocated.groups[provider],auditBatches=splitIntoChunks(group,2);
   for(let bi=0;bi<auditBatches.length;bi++){
    const batch=auditBatches[bi];
-   // If Groq is already unavailable, do not send another copy to Gemini for questions Gemini itself created.
-   // A same-provider recheck is not independent, so mark these items for manual review without wasting tokens.
-   if(provider==='Groq'&&(groqUnavailableThisSession||!$('groqApiKey')?.value.trim())){
-    groqUnavailableThisSession=true;groqUnavailableReason=groqUnavailableReason||'Groq検証キー未入力または利用停止中';
-    for(const q of batch){primaryById.set(Number(q.id),{verdict:'REVIEW',reason:'独立検証に使える別AIが利用できません。Gemini再確認は同一AIとなるため省略しました。',provider:'',confidence:0});}
+   // Keep verification outages separate from normal generation; failed audit batches become manual-review items.
+   if(auditUnavailableThisSession[provider]||(provider==='Groq'&&(groqUnavailableThisSession||!$('groqApiKey')?.value.trim()))){
+    if(provider==='Groq'&&(groqUnavailableThisSession||!$('groqApiKey')?.value.trim())){groqUnavailableThisSession=true;groqUnavailableReason=groqUnavailableReason||'Groq検証キー未入力または利用停止中';}
+    for(const q of batch){primaryById.set(Number(q.id),{verdict:'REVIEW',reason:`${provider}の独立検証を利用できないため手動確認が必要です。同じAIでの再検証は行いません。`,provider:'',confidence:0});}
     continue;
    }
    showStatus(`${provider}で重要問題を独立検証中...（${bi+1}/${auditBatches.length}）`,Math.min(91,79+Math.round((primaryById.size+batch.length)/Math.max(1,highRisk.length)*10)));
    let response;
    try{response=await requestAuditGroup(provider,batch,reference);}
    catch(error){
-    if(provider==='Groq'&&groqFallbackAllowed(error)){
-     groqUnavailableThisSession=true;groqUnavailableReason=String(error.message||'Groq独立検証が利用できません').slice(0,180);
-     for(const q of batch)primaryById.set(Number(q.id),{verdict:'REVIEW',reason:'Groq利用不可。Geminiが生成した問題を同じGeminiで再検証すると独立確認にならないため省略。',provider:'',confidence:0});
-     recordActivity('distribution','独立検証でGroq停止','Gemini生成問題の再検証は同一AIになるため省略し、手動確認に回しました。');
-     continue;
-    }
-    throw error;
+    auditUnavailableThisSession[provider]=true;
+    const detail=String(error?.message||error||'検証エラー').replace(/\s+/g,' ').slice(0,140);
+    for(const q of batch)primaryById.set(Number(q.id),{verdict:'REVIEW',reason:`${provider}検証エラーのため手動確認：${detail}`,provider:'',confidence:0});
+    recordActivity('audit_error',`${provider}独立検証を保留`,`${batch.length}問を手動確認へ。模試生成自体は継続。${detail}`);
+    // The same provider/model audit failure is not retried in this session, avoiding repeated quota use.
+    continue;
    }
    const checks=Array.isArray(response.checks)?response.checks:[],actualVerifier=response?._actualProvider||provider;
    for(const check of checks){const id=Number(check.id);if(primaryById.has(id))primaryById.set(id,null);else{primaryById.set(id,{...check,provider:actualVerifier,fallbackFrom:response?._fallbackFrom||''});if(actualCounts[actualVerifier]!==undefined)actualCounts[actualVerifier]++;}}
@@ -1396,7 +1416,7 @@ async function verifyGeneratedAnswers(questions,settings,analysis){
  state.providerAssignments.verification={...counts,secondary:{Gemini:0,Groq:0}};
  summary.review=highRisk.filter(q=>q._answerStatus!=='verified').length;summary.confirmed=highRisk.filter(q=>q._answerStatus==='verified'&&q._answerAuditVerdict==='CONFIRMED').length;summary.corrected=highRisk.filter(q=>q._answerStatus==='verified'&&q._answerAuditVerdict==='CORRECTED').length;
  recordActivity('audit','重要問題の重点独立検証完了',`重点対象 ${highRisk.length}問／通常問題の形式チェック ${localChecked.length}問／Groq ${counts.Groq}問・Gemini ${counts.Gemini}問／要確認 ${summary.review}問`);
- return{...summary,localChecked:localChecked.length,independentTarget:highRisk.length,providers:counts,secondary:0};
+ return{...summary,localChecked:localChecked.length,independentTarget:highRisk.length,providers:counts,secondary:0,verificationProviderIssues:Object.keys(auditUnavailableThisSession).filter(p=>auditUnavailableThisSession[p])};
 }
 
 function makeLocalExam(text,s,analysis){const qs=[];const lines=text.split(/[\n。！？!?；;]/).map(x=>x.trim()).filter(x=>x.length>=8);const seen=new Set();
