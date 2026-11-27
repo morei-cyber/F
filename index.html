@@ -234,6 +234,29 @@ body.test-mode{background:#edf0f4!important;color:#171717!important;color-scheme
  #answerSheetPrint [style*="height:35px"]{height:15px!important}
  .print-footer{margin-top:4px!important;font-size:7pt!important}
 }
+
+/* iOS home-screen web-app print handoff */
+#printHandoffOverlay{position:fixed;inset:0;z-index:10000;display:flex;align-items:center;justify-content:center;padding:16px;background:#050b15dd;backdrop-filter:blur(7px)}
+#printHandoffOverlay[hidden]{display:none!important}
+#printHandoffCard{width:min(100%,520px);max-height:90vh;overflow:auto;border:1px solid #425a7b;border-radius:18px;background:#142136;color:#edf4ff;padding:20px;box-shadow:0 18px 60px #0008}
+#printHandoffCard h2{font-size:19px;margin:0 0 8px}#printHandoffCard p{font-size:13px;color:#c1d0e4;line-height:1.7}
+#printHandoffCard .print-handoff-actions{display:grid;gap:9px;margin-top:14px}
+#printHandoffCard a,#printHandoffCard button{display:block;width:100%;border:0;border-radius:10px;padding:12px 14px;text-align:center;text-decoration:none;font-weight:800;font-size:14px}
+#printSafariLink{background:linear-gradient(135deg,#83bcff,#8c8bff);color:#071322}
+#printCopyLink{background:#243650;color:#e5efff;border:1px solid #3a5274!important}
+#printHandoffClose{background:transparent;color:#c5d3e5;border:1px solid #536780!important}
+#printLinkFallback{width:100%;min-height:54px;margin-top:8px;border-radius:8px;background:#0b1625;color:#edf4ff;border:1px solid #425a7b;padding:8px;font-size:10px;overflow-wrap:anywhere}
+#externalPrintActions{max-width:850px;margin:14px auto;padding:12px 16px;border:1px solid #c7d0dd;border-radius:12px;background:#fff;color:#26364a;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+#externalPrintActions p{margin:0;font-size:12px;line-height:1.55;flex:1 1 240px}
+#externalPrintNow{border:0;border-radius:9px;background:#172b46;color:#fff;padding:11px 16px;font-size:13px;font-weight:800}
+body.external-print-mode #builderPage{display:none!important}
+body.external-print-mode #testPage{display:block!important}
+body.external-print-mode #testPage .test-nav{display:none!important}
+body.external-print-mode #externalPrintActions{display:flex!important}
+body.external-print-mode #testPaper .exam{display:block!important}
+body.external-print-mode .print-only{display:block!important}
+@media print{#printHandoffOverlay,#externalPrintActions{display:none!important}body.external-print-mode #testPageStatus{display:none!important}}
+
 </style>
 </head>
 <body>
@@ -1343,10 +1366,11 @@ function allocateVerifiers(questions){
  for(const q of questions){const creator=PROVIDERS.includes(q._generatedBy)?q._generatedBy:'Gemini';const verifier=creator==='Gemini'?'Groq':'Gemini';groups[verifier].push(q);}
  const counts=Object.fromEntries(PROVIDERS.map(p=>[p,groups[p].length]));return{groups,counts};
 }
+function isFreeResponseQuestion(q){const type=String(q?.type||'');const text=String(q?.prompt||'');return type==='essay'||(!['choice','calculation','drawing'].includes(type)&&/(理由を|なぜ|どうして|説明しなさい|説明せよ|述べなさい|論じ|考察|比較し|根拠を|具体的に記述|要約し|どのように)/.test(text));}
 function makeAuditPrompt(items,provider,reference){
- const compact=items.map(q=>({id:q.id,type:q.type,q:String(q.prompt||'').slice(0,420),c:(q.choices||[]).slice(0,4),a:String(q.answer||'').slice(0,70),e:String(q.explanation||'').slice(0,28),f:q.figureType||'',d:String(q.figureData||'').slice(0,220)}));
+ const compact=items.map(q=>({id:q.id,type:isFreeResponseQuestion(q)?'essay':q.type,q:String(q.prompt||'').slice(0,420),c:(q.choices||[]).slice(0,4),a:String(q.answer||'').slice(0,90),rubric:String(q.markingGuide||'').slice(0,130),e:String(q.explanation||'').slice(0,50),f:q.figureType||'',d:String(q.figureData||'').slice(0,220)}));
  const example={checks:[{id:1,verdict:'REVIEW',verifiedAnswer:'',independentAnswer:'',acceptableAnswers:[],solutionCheck:false,choiceUnique:false,explanationConsistent:false,sourceSupported:false,confidence:0,reason:'根拠不足',verifiedExplanation:''}]};
- return `独立検証。各問題を解き直し、計算・記述・曖昧さ・教材範囲・正答と解説の整合を確認。教科=${reference.subject}。単元=${JSON.stringify(reference.topics)}。要点=${JSON.stringify(reference.keyPoints)}。根拠=${reference.source}。対象=${JSON.stringify(compact)}。全IDを各1回だけchecksへ返す。最上位はchecks配列。各要素はid,verdict,verifiedAnswer,independentAnswer,acceptableAnswers,solutionCheck,choiceUnique,explanationConsistent,sourceSupported,confidence,reason,verifiedExplanationの全キー必須。該当なしの配列は[]、文字列は空文字。verdictはCONFIRMED/CORRECTED/REVIEW。CONFIRMEDは独立解答と元の正答が一致し、4つの判定フラグがすべてtrue、confidence>=0.92の場合のみ。CORRECTEDは誤答が明確で正答が一意の場合のみ。選択式verifiedAnswerは選択肢本文と一致。REVIEW時のverifiedAnswer/independentAnswerは空文字、4つの判定フラグはfalse、confidenceは0〜0.91。reasonは25文字以内。出力形式例=${JSON.stringify(example)}。JSON以外は禁止。`;
+ return `独立検証。問題の正しさ、条件、教材範囲、正答と解説・採点基準の整合を確認。教科=${reference.subject}。単元=${JSON.stringify(reference.topics)}。要点=${JSON.stringify(reference.keyPoints)}。根拠=${reference.source}。対象=${JSON.stringify(compact)}。全IDを各1回だけchecksへ返す。最上位はchecks配列。各要素はid,verdict,verifiedAnswer,independentAnswer,acceptableAnswers,solutionCheck,choiceUnique,explanationConsistent,sourceSupported,confidence,reason,verifiedExplanationの全キー必須。該当なしの配列は[]、文字列は空文字。verdictはCONFIRMED/CORRECTED/REVIEW。共通条件：問題自体に誤りがないこと、解説・根拠に矛盾がないことを確認し、confidence>=0.92の場合だけ確定する。重要：type=essay（記述・論述）は文章の完全一致・文字列一致で判定しない。verifiedAnswerは元の模範解答例を維持するか、明確な誤りがある場合のみ修正。independentAnswerは同じ意味を別の言葉で説明してよい。内容の正確さ・論理・根拠・採点基準との整合で判定し、choiceUniqueは「採点基準が一意で明確」ならtrue。表現や語順が違うだけならCONFIRMED。記述の模範解答と別表現の回答が文字列として違うことを理由にREVIEW/CORRECTEDにしない。選択式verifiedAnswerは選択肢本文と一致。REVIEWは確信が持てない場合のみ。REVIEW時のverifiedAnswer/independentAnswerは空文字、判定フラグはfalse、confidenceは0〜0.91。reasonは25文字以内。出力形式例=${JSON.stringify(example)}。JSON以外は禁止。`;
 }
 async function requestAuditGroup(provider,items,reference){
  state.currentOperation=`重点正答検証・${provider}（${items.length}問）`;
@@ -1399,18 +1423,19 @@ async function verifyGeneratedAnswers(questions,settings,analysis){
   }
  }
  const primaryCheck=q=>primaryById.get(Number(q.id));
- const summary={confirmed:0,corrected:0,review:0},validCheck=c=>{const verdict=String(c?.verdict||'REVIEW').toUpperCase(),answer=String(c?.verifiedAnswer||'').trim(),ind=String(c?.independentAnswer||'').trim(),confidence=Number(c?.confidence);return !!c&&['CONFIRMED','CORRECTED'].includes(verdict)&&!!answer&&!!ind&&c.solutionCheck===true&&c.explanationConsistent===true&&c.sourceSupported===true&&c.choiceUnique===true&&Number.isFinite(confidence)&&confidence>=.92&&norm(answer)===norm(ind);};
+ const summary={confirmed:0,corrected:0,review:0},validCheck=(c,q)=>{const verdict=String(c?.verdict||'REVIEW').toUpperCase(),answer=String(c?.verifiedAnswer||'').trim(),ind=String(c?.independentAnswer||'').trim(),confidence=Number(c?.confidence),essay=isFreeResponseQuestion(q);const flags=c?.solutionCheck===true&&c?.explanationConsistent===true&&c?.sourceSupported===true&&(essay||c?.choiceUnique===true);return !!c&&['CONFIRMED','CORRECTED'].includes(verdict)&&!!answer&&!!ind&&flags&&Number.isFinite(confidence)&&confidence>=.92&&(essay||norm(answer)===norm(ind));};
  for(const q of highRisk){
-  const a=primaryCheck(q),issues=precheck.get(q.id)||[];let valid=!issues.length&&validCheck(a),verdict=String(a?.verdict||'REVIEW').toUpperCase(),answer=String(a?.verifiedAnswer||'').trim();
+  const a=primaryCheck(q),issues=precheck.get(q.id)||[];let valid=!issues.length&&validCheck(a,q),verdict=String(a?.verdict||'REVIEW').toUpperCase(),answer=String(a?.verifiedAnswer||'').trim();
   if(valid&&mathExpected.has(q.id)){const n=numericFromAnswer(q.type==='choice'?(q.choices||[]).find(x=>norm(x)===norm(answer)):answer);valid=n!==null&&Math.abs(n-mathExpected.get(q.id))<1e-9;if(!valid)q._answerAuditReason='端末内の独立計算とAI検証結果が一致しません。';}
   let acceptable=Array.isArray(a?.acceptableAnswers)?a.acceptableAnswers.map(x=>String(x).trim()).filter(Boolean).slice(0,4):[];
   if(valid&&q.type==='choice'){const opts=(q.choices||[]).map(norm);valid=opts.length===4&&new Set(opts).size===4&&opts.includes(norm(answer));acceptable=acceptable.filter(x=>opts.includes(norm(x)));}
-  if(valid&&verdict==='CONFIRMED'&&norm(answer)!==norm(q.answer||''))valid=false;
-  if(valid&&verdict==='CORRECTED'&&norm(answer)===norm(q.answer||''))valid=false;
-  if(!valid){q._answerStatus='review';q._answerAuditLevel='independent';q._answerAuditReason=(q._answerAuditReason||[q._verificationFocus,...issues,String(a?.reason||`${a?.provider||'独立検証'}で確定条件を満たしませんでした。`)].filter(Boolean).join(' / ')).slice(0,240);summary.review++;continue;}
+  // Essay answers are examples, not exact-match strings. Only compare literal answers for objective questions.
+  if(valid&&!isFreeResponseQuestion(q)&&verdict==='CONFIRMED'&&norm(answer)!==norm(q.answer||''))valid=false;
+  if(valid&&!isFreeResponseQuestion(q)&&verdict==='CORRECTED'&&norm(answer)===norm(q.answer||''))valid=false;
+  if(!valid){q._answerStatus='review';q._answerAuditLevel='independent';q._answerAuditReason=isFreeResponseQuestion(q)?'記述問題は文章の完全一致では判定しません。独立検証が確定できなかったため、内容・論理・根拠を採点基準に沿って手動確認してください。':(q._answerAuditReason||[q._verificationFocus,...issues,String(a?.reason||`${a?.provider||'独立検証'}で確定条件を満たしませんでした。`)].filter(Boolean).join(' / ')).slice(0,240);summary.review++;continue;}
   const sameProvider=a.provider===(q._generatedBy||'');
-  if(sameProvider){q._answerStatus='review';q._answerAuditLevel='independent';q._answerAuditReason=`${a.provider}が代替確認しましたが生成元と同じAIのため独立検証になりません。手動確認してください。`;summary.review++;continue;}
-  q._answerStatus='verified';q._answerAuditLevel='independent';q._answerAuditReason=`${verdict==='CORRECTED'?'正答修正':'独立解答一致'}。生成=${q._generatedBy||'不明'}／検証=${a.provider}${a.fallbackFrom?'（Groq停止時Gemini代替）':''}。信頼度${Math.round(Number(a.confidence)*100)}%。`;q.answer=answer;q.acceptableAnswers=acceptable;q._answerAuditVerdict=verdict;q._answerConfidence=Number(a.confidence);if(a.verifiedExplanation)q.explanation=String(a.verifiedExplanation).slice(0,180);if(verdict==='CORRECTED')summary.corrected++;else summary.confirmed++;
+  if(sameProvider){q._answerStatus='review';q._answerAuditLevel='independent';q._answerAuditReason=isFreeResponseQuestion(q)?'記述問題は表現の完全一致で判定しません。独立した別AIで確認できないため、内容・根拠を手動確認してください。':`${a.provider}が代替確認しましたが生成元と同じAIのため独立検証になりません。手動確認してください。`;summary.review++;continue;}
+  q._answerStatus='verified';q._answerAuditLevel='independent';q._answerAuditReason=isFreeResponseQuestion(q)?`記述内容・論旨・根拠・採点基準を確認（文章表現の完全一致は判定していません）。検証=${a.provider}。信頼度${Math.round(Number(a.confidence)*100)}%。`:`${verdict==='CORRECTED'?'正答修正':'独立解答一致'}。生成=${q._generatedBy||'不明'}／検証=${a.provider}${a.fallbackFrom?'（Groq停止時Gemini代替）':''}。信頼度${Math.round(Number(a.confidence)*100)}%。`;if(!isFreeResponseQuestion(q)||verdict==='CORRECTED'){q.answer=answer;q.acceptableAnswers=acceptable;}q._answerAuditVerdict=verdict;q._answerConfidence=Number(a.confidence);if(a.verifiedExplanation)q.explanation=String(a.verifiedExplanation).slice(0,180);if(verdict==='CORRECTED')summary.corrected++;else summary.confirmed++;
  }
  for(const p of PROVIDERS)counts[p]=actualCounts[p];
  state.providerAssignments.verification={...counts,secondary:{Gemini:0,Groq:0}};
@@ -1563,17 +1588,17 @@ function applyTeacherMarks(results){
   }
   const symbol=status==='correct'?'○':status==='review'?'△':'×';
   const title=status==='correct'?'正解':status==='review'?'要確認':'不正解';
-  const reason=status==='correct'?'正答と一致しています。':status==='review'?(r.reason||'記述内容・途中式の確認が必要です。'):(r.reason||'正答と一致しません。');
+  const reason=isFreeResponseQuestion(q)?'記述問題は文章の完全一致では判定しません。内容・論理・根拠を採点基準に沿って確認してください。':status==='correct'?'正答と一致しています。':status==='review'?(r.reason||'記述内容・途中式の確認が必要です。'):(r.reason||'正答と一致しません。');
   const given=String(state.answers[q.id]??'').trim();
   const correctAnswer=String(q.answer??'').trim();
-  const detail=!['verified','local_checked'].includes(q._answerStatus)?'正答：独立検証未完了のため非表示・採点保留':q._answerStatus==='local_checked'?`正答：${escapeHtml(correctAnswer||'確認')}（端末内形式チェックのみ・独立検証対象外）`:status==='correct'?'':status==='review'?'手動確認：部分点が必要な場合は答案と採点基準を確認してください。':`正答：${escapeHtml(correctAnswer||'模範解答を確認')}`;
+  const detail=isFreeResponseQuestion(q)?`模範解答例：${escapeHtml(correctAnswer||'採点基準を参照')}（同じ意味であれば別の表現でも構いません）。採点基準：${escapeHtml(q.markingGuide||'内容・論理・根拠を確認')}`:!['verified','local_checked'].includes(q._answerStatus)?'正答：独立検証未完了のため非表示・採点保留':q._answerStatus==='local_checked'?`正答：${escapeHtml(correctAnswer||'確認')}（端末内形式チェックのみ・独立検証対象外）`:status==='correct'?'':status==='review'?'手動確認：部分点が必要な場合は答案と採点基準を確認してください。':`正答：${escapeHtml(correctAnswer||'模範解答を確認')}`;
   card.insertAdjacentHTML('beforeend',`<div class="teacher-marking ${status}"><span class="mark-stamp">${symbol}</span><div><b>${title}　${Math.max(0,Number(r.score)||0)} / ${q.points}点</b><small>${escapeHtml(reason)}</small>${given?`<small>あなたの解答：${escapeHtml(given)}</small>`:'<small>未回答</small>'}${detail?`<small>${detail}</small>`:''}</div></div>`);
  }
 }
 function showGradeResults(results,overallFeedback='',weakAreas=[]){
  const total=state.questions.reduce((n,q)=>n+q.points,0),score=results.reduce((n,r)=>n+Math.max(0,Math.min(Number(r.maxPoints)||0,Number(r.score)||0)),0),pct=total?Math.round(score/total*100):0;
  const reviewCount=results.filter(r=>r.needsReview).length;const provisional=reviewCount>0||state.questions.some(q=>q._answerStatus==='local_checked');const localOnlyCount=state.questions.filter(q=>q._answerStatus==='local_checked').length;
- $('resultBox').innerHTML=`<div class="grade-score">${provisional?'仮得点':'得点'}　${score} / ${total} 点</div><div><b>得点率 ${pct}%</b></div><div class="grading-note">端末内の自動採点です。Geminiへの採点リクエストは送信していません。${reviewCount?` ${reviewCount}問は途中式・記述・作図の確認待ちです。`:''}${localOnlyCount?` 通常問題${localOnlyCount}問は別AIの独立検証対象外のため、得点は暫定です。`:''}</div><div class="grade-detail"><h4>総合結果</h4><div>${escapeHtml(overallFeedback||'採点が完了しました。')}</div>${weakAreas.length?`<p><b>復習したい分野：</b>${weakAreas.map(escapeHtml).join('、')}</p>`:''}</div>${results.map(r=>{const q=state.questions.find(x=>x.id===Number(r.id));if(!q)return '';const sc=Math.max(0,Math.min(q.points,Number(r.score)||0));const status=r.status|| (r.needsReview?'review':sc>=q.points?'correct':'incorrect');return `<div class="grade-detail"><h4>第${q.id}問　${sc}/${q.points}点　${status==='correct'?'○ 正解':status==='review'?'△ 要確認':'× 不正解'}</h4><div><b>あなたの解答：</b>${escapeHtml(state.answers[q.id]||'未回答')}</div><div><b>正答：</b>${q._answerStatus==='verified'?escapeHtml(q.answer||'要手動確認'):q._answerStatus==='local_checked'?escapeHtml(q.answer||'要確認')+'（独立検証対象外）':'独立検証未完了・採点保留'}</div><div><b>解説：</b>${escapeHtml(q.explanation||r.reason||'解説はありません。')}</div>${r.needsReview?'<div class="grading-note">記述・途中式を見て部分点を判断してください。</div>':''}</div>`;}).join('')}`;
+ $('resultBox').innerHTML=`<div class="grade-score">${provisional?'仮得点':'得点'}　${score} / ${total} 点</div><div><b>得点率 ${pct}%</b></div><div class="grading-note">端末内の自動採点です。Geminiへの採点リクエストは送信していません。${reviewCount?` ${reviewCount}問は途中式・記述・作図の確認待ちです。`:''}${localOnlyCount?` 通常問題${localOnlyCount}問は別AIの独立検証対象外のため、得点は暫定です。`:''}</div><div class="grade-detail"><h4>総合結果</h4><div>${escapeHtml(overallFeedback||'採点が完了しました。')}</div>${weakAreas.length?`<p><b>復習したい分野：</b>${weakAreas.map(escapeHtml).join('、')}</p>`:''}</div>${results.map(r=>{const q=state.questions.find(x=>x.id===Number(r.id));if(!q)return '';const sc=Math.max(0,Math.min(q.points,Number(r.score)||0));const status=r.status|| (r.needsReview?'review':sc>=q.points?'correct':'incorrect');return `<div class="grade-detail"><h4>第${q.id}問　${sc}/${q.points}点　${status==='correct'?'○ 正解':status==='review'?'△ 要確認':'× 不正解'}</h4><div><b>あなたの解答：</b>${escapeHtml(state.answers[q.id]||'未回答')}</div><div><b>${isFreeResponseQuestion(q)?'模範解答例（表現の完全一致は不要）':'正答'}：</b>${q._answerStatus==='verified'?escapeHtml(q.answer||'要手動確認'):q._answerStatus==='local_checked'?escapeHtml(q.answer||'要確認')+'（独立検証対象外）':'独立検証未完了・採点保留'}</div><div><b>解説：</b>${escapeHtml(q.explanation||r.reason||'解説はありません。')}</div>${r.needsReview?'<div class="grading-note">記述・途中式を見て部分点を判断してください。</div>':''}</div>`;}).join('')}`;
  $('resultBox').classList.add('show');
  applyTeacherMarks(results);
  $('resultBox').scrollIntoView({behavior:'smooth',block:'nearest'});
@@ -1596,17 +1621,17 @@ function collectAnswers(){
 function gradeLocally(){
  collectAnswers();
  const results=state.questions.map(q=>{
-  const given=String(state.answers[q.id]??'').trim(),correct=answerMatches(q,given),hasAnswer=!!given;
+  const given=String(state.answers[q.id]??'').trim(),correct=isFreeResponseQuestion(q)?false:answerMatches(q,given),hasAnswer=!!given;
   let status='incorrect',score=0,reason='';
   if(!hasAnswer){reason='未回答のため0点です。';}
   else if(q.type==='drawing'){
    status='review';reason='作図は線の位置・条件・構成を確認する必要があるため、自動採点せず手動確認に回しました。';
+  }else if(isFreeResponseQuestion(q)){
+   status='review';reason='記述答案は模範解答と文章表現が違っていても構いません。内容・論理・根拠を採点基準に沿って手動確認してください。';
   }else if(!['verified','local_checked'].includes(q._answerStatus)){
    status='review';reason='重要問題の独立検証が未完了です。誤った正答で採点しないため、この問題は採点保留にしています。';
   }else if(q._answerStatus==='local_checked'&&!correct){
    status='review';reason='端末内の形式チェックのみで、別AIの独立検証対象外です。誤答とは確定せず手動確認に回します。';
-  }else if(q.type==='essay'){
-   status='review';reason='論述問題は表現・論理・根拠を確認する必要があるため、自動で点数を確定していません。';
   }else if(q.type==='calculation'&&!correct){
    status='review';reason='最終答案は模範解答と一致しません。途中式による部分点を確認してください。';
   }else if(correct){status='correct';score=q.points;reason=q._answerStatus==='local_checked'?'AI作成正答と一致（独立検証対象外・暫定判定）。':'登録された正答または許容解と一致しました。';}
@@ -1628,13 +1653,22 @@ $('gradeBtn').addEventListener('click',()=>{
  finally{$('gradeBtn').disabled=false;}
 });
 $('questionList').addEventListener('change',e=>{const el=e.target;if(el.matches('input[type=radio]'))state.answers[el.name.slice(1)]=el.value;});
-function printInMode(mode){recordActivity('print','印刷・PDF出力',mode==='question'?'問題用紙':mode==='answer-sheet'?'解答用紙':'模範解答');document.body.dataset.printMode=mode;const clean=()=>{delete document.body.dataset.printMode;window.removeEventListener('afterprint',clean);};window.addEventListener('afterprint',clean);window.print();setTimeout(clean,60000);}
+function isIosStandaloneApp(){const ua=navigator.userAgent||'',ios=/iPad|iPhone|iPod/.test(ua)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1),standalone=navigator.standalone===true||!!window.matchMedia?.('(display-mode: standalone)').matches;return ios&&standalone;}
+function printPayloadForMode(mode){let head='',content='';if(mode==='question'){head=$('questionPrintHead')?.innerHTML||'';content=$('questionList')?.innerHTML||'';}else if(mode==='answer-sheet'){content=$('answerSheetPrint')?.innerHTML||'';}else{content=$('answerKeyPrint')?.innerHTML||'';}return{v:1,mode,title:$('examTitle')?.textContent||'EXAM FORGE',subject:$('testPaper')?.dataset.subject||'',head,content};}
+function bytesToBase64Url(bytes){let binary='';for(let i=0;i<bytes.length;i+=0x6000)binary+=String.fromCharCode(...bytes.subarray(i,Math.min(i+0x6000,bytes.length)));return btoa(binary).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');}
+function base64UrlToBytes(value){const base=value.replace(/-/g,'+').replace(/_/g,'/'),padded=base+'='.repeat((4-base.length%4)%4),binary=atob(padded),bytes=new Uint8Array(binary.length);for(let i=0;i<binary.length;i++)bytes[i]=binary.charCodeAt(i);return bytes;}
+async function encodePrintPayload(payload){const raw=JSON.stringify(payload);if(typeof CompressionStream==='function'){try{const stream=new Blob([raw]).stream().pipeThrough(new CompressionStream('gzip'));const bytes=new Uint8Array(await new Response(stream).arrayBuffer());return'g'+bytesToBase64Url(bytes);}catch(e){}}return'r'+bytesToBase64Url(new TextEncoder().encode(raw));}
+async function decodePrintPayload(token){const bytes=base64UrlToBytes(token.slice(1));let raw;if(token[0]==='g'){if(typeof DecompressionStream!=='function')throw new Error('このSafariでは圧縮データを展開できません。通常のSafariでサイトを開き直してください。');const stream=new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'));raw=await new Response(stream).text();}else raw=new TextDecoder().decode(bytes);const payload=JSON.parse(raw);if(!payload||payload.v!==1||!['question','answer-sheet','key'].includes(payload.mode)||typeof payload.content!=='string')throw new Error('印刷データの形式が正しくありません。');return payload;}
+function showPrintHandoff(mode){let overlay=$('printHandoffOverlay');if(!overlay){overlay=document.createElement('div');overlay.id='printHandoffOverlay';document.body.appendChild(overlay);}overlay.innerHTML=`<section id="printHandoffCard" role="dialog" aria-modal="true" aria-labelledby="printHandoffTitle"><h2 id="printHandoffTitle">Safariで印刷用ページを開く</h2><p>ホーム画面から起動したiPadのWebアプリでは、直接印刷画面が開かない場合があります。模試データをSafariへ渡して、Safari側から印刷します。</p><p>①「Safariで開く」を押す<br>② Safariで開いたページの「印刷する」を押す<br>③ プリンタ選択、またはPDFとして保存します。</p><div class="print-handoff-actions"><a id="printSafariLink" href="#" aria-disabled="true" style="pointer-events:none;opacity:.5">Safariで開く</a><button id="printCopyLink" type="button">Safari用リンクをコピー</button><button id="printHandoffClose" type="button">戻る</button></div><textarea id="printLinkFallback" readonly hidden aria-label="Safari用リンク"></textarea><p id="printHandoffStatus" aria-live="polite">印刷データを準備しています...</p></section>`;overlay.hidden=false;const close=()=>{overlay.hidden=true;};$('printHandoffClose').addEventListener('click',close);let targetUrl='';(async()=>{try{const token=await encodePrintPayload(printPayloadForMode(mode));const url=new URL(location.href);url.hash='examforge-print='+token;targetUrl=url.href;if(targetUrl.length>100000)throw new Error('印刷データが大きすぎます。問題数を少し減らしてから再度お試しください。');$('printSafariLink').href='x-safari-'+targetUrl;$('printSafariLink').style.pointerEvents='auto';$('printSafariLink').style.opacity='1';$('printSafariLink').setAttribute('aria-disabled','false');$('printHandoffStatus').textContent='準備完了。Safariで開くボタンを押してください。';}catch(e){$('printHandoffStatus').textContent='準備できませんでした：'+(e.message||e);}})();$('printCopyLink').addEventListener('click',async()=>{if(!targetUrl){$('printHandoffStatus').textContent='まだ準備中です。';return;}try{await navigator.clipboard.writeText(targetUrl);$('printHandoffStatus').textContent='リンクをコピーしました。Safariのアドレス欄に貼り付けて開いてください。';}catch(e){$('printLinkFallback').hidden=false;$('printLinkFallback').value=targetUrl;$('printLinkFallback').focus();$('printLinkFallback').select();$('printHandoffStatus').textContent='リンクを表示しました。長押ししてコピーし、Safariのアドレス欄に貼り付けてください。';}});}
+async function restoreExternalPrintViewFromHash(){const prefix='#examforge-print=';if(!location.hash.startsWith(prefix))return;try{const payload=await decodePrintPayload(location.hash.slice(prefix.length));document.body.dataset.printMode=payload.mode;document.body.classList.add('external-print-mode','test-mode');$('examTitle').textContent=payload.title||'模試';$('testNavTitle').textContent=payload.title||'模試';$('testPaper').dataset.subject=payload.subject||'';$('questionPrintHead').innerHTML=payload.mode==='question'?payload.head||'':'';$('questionList').innerHTML=payload.mode==='question'?payload.content:'';$('answerSheetPrint').innerHTML=payload.mode==='answer-sheet'?payload.content:'';$('answerKeyPrint').innerHTML=payload.mode==='key'?payload.content:'';$('examSection').classList.add('show');$('examSection').dataset.subject=payload.subject||'';$('builderPage').classList.add('hidden');$('testPage').classList.add('active');$('testPage').setAttribute('aria-hidden','false');const actions=document.createElement('section');actions.id='externalPrintActions';actions.innerHTML='<p><b>印刷用ページを開きました。</b><br>「印刷する」を押してください。反応しない場合はSafariの共有ボタンから「プリント」を選んでください。</p><button id="externalPrintNow" type="button">印刷する</button>';$('testPage').insertBefore(actions,$('testPage').querySelector('.test-paper-wrap'));$('externalPrintNow').addEventListener('click',()=>{try{window.print();}catch(e){$('testPageStatus').textContent='印刷を開始できませんでした。Safariの共有ボタンから「プリント」を選んでください。';$('testPageStatus').classList.add('show');}});$('testPageStatus').textContent='Safariで開いた印刷用ページです。';$('testPageStatus').classList.add('show');window.scrollTo({top:0,behavior:'auto'});}catch(e){document.body.classList.add('external-print-mode','test-mode');$('builderPage').classList.add('hidden');$('testPage').classList.add('active');$('testPageStatus').textContent='印刷データを開けませんでした：'+(e.message||e);$('testPageStatus').classList.add('show','error');}}
+function printInMode(mode){recordActivity('print','印刷・PDF出力',mode==='question'?'問題用紙':mode==='answer-sheet'?'解答用紙':'模範解答');if(isIosStandaloneApp()){showPrintHandoff(mode);return;}document.body.dataset.printMode=mode;const clean=()=>{delete document.body.dataset.printMode;window.removeEventListener('afterprint',clean);};window.addEventListener('afterprint',clean);try{window.print();}catch(e){showPrintHandoff(mode);}setTimeout(clean,60000);}
 $('printBtn').addEventListener('click',()=>printInMode('question'));
 $('printAnswerSheetBtn').addEventListener('click',()=>printInMode('answer-sheet'));
 $('printKeyBtn').addEventListener('click',()=>printInMode('key'));
 $('answerKeyBtn').addEventListener('click',()=>{const lines=state.questions.map(q=>`【第${q.id}問・${q.points}点】\n模範解答：${q._answerStatus==='verified'?(q.answer??'手動確認'):q._answerStatus==='local_checked'?`${q.answer??'手動確認'}（独立検証対象外・形式確認のみ）`:'独立検証未完了・採点保留'}\n検証メモ：${q._answerAuditReason||'なし'}\n採点基準：${q.markingGuide||'なし'}\n解説：${q.explanation||''}`).join('\n\n');downloadText('模試_模範解答と採点基準.txt',lines);});
 function downloadText(name,txt){const blob=new Blob([txt],{type:'text/plain;charset=utf-8'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
 window.addEventListener('beforeunload',()=>{if(state.tesseract)state.tesseract.terminate();});
+restoreExternalPrintViewFromHash();
 </script>
 </body>
 </html>
